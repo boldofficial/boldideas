@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { getChatResponse } from '../services/geminiService';
+import { chatAction } from '@/actions/chat';
 import { ChatMessage } from '../types';
 
 const ChatWidget: React.FC = () => {
@@ -29,15 +29,20 @@ const ChatWidget: React.FC = () => {
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setIsLoading(true);
 
+    // Prepare history for the server
     const history = messages.map(m => ({
       role: m.role,
       parts: [{ text: m.text }]
     }));
 
-    const response = await getChatResponse(userMsg, history);
-    
-    setMessages(prev => [...prev, { role: 'model', text: response }]);
-    setIsLoading(false);
+    try {
+        const { text } = await chatAction(userMsg, history);
+        setMessages(prev => [...prev, { role: 'model', text: text }]);
+    } catch (error) {
+        setMessages(prev => [...prev, { role: 'model', text: "Connection interrupted." }]);
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
