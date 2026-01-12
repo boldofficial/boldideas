@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
+import AdminInitCheck from "@/components/auth/AdminInitCheck";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
             </main>
           <Footer />
           <ChatWidget />
+          <AdminInitCheck />
         </div>
       </body>
     </html>
