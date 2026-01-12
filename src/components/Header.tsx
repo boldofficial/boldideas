@@ -77,19 +77,7 @@ const Header: React.FC = () => {
             Services
           </Link>
           
-          {/* Conditional Admin Link */}
-          {isAdmin && (
-            <Link
-                href="/admin"
-                className={`text-[10px] font-black uppercase tracking-widest transition-colors ${
-                pathname.startsWith("/admin")
-                    ? "text-brand-gold"
-                    : "text-brand-navy/60 hover:text-brand-gold"
-                }`}
-            >
-                Admin
-            </Link>
-          )}
+
 
           <Link
             href="/contact"
@@ -105,6 +93,18 @@ const Header: React.FC = () => {
 
         <div className="flex items-center space-x-4">
              {/* Dynamic Auth Button */}
+             {isAdmin && (
+                <Link
+                    href="/admin"
+                    className={`text-[10px] font-black uppercase tracking-widest transition-colors mr-4 ${
+                    pathname.startsWith("/admin")
+                        ? "text-brand-gold"
+                        : "text-brand-navy/60 hover:text-brand-gold"
+                    }`}
+                >
+                    Admin
+                </Link>
+             )}
              {user ? (
                 <button
                     onClick={handleSignOut}
