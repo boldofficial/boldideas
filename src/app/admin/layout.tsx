@@ -62,10 +62,12 @@ export default function AdminLayout({
           </div>
 
           <nav className="flex-1 p-4 space-y-2">
-              <Link href="/admin" className="block px-4 py-3 bg-white/5 border border-white/5 rounded-sm text-xs font-mono text-white hover:bg-white/10 hover:border-brand-gold/50 transition-all uppercase tracking-widest">
-                 Dashboard
-              </Link>
-              {/* Add more links here */}
+               <Link href="/admin" className="block px-4 py-3 bg-white/5 border border-white/5 rounded-sm text-xs font-mono text-white hover:bg-white/10 hover:border-brand-gold/50 transition-all uppercase tracking-widest">
+                  Dashboard
+               </Link>
+               <Link href="/admin/inbox" className="block px-4 py-3 bg-white/5 border border-white/5 rounded-sm text-xs font-mono text-white hover:bg-white/10 hover:border-brand-gold/50 transition-all uppercase tracking-widest">
+                  Inbox (Messages)
+               </Link>
           </nav>
 
           <div className="p-4 border-t border-brand-gold/10">
