@@ -1,19 +1,29 @@
 
-import { pgTable, uuid, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, uuid, jsonb } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  email: text('email').notNull().unique(),
-  role: text('role', { enum: ['admin', 'user'] }).notNull().default('user'),
+  id: uuid('id').primaryKey(), // Matches Supabase Auth ID
+  email: text('email').notNull(),
   name: text('name'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-  lastLogin: timestamp('last_login'),
-  isActive: boolean('is_active').default(true).notNull(),
-}, (table) => [
-  index('idx_users_email').on(table.email),
-  index('idx_users_role').on(table.role),
-]);
+  role: text('role').default('user'), // 'admin' | 'user'
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+});
 
-export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
+export const projects = pgTable('projects', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  title: text('title').notNull(), // Client Name / Subject
+  slug: text('slug').notNull().unique(),
+  
+  // The Schematic Content Structure
+  problem: text('problem').notNull(), // The Glitch
+  solution: text('solution').notNull(), // The Fix
+  result: text('result').notNull(), // The Upgrade
+  
+  imageUrl: text('image_url'), // Optional schematic diagram or screenshot
+  tags: jsonb('tags').$type<string[]>(), // e.g. ["Automation", "AI", "Zapier"]
+  
+  isPublished: boolean('is_published').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
