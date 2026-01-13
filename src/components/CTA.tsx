@@ -1,5 +1,5 @@
-
 import React from 'react';
+import Link from 'next/link';
 
 const CTA: React.FC = () => {
   return (
@@ -38,13 +38,13 @@ const CTA: React.FC = () => {
                 </p>
 
                 <div className="flex flex-col sm:flex-row justify-center gap-6 relative z-10">
-                  <button className="bg-brand-gold text-brand-navy px-12 py-5 rounded-sm font-black hover:bg-white transition-all shadow-xl uppercase tracking-widest text-xs relative overflow-hidden group/btn">
+                  <Link href="/contact" className="bg-brand-gold text-brand-navy px-12 py-5 rounded-sm font-black hover:bg-white transition-all shadow-xl uppercase tracking-widest text-xs relative overflow-hidden group/btn flex items-center justify-center">
                     <span className="relative z-10">Schedule Consultation</span>
                     <div className="absolute inset-0 bg-white translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
-                  </button>
-                  <button className="bg-transparent text-white px-12 py-5 rounded-sm font-bold border border-white/20 hover:border-brand-gold hover:text-brand-gold transition-all uppercase tracking-widest text-xs font-mono">
-                    View_Case_Studies
-                  </button>
+                  </Link>
+                  <Link href="/projects" className="bg-transparent text-white px-12 py-5 rounded-sm font-bold border border-white/20 hover:border-brand-gold hover:text-brand-gold transition-all uppercase tracking-widest text-xs font-mono flex items-center justify-center">
+                    Case_Study
+                  </Link>
                 </div>
            </div>
            
