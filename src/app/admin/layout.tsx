@@ -53,9 +53,9 @@ export default function AdminLayout({
       {/* Sidebar - could be a separate component */}
       <aside className="w-64 bg-brand-navy border-r border-brand-gold/10 fixed inset-y-0 left-0 z-50 flex flex-col">
           <div className="p-6 border-b border-brand-gold/10">
-              <div className="text-white font-black uppercase tracking-tighter text-xl">
+              <Link href="/" className="text-white font-black uppercase tracking-tighter text-xl hover:text-brand-gold transition-colors block">
                   Admin <span className="text-brand-gold">Panel</span>
-              </div>
+              </Link>
               <div className="text-[9px] font-mono text-slate-400 mt-1">
                   V 2.0.1 | LEVEL 5 ACCESS
               </div>
@@ -82,7 +82,7 @@ export default function AdminLayout({
                 onClick={() => signOut().then(() => router.push('/auth/signin'))}
                 className="w-full text-left px-4 py-2 text-slate-400 hover:text-red-400 text-xs font-mono uppercase tracking-widest transition-colors flex items-center space-x-2"
               >
-                  <span>Term_Session</span>
+                  <span>Logout</span>
                   <span>&gt;</span>
               </button>
           </div>
