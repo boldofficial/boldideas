@@ -8,6 +8,13 @@
       "when": 1768229539402,
       "tag": "0000_wakeful_madrox",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1768236794794,
+      "tag": "0001_add_project_schema",
+      "breakpoints": true
     }
   ]
 }
