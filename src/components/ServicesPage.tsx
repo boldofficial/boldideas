@@ -106,7 +106,7 @@ const ServicesPage: React.FC = () => {
         <div className="max-w-7xl mx-auto flex flex-col items-center text-center relative z-10">
           <div className="inline-flex items-center space-x-3 mb-12 border border-brand-navy/10 bg-white/50 px-4 py-2 rounded-sm backdrop-blur-sm">
             <div className="w-1.5 h-1.5 bg-brand-gold animate-pulse"></div>
-            <span className="text-[10px] font-mono font-black text-brand-navy uppercase tracking-[0.3em]">System_Modules: Active</span>
+            <span className="text-[10px] md:text-xs font-mono font-black text-brand-navy uppercase tracking-[0.3em]">System_Modules: Active</span>
           </div>
           
           <h1 className="text-6xl md:text-8xl font-black text-brand-navy leading-none tracking-tighter mb-12">
@@ -133,8 +133,8 @@ const ServicesPage: React.FC = () => {
               <div className="h-full bg-slate-50 p-8 relative overflow-hidden group-hover:bg-white transition-colors duration-500">
                   {/* Metadata Header */}
                   <div className="flex justify-between items-center mb-8 border-b border-brand-navy/5 pb-4">
-                      <span className="font-mono text-[9px] text-brand-navy/40 tracking-widest">MOD_ID: {service.id}</span>
-                      <span className="font-mono text-[9px] text-brand-gold tracking-widest bg-brand-navy/5 px-2 py-1 rounded-sm">{service.status}</span>
+                      <span className="font-mono text-[9px] md:text-xs text-brand-navy/40 tracking-widest">MOD_ID: {service.id}</span>
+                      <span className="font-mono text-[9px] md:text-xs text-brand-gold tracking-widest bg-brand-navy/5 px-2 py-1 rounded-sm">{service.status}</span>
                   </div>
 
                   <div className="w-12 h-12 flex items-center justify-center text-3xl mb-6 grayscale group-hover:grayscale-0 transition-all duration-500">
@@ -150,13 +150,13 @@ const ServicesPage: React.FC = () => {
                   </p>
                   
                   <div className="space-y-3">
-                    <div className="text-[9px] font-black uppercase tracking-widest text-brand-navy/30 mb-4 flex items-center">
+                    <div className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-brand-navy/30 mb-4 flex items-center">
                         <span className="w-2 h-px bg-brand-navy/30 mr-2"></span>
                         Capabilities
                     </div>
                     {service.details.map((detail, idx) => (
-                      <div key={idx} className="flex items-center space-x-3 text-xs text-slate-600 font-mono">
-                        <span className="text-brand-gold text-[10px]">{'>'}</span>
+                      <div key={idx} className="flex items-center space-x-3 text-xs md:text-sm text-slate-600 font-mono">
+                        <span className="text-brand-gold text-[10px] md:text-[11px]">{'>'}</span>
                         <span>{detail}</span>
                       </div>
                     ))}
@@ -177,7 +177,7 @@ const ServicesPage: React.FC = () => {
          <div className="max-w-7xl mx-auto relative z-10">
             <div className="text-center mb-16">
                <div className="inline-block border border-brand-gold/30 px-4 py-1 mb-6 bg-brand-navy">
-                   <p className="text-[10px] font-mono text-brand-gold uppercase tracking-[0.4em]">SYS_OVERVIEW: ADVANTAGE</p>
+                   <p className="text-[10px] md:text-xs font-mono text-brand-gold uppercase tracking-[0.4em]">SYS_OVERVIEW: ADVANTAGE</p>
                </div>
                <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter">Why Partner <span className="text-brand-gold italic">With Us?</span></h2>
             </div>
@@ -204,7 +204,7 @@ const ServicesPage: React.FC = () => {
                  }
                ].map((item, i) => (
                  <div key={i} className="bg-brand-navy border border-white/10 p-8 relative group hover:border-brand-gold/50 transition-colors">
-                    <div className="absolute top-2 right-2 font-mono text-[9px] text-white/20 group-hover:text-brand-gold transition-colors">{item.id}</div>
+                    <div className="absolute top-2 right-2 font-mono text-[9px] md:text-xs text-white/20 group-hover:text-brand-gold transition-colors">{item.id}</div>
                     
                     <div className="w-12 h-12 bg-white/5 flex items-center justify-center text-2xl mb-6 group-hover:bg-brand-gold group-hover:text-brand-navy transition-all rounded-sm border border-white/5">
                        {item.icon}

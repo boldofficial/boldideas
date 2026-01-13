@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 
 const BentoGrid: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'strategy' | 'automation' | 'seo'>('strategy');
@@ -92,16 +93,18 @@ const BentoGrid: React.FC = () => {
           <div className="animate-fade-in relative">
             <div className="absolute -left-6 top-2 bottom-2 w-0.5 bg-brand-gold/30 hidden md:block"></div>
             
-            <p className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-brand-gold mb-6 pl-2">System_Capabilities</p>
+            <p className="text-[10px] md:text-xs font-mono font-black uppercase tracking-[0.3em] text-brand-gold mb-6 pl-2">System_Capabilities</p>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-brand-navy leading-none tracking-tighter mb-8 bg-clip-text">
               Intelligent Services<br />
               <span className="text-brand-gold italic">for Modern</span><br />
               Business Growth.
             </h2>
-            <button className="bg-brand-navy text-white px-10 py-4 rounded-sm font-black hover:bg-brand-gold hover:text-brand-navy transition-all hover:shadow-xl active:scale-95 shadow-md uppercase tracking-widest text-xs border border-transparent hover:border-brand-navy flex items-center group">
-              EXPLORE PROTOCOLS
-              <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0">_&gt;</span>
-            </button>
+            <Link href="/services">
+                <button className="bg-brand-navy text-white px-10 py-4 rounded-sm font-black hover:bg-brand-gold hover:text-brand-navy transition-all hover:shadow-xl active:scale-95 shadow-md uppercase tracking-widest text-xs md:text-sm border border-transparent hover:border-brand-navy flex items-center group">
+                EXPLORE SERVICES
+                <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0">_&gt;</span>
+                </button>
+            </Link>
           </div>
 
           <div className="bg-white/50 backdrop-blur-sm border border-brand-navy/10 p-1 rounded-sm shadow-2xl relative">
@@ -120,7 +123,7 @@ const BentoGrid: React.FC = () => {
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`text-[10px] font-mono font-bold uppercase tracking-widest px-6 py-2 transition-all relative top-[1px] border-t border-l border-r ${
+                        className={`text-[10px] md:text-xs font-mono font-bold uppercase tracking-widest px-6 py-2 transition-all relative top-[1px] border-t border-l border-r ${
                             activeTab === tab 
                             ? 'bg-white text-brand-navy border-brand-navy/10 border-b-white z-10' 
                             : 'bg-slate-50 text-slate-400 border-transparent hover:bg-slate-100'
@@ -155,7 +158,7 @@ const BentoGrid: React.FC = () => {
                 <div className={`w-full lg:w-[45%] ${node.position === 'right' ? 'text-left' : 'text-right'}`}>
                   <div className={`inline-flex items-center space-x-3 mb-4 ${node.position === 'right' ? 'flex-row' : 'flex-row-reverse'}`}>
                     <span className="text-xs font-black text-brand-navy/20 font-mono">CODE_{node.id}</span>
-                    <span className={`px-2 py-0.5 rounded-sm text-[8px] font-mono font-black border tracking-widest ${
+                    <span className={`px-2 py-0.5 rounded-sm text-[8px] md:text-[10px] font-mono font-black border tracking-widest ${
                       node.highlight ? 'bg-brand-navy text-brand-gold border-brand-navy' : 'bg-white text-slate-400 border-slate-200'
                     }`}>
                       STATUS: {node.status}

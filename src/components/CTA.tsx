@@ -23,7 +23,7 @@ const CTA: React.FC = () => {
 
            <div className="relative p-12 md:p-20 text-center overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-brand-gold/20 text-brand-gold px-4 py-1 rounded-b-sm border-b border-l border-r border-brand-gold/30">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-[0.3em] animate-pulse">System_Ready</span>
+                    <span className="text-[10px] md:text-xs font-mono font-bold uppercase tracking-[0.3em] animate-pulse">System_Ready</span>
                 </div>
 
                 <h2 className="text-4xl md:text-6xl font-black text-white mb-8 uppercase tracking-tighter relative z-10">
@@ -38,11 +38,11 @@ const CTA: React.FC = () => {
                 </p>
 
                 <div className="flex flex-col sm:flex-row justify-center gap-6 relative z-10">
-                  <Link href="/contact" className="bg-brand-gold text-brand-navy px-12 py-5 rounded-sm font-black hover:bg-white transition-all shadow-xl uppercase tracking-widest text-xs relative overflow-hidden group/btn flex items-center justify-center">
+                  <Link href="/contact" className="bg-brand-gold text-brand-navy px-12 py-5 rounded-sm font-black hover:bg-white transition-all shadow-xl uppercase tracking-widest text-xs md:text-sm relative overflow-hidden group/btn flex items-center justify-center">
                     <span className="relative z-10">Schedule Consultation</span>
                     <div className="absolute inset-0 bg-white translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
                   </Link>
-                  <Link href="/projects" className="bg-transparent text-white px-12 py-5 rounded-sm font-bold border border-white/20 hover:border-brand-gold hover:text-brand-gold transition-all uppercase tracking-widest text-xs font-mono flex items-center justify-center">
+                  <Link href="/projects" className="bg-transparent text-white px-12 py-5 rounded-sm font-bold border border-white/20 hover:border-brand-gold hover:text-brand-gold transition-all uppercase tracking-widest text-xs md:text-sm font-mono flex items-center justify-center">
                     Case_Study
                   </Link>
                 </div>

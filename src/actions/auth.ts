@@ -96,7 +96,7 @@ export async function sendPasswordResetAction(email: string) {
             type: 'recovery',
             email: email,
             options: {
-                 redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/reset-password`
+                 redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`
             }
         });
 
@@ -104,7 +104,7 @@ export async function sendPasswordResetAction(email: string) {
 
         // 3. Send Email via Resend
         await resend.emails.send({
-            from: 'Bold Ideas Security <security@getboldideas.com>',
+            from: process.env.FROM_EMAIL!,
             to: email,
             subject: 'ACTION REQUIRED: Admin Access Recovery',
             html: `
@@ -118,7 +118,7 @@ export async function sendPasswordResetAction(email: string) {
                     </a>
                     <br/><br/>
                     <p style="color: #64748b; font-size: 10px;">
-                        SECURE TRANSMISSION // IF THIS WAS NOT YOU, TERMINATE IMMEDIATELY.
+                        SECURE RECOVERY EMAIL // IF THIS WAS NOT YOU, TERMINATE IMMEDIATELY.
                     </p>
                 </div>
             `

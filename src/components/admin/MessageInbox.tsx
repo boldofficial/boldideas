@@ -46,7 +46,7 @@ const MessageInbox = ({ initialMessages }: { initialMessages: any[] }) => {
           setReplyContent("");
           setSelectedMessage(null);
           router.refresh();
-          alert("Transmission Response Sent.");
+          alert("Email Response Sent.");
       } else {
           alert("Failed to send response.");
       }

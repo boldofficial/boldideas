@@ -1,5 +1,6 @@
 
 import React from 'react';
+import Link from 'next/link';
 
 const Hero: React.FC = () => {
   return (
@@ -11,7 +12,7 @@ const Hero: React.FC = () => {
         <div className="text-left animate-fade-in">
           <div className="inline-flex items-center space-x-2 bg-white border border-brand-navy/5 rounded-full px-4 py-1.5 mb-8 shadow-sm">
             <span className="flex h-2 w-2 rounded-full bg-brand-gold animate-pulse"></span>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-navy/60">AI Digital Marketing & Automation Agency</span>
+            <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-brand-navy/60">AI Digital Marketing & Automation Agency</span>
           </div>
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-brand-navy leading-[1.05] tracking-tighter mb-8">
@@ -25,12 +26,14 @@ const Hero: React.FC = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-start gap-6">
-            <button className="w-full sm:w-auto px-10 py-5 bg-brand-navy text-white font-black rounded-2xl hover:bg-brand-gold hover:text-brand-navy hover:shadow-[0_20px_40px_rgba(255,184,28,0.2)] transition-all flex items-center justify-center group shadow-xl uppercase tracking-widest text-xs">
-              INITIALIZE PROTOCOL
-              <svg className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </button>
+            <Link href="/contact" className="w-full sm:w-auto">
+                <button className="w-full px-10 py-5 bg-brand-navy text-white font-black rounded-2xl hover:bg-brand-gold hover:text-brand-navy hover:shadow-[0_20px_40px_rgba(255,184,28,0.2)] transition-all flex items-center justify-center group shadow-xl uppercase tracking-widest text-xs md:text-sm">
+                GET STARTEDOUCH
+                <svg className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+                </button>
+            </Link>
           </div>
         </div>
 

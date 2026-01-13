@@ -21,7 +21,7 @@ const AboutPage: React.FC = () => {
         <div className="max-w-7xl mx-auto flex flex-col items-center text-center relative z-10">
           <div className="flex items-center space-x-3 mb-12 animate-pulse">
             <div className="w-2 h-2 rounded-full bg-brand-gold shadow-[0_0_8px_#FFB81C]"></div>
-            <span className="text-[10px] font-mono font-black text-brand-navy/40 uppercase tracking-[0.5em]">System_Boot: About_Us</span>
+            <span className="text-[10px] md:text-xs font-mono font-black text-brand-navy/40 uppercase tracking-[0.5em]">System_Boot: About_Us</span>
           </div>
           
           <h1 className="text-6xl md:text-9xl font-black text-brand-navy leading-none tracking-tighter mb-12">
@@ -55,7 +55,7 @@ const AboutPage: React.FC = () => {
              </div>
              <div className="absolute top-0 right-0 p-8 opacity-20 font-mono text-[100px] text-white/10 font-black pointer-events-none select-none">0101</div>
              <div className="relative z-10">
-                <span className="inline-block px-3 py-1 rounded bg-white/10 text-brand-gold font-mono text-[10px] mb-8 tracking-widest uppercase">INPUT: THE_FRICTION</span>
+                <span className="inline-block px-3 py-1 rounded bg-white/10 text-brand-gold font-mono text-[10px] md:text-sm mb-8 tracking-widest uppercase">INPUT: THE_FRICTION</span>
                 <h2 className="text-4xl font-black text-white mb-12 tracking-tight">Why We <br/><span className="text-white/30 italic underline decoration-brand-gold/30">Exist</span></h2>
                 
                 <div className="space-y-12">
@@ -65,7 +65,7 @@ const AboutPage: React.FC = () => {
                     { cmd: "ERR_03", msg: "Ad spend difficult to control." }
                   ].map((item, i) => (
                     <div key={i} className="flex items-start space-x-6 group/item">
-                       <span className="font-mono text-brand-gold text-xs mt-1.5">{item.cmd}</span>
+                       <span className="font-mono text-brand-gold text-xs md:text-sm mt-1.5">{item.cmd}</span>
                        <p className="text-white/60 text-lg font-medium group-hover/item:text-white transition-colors">-- {item.msg}</p>
                     </div>
                   ))}
@@ -85,7 +85,7 @@ const AboutPage: React.FC = () => {
              </div>
              <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle, #002D5B 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
              <div className="relative z-10">
-                <span className="inline-block px-3 py-1 rounded bg-brand-navy text-brand-gold font-mono text-[10px] mb-8 tracking-widest uppercase">OUTPUT: BOLD_IDEAS</span>
+                <span className="inline-block px-3 py-1 rounded bg-brand-navy text-brand-gold font-mono text-[10px] md:text-sm mb-8 tracking-widest uppercase">OUTPUT: BOLD_IDEAS</span>
                 <h2 className="text-4xl font-black text-brand-navy mb-12 tracking-tight">Making AI <br/><span className="text-brand-gold italic">Practical.</span></h2>
                 
                 <div className="space-y-12">
@@ -95,7 +95,7 @@ const AboutPage: React.FC = () => {
                     { tag: "COMPOUND", msg: "Campaigns that compound." }
                   ].map((item, i) => (
                     <div key={i} className="flex items-start space-x-6 group/item">
-                       <span className="bg-brand-navy/5 text-brand-navy font-black text-[9px] px-2 py-0.5 rounded tracking-widest mt-1.5">{item.tag}</span>
+                       <span className="bg-brand-navy/5 text-brand-navy font-black text-[9px] md:text-xs px-2 py-0.5 rounded tracking-widest mt-1.5">{item.tag}</span>
                        <p className="text-slate-500 text-lg font-medium group-hover/item:text-brand-navy transition-colors">&gt;&gt; {item.msg}</p>
                     </div>
                   ))}
@@ -111,7 +111,9 @@ const AboutPage: React.FC = () => {
           <div className="mb-24 flex flex-col md:flex-row md:items-end justify-between gap-8">
             <div className="max-w-xl">
               <div className="inline-block border border-brand-navy/10 px-3 py-1 mb-4">
-                 <p className="text-[10px] font-mono text-brand-gold uppercase tracking-[0.4em]">Core_Protocols</p>
+                 <p className="text-[10px] font-mono text-brand-gold uppercase tracking-[0.4em]">
+                  Core Principles
+                 </p>
               </div>
               <h2 className="text-5xl font-black text-brand-navy tracking-tighter leading-none">Operating <br/>Principles.</h2>
             </div>
@@ -137,10 +139,10 @@ const AboutPage: React.FC = () => {
                 </div>
                 
                 {/* Corner Accents */}
-                <div className="absolute top-0 right-0 p-2 font-mono text-[9px] text-brand-navy/20 group-hover:text-brand-gold">M_{mod.id}</div>
+                <div className="absolute top-0 right-0 p-2 font-mono text-[9px] md:text-xs text-brand-navy/20 group-hover:text-brand-gold">M_{mod.id}</div>
                 
                 <div className="relative z-10">
-                  <div className="w-8 h-8 flex items-center justify-center text-brand-navy font-black text-xs mb-8 bg-brand-light border border-brand-navy/5 group-hover:bg-brand-navy group-hover:text-brand-gold transition-colors">
+                  <div className="w-8 h-8 flex items-center justify-center text-brand-navy font-black text-xs md:text-sm mb-8 bg-brand-light border border-brand-navy/5 group-hover:bg-brand-navy group-hover:text-brand-gold transition-colors">
                     {mod.id}
                   </div>
                   <h3 className="text-xl font-black text-brand-navy mb-4 transition-colors uppercase tracking-tight">{mod.title}</h3>
@@ -161,7 +163,9 @@ const AboutPage: React.FC = () => {
              <div className="grid lg:grid-cols-3 gap-16 relative z-10">
                 <div className="lg:col-span-1">
                    <div className="inline-block border border-brand-navy/10 px-3 py-1 mb-4">
-                      <p className="text-[10px] font-mono text-brand-gold uppercase tracking-[0.4em]">Target_Nodes</p>
+                      <p className="text-[10px] md:text-xs font-mono text-brand-gold uppercase tracking-[0.4em]">
+                        Target_Audience
+                      </p>
                    </div>
                    <h2 className="text-4xl font-black text-brand-navy tracking-tight mb-8 leading-none">Who We <br/>Help.</h2>
                    <p className="text-slate-500 font-light leading-relaxed">We partner with forward-thinking SMEs, ambitious entrepreneurs, and scaling startups.</p>
@@ -174,12 +178,12 @@ const AboutPage: React.FC = () => {
                    ].map((item, i) => (
                      <div key={i} className="flex flex-col md:flex-row md:items-center justify-between p-8 rounded-sm bg-brand-light/50 border border-brand-navy/5 group/item hover:border-brand-navy hover:bg-white transition-all duration-300">
                         <div className="mb-4 md:mb-0">
-                           <span className="font-mono text-[9px] text-brand-gold mb-2 block tracking-widest uppercase">NODE_0{i+1}: CONNECTED</span>
+                           <span className="font-mono text-[9px] md:text-xs text-brand-gold mb-2 block tracking-widest uppercase">NODE_0{i+1}: CONNECTED</span>
                            <h4 className="text-2xl font-black text-brand-navy">{item.name}</h4>
                         </div>
                         <div className="text-right flex flex-col items-end">
-                           <span className="px-2 py-0.5 rounded-sm bg-brand-navy text-brand-gold text-[8px] font-mono font-bold tracking-widest mb-2">{item.focus}</span>
-                           <p className="text-xs text-slate-500 font-mono max-w-xs">{item.desc}</p>
+                           <span className="px-2 py-0.5 rounded-sm bg-brand-navy text-brand-gold text-[8px] md:text-[10px] font-mono font-bold tracking-widest mb-2">{item.focus}</span>
+                           <p className="text-xs md:text-sm text-slate-500 font-mono max-w-xs">{item.desc}</p>
                         </div>
                      </div>
                    ))}
@@ -200,7 +204,7 @@ const AboutPage: React.FC = () => {
            <div>
               <div className="inline-flex items-center space-x-2 bg-brand-gold/10 border border-brand-gold/20 px-4 py-1.5 rounded-full mb-8">
                  <span className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-pulse"></span>
-                 <span className="text-[10px] font-mono font-black uppercase tracking-widest text-brand-navy">Sys_Stack: Active</span>
+                 <span className="text-[10px] md:text-xs font-mono font-black uppercase tracking-widest text-brand-navy">Sys_Stack: Active</span>
               </div>
               <h2 className="text-5xl lg:text-7xl font-black text-brand-navy mb-12 tracking-tighter leading-none">
                  Tools We <br/><span className="text-brand-gold italic">Work With.</span>
@@ -214,7 +218,7 @@ const AboutPage: React.FC = () => {
                    <div key={i} className="flex items-center space-x-6 p-6 rounded-sm border border-brand-navy/5 bg-white shadow-sm hover:border-brand-gold transition-colors group">
                       <div className="w-12 h-12 rounded-sm bg-brand-navy flex items-center justify-center text-brand-gold font-bold group-hover:scale-105 transition-transform font-mono">0{i+1}</div>
                       <div>
-                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono">{spec.label}</p>
+                         <p className="text-[9px] md:text-xs font-black text-slate-400 uppercase tracking-widest font-mono">{spec.label}</p>
                          <p className="text-brand-navy font-bold">{spec.val}</p>
                       </div>
                    </div>
@@ -236,7 +240,7 @@ const AboutPage: React.FC = () => {
                        <div className="w-3 h-3 rounded-full bg-white/10"></div>
                        <div className="w-3 h-3 rounded-full bg-white/10"></div>
                     </div>
-                    <span className="font-mono text-[9px] text-brand-gold tracking-widest">ECOSYSTEM_V2</span>
+                    <span className="font-mono text-[9px] md:text-xs text-brand-gold tracking-widest">ECOSYSTEM_V2</span>
                  </div>
                  
                  <div className="space-y-16 relative z-10">
@@ -251,7 +255,7 @@ const AboutPage: React.FC = () => {
                             {node.i}
                          </div>
                          <div>
-                            <span className="text-[9px] font-black text-brand-gold tracking-[0.3em] uppercase block mb-1 font-mono">{node.l}</span>
+                            <span className="text-[9px] md:text-xs font-black text-brand-gold tracking-[0.3em] uppercase block mb-1 font-mono">{node.l}</span>
                             <span className="text-xl font-bold text-white">{node.t}</span>
                          </div>
                       </div>

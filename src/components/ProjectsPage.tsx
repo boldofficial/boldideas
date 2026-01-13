@@ -38,7 +38,7 @@ const ProjectsPage: React.FC<Props> = ({ projects }) => {
                Operational <span className="text-brand-gold">Successes</span>
             </h1>
             <p className="text-xl text-slate-300 max-w-2xl mx-auto font-mono">
-               DATABASE_ACCESS_GRANTED // Review successful deployment protocols and outcome analysis.
+               Review successful deployment protocols and outcome analysis.
             </p>
          </div>
       </section>

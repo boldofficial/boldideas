@@ -27,3 +27,12 @@ export const projects = pgTable('projects', {
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
+
+export const messages = pgTable('messages', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),         // Identity_Name
+  email: text('email').notNull(),       // Comms_Email
+  content: text('content').notNull(),   // Transmission_Content
+  status: text('status').default('new'), // 'new', 'read', 'replied'
+  createdAt: timestamp('created_at').defaultNow(),
+});

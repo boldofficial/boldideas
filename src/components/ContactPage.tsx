@@ -41,7 +41,7 @@ const ContactPage: React.FC = () => {
              
              <div className="inline-flex items-center space-x-2 border border-brand-navy/10 bg-brand-light px-3 py-1 mb-8 rounded-sm">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                <span className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-brand-navy">Uplink_Ready</span>
+                <span className="text-[10px] md:text-xs font-mono font-black uppercase tracking-[0.3em] text-brand-navy">Uplink_Ready</span>
              </div>
 
              <h1 className="text-5xl md:text-7xl font-black text-brand-navy leading-none tracking-tighter mb-8">
@@ -59,8 +59,8 @@ const ContactPage: React.FC = () => {
                       <span className="text-2xl">📧</span>
                    </div>
                    <div>
-                      <h3 className="text-xs font-black uppercase tracking-widest text-brand-navy mb-1">Transmission_Target</h3>
-                      <p className="text-slate-500 font-mono text-sm">hello@myezer.org</p>
+                      <h3 className="text-xs md:text-sm font-black uppercase tracking-widest text-brand-navy mb-1">Transmission_Target</h3>
+                      <p className="text-slate-500 font-mono text-sm">{process.env.NEXT_PUBLIC_ADMIN_EMAIL}</p>
                    </div>
                 </div>
 
@@ -69,7 +69,7 @@ const ContactPage: React.FC = () => {
                       <span className="text-2xl">📍</span>
                    </div>
                    <div>
-                      <h3 className="text-xs font-black uppercase tracking-widest text-brand-navy mb-1">Base_Coordinates</h3>
+                      <h3 className="text-xs md:text-sm font-black uppercase tracking-widest text-brand-navy mb-1">Base_Coordinates</h3>
                       <p className="text-slate-500 font-mono text-sm">San Francisco, CA<br/>Sector 7G</p>
                    </div>
                 </div>
@@ -84,7 +84,7 @@ const ContactPage: React.FC = () => {
                 <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-brand-gold"></div>
 
                 <div className="bg-brand-navy/5 p-3 flex justify-between items-center border-b border-brand-navy/5">
-                   <span className="font-mono text-[9px] text-brand-navy/40 uppercase tracking-widest">SECURE_CHANNEL_V1</span>
+                   <span className="font-mono text-[9px] md:text-[11px] text-brand-navy/40 uppercase tracking-widest">SECURE_CHANNEL_V1</span>
                    <div className="flex space-x-1">
                       <div className="w-1.5 h-1.5 bg-brand-navy/20 rounded-full"></div>
                       <div className="w-1.5 h-1.5 bg-brand-navy/20 rounded-full"></div>
@@ -99,7 +99,7 @@ const ContactPage: React.FC = () => {
                            </div>
                            <h3 className="text-brand-navy font-black uppercase tracking-widest text-sm mb-2">Transmission Successful</h3>
                            <p className="text-slate-600 text-xs font-mono">Secure uplink established. We will respond via designated channel.</p>
-                           <button onClick={() => setStatus('idle')} className="mt-4 text-[10px] font-bold underline text-brand-navy hover:text-brand-gold uppercase tracking-widest">
+                           <button onClick={() => setStatus('idle')} className="mt-4 text-[10px] md:text-xs font-bold underline text-brand-navy hover:text-brand-gold uppercase tracking-widest">
                                Send_Another_Packet
                            </button>
                        </div>
@@ -107,7 +107,7 @@ const ContactPage: React.FC = () => {
                    <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="grid md:grid-cols-2 gap-6">
                          <div className="relative group">
-                            <label className="block text-[9px] font-mono font-bold uppercase tracking-widest text-brand-navy/50 mb-2 group-focus-within:text-brand-gold transition-colors">
+                            <label className="block text-[9px] md:text-[11px] font-mono font-bold uppercase tracking-widest text-brand-navy/50 mb-2 group-focus-within:text-brand-gold transition-colors">
                                Identity_Name
                             </label>
                             <input 
@@ -119,7 +119,7 @@ const ContactPage: React.FC = () => {
                             />
                          </div>
                          <div className="relative group">
-                            <label className="block text-[9px] font-mono font-bold uppercase tracking-widest text-brand-navy/50 mb-2 group-focus-within:text-brand-gold transition-colors">
+                            <label className="block text-[9px] md:text-[11px] font-mono font-bold uppercase tracking-widest text-brand-navy/50 mb-2 group-focus-within:text-brand-gold transition-colors">
                                Comms_Email
                             </label>
                             <input 
@@ -133,7 +133,7 @@ const ContactPage: React.FC = () => {
                       </div>
 
                       <div className="relative group">
-                         <label className="block text-[9px] font-mono font-bold uppercase tracking-widest text-brand-navy/50 mb-2 group-focus-within:text-brand-gold transition-colors">
+                         <label className="block text-[9px] md:text-[11px] font-mono font-bold uppercase tracking-widest text-brand-navy/50 mb-2 group-focus-within:text-brand-gold transition-colors">
                             Transmission_Content
                          </label>
                          <textarea 
@@ -145,7 +145,7 @@ const ContactPage: React.FC = () => {
                          ></textarea>
                       </div>
 
-                      <button disabled={isSubmitting} className="w-full bg-brand-navy text-white px-8 py-5 rounded-sm font-black hover:bg-brand-gold hover:text-brand-navy transition-all shadow-lg uppercase tracking-widest text-xs border border-transparent hover:border-brand-navy relative group overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed">
+                      <button disabled={isSubmitting} className="w-full bg-brand-navy text-white px-8 py-5 rounded-sm font-black hover:bg-brand-gold hover:text-brand-navy transition-all shadow-lg uppercase tracking-widest text-xs md:text-sm border border-transparent hover:border-brand-navy relative group overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed">
                          <span className="relative z-10 flex items-center justify-center">
                             {isSubmitting ? (
                                 <>

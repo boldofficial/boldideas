@@ -44,7 +44,7 @@ const CommunityBlueprint: React.FC = () => {
           <div className="lg:col-span-3 animate-fade-in relative">
             <div className="absolute -left-6 top-0 bottom-0 w-1 bg-brand-gold/50 hidden lg:block"></div>
             
-            <p className="text-[10px] font-mono font-black uppercase tracking-[0.4em] text-brand-gold mb-6 pl-2">Operational_Protocol</p>
+            <p className="text-[10px] md:text-xs font-mono font-black uppercase tracking-[0.4em] text-brand-gold mb-6 pl-2">Operational_Protocol</p>
             <h2 className="text-4xl md:text-5xl lg:text-7xl font-black text-brand-navy leading-none tracking-tighter mb-8 bg-clip-text">
               We deliver <br />
               <span className="text-brand-gold italic">Data-Driven</span><br />
@@ -69,7 +69,7 @@ const CommunityBlueprint: React.FC = () => {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`text-[9px] font-mono font-black uppercase tracking-widest whitespace-nowrap transition-all pb-2 relative ${
+                  className={`text-[9px] md:text-[10px] font-mono font-black uppercase tracking-widest whitespace-nowrap transition-all pb-2 relative ${
                     activeTab === tab ? 'text-brand-navy border-b-2 border-brand-gold' : 'text-slate-400 hover:text-brand-navy border-b-2 border-transparent'
                   }`}
                 >
@@ -79,8 +79,8 @@ const CommunityBlueprint: React.FC = () => {
             </div>
             <div className="min-h-[100px] animate-fade-in flex flex-col justify-center">
               <div className="text-5xl font-black text-brand-navy mb-2 tracking-tighter">{stats[activeTab].value}</div>
-              <p className="text-brand-gold text-xs font-mono font-bold uppercase tracking-widest mb-2">{stats[activeTab].label}</p>
-              <p className="text-slate-400 text-[10px] leading-relaxed font-mono">
+              <p className="text-brand-gold text-xs md:text-sm font-mono font-bold uppercase tracking-widest mb-2">{stats[activeTab].label}</p>
+              <p className="text-slate-400 text-[10px] md:text-xs leading-relaxed font-mono">
                   {stats[activeTab].id}: {stats[activeTab].detail}
               </p>
             </div>
@@ -112,8 +112,8 @@ const CommunityBlueprint: React.FC = () => {
                    <div className={`absolute bottom-0 left-0 w-3 h-3 border-b border-l ${node.highlight ? 'border-brand-gold' : 'border-brand-navy/20'}`}></div>
 
                   <div className="flex justify-between items-start mb-6">
-                    <span className={`text-[10px] font-black font-mono tracking-widest ${node.highlight ? 'text-brand-gold' : 'text-brand-navy/30'}`}>ID_{node.id}</span>
-                    <span className={`px-2 py-0.5 rounded-sm text-[8px] font-black border tracking-widest ${node.highlight ? 'bg-white/10 text-brand-gold border-white/10' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>{node.status}</span>
+                    <span className={`text-[10px] md:text-xs font-black font-mono tracking-widest ${node.highlight ? 'text-brand-gold' : 'text-brand-navy/30'}`}>ID_{node.id}</span>
+                    <span className={`px-2 py-0.5 rounded-sm text-[8px] md:text-[10px] font-black border tracking-widest ${node.highlight ? 'bg-white/10 text-brand-gold border-white/10' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>{node.status}</span>
                   </div>
                   <div className="flex items-center space-x-5 mb-4">
                     <div className={`w-14 h-14 flex items-center justify-center text-2xl border ${node.highlight ? 'bg-white/10 border-white/10 text-white' : 'bg-brand-light border-brand-navy/5 text-brand-navy'} rounded-sm`}>{node.icon}</div>
@@ -128,9 +128,9 @@ const CommunityBlueprint: React.FC = () => {
           <div className="mt-20 p-8 bg-brand-gold rounded-sm max-w-lg mx-auto text-center border border-brand-navy/20 shadow-2xl relative z-10 group overflow-hidden">
              <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
              
-             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-navy/60 mb-2 block relative z-10">The Result</span>
+             <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-brand-navy/60 mb-2 block relative z-10">The Result</span>
              <h4 className="text-3xl font-black text-brand-navy relative z-10">05 Measure</h4>
-             <p className="text-brand-navy/80 text-sm mt-2 font-mono relative z-10">We analyze performance and optimize loops continuously for continuous improvement.</p>
+             <p className="text-brand-navy/80 text-sm md:text-base mt-2 font-mono relative z-10">We analyze performance and optimize loops continuously for continuous improvement.</p>
              
              {/* Tech Accents */}
              <div className="absolute top-2 left-2 w-2 h-2 border-t border-l border-brand-navy/40"></div>
