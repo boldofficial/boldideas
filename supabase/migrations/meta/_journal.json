@@ -15,6 +15,13 @@
       "when": 1768236794794,
       "tag": "0001_add_project_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768276895311,
+      "tag": "0002_create_messages_table",
+      "breakpoints": true
     }
   ]
 }
