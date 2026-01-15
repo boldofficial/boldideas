@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
                 alt="Bold Ideas Innovation"
                 width={150}
                 height={50}
-                className="h-12 w-auto"
+                className="h-12 w-auto brightness-0 invert"
               />
             </div>
             <p className="text-slate-500 text-sm max-w-xs leading-relaxed">
