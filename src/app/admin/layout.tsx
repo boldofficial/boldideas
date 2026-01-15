@@ -68,6 +68,9 @@ export default function AdminLayout({
                <Link href="/admin/inbox" className="block px-4 py-3 bg-white/5 border border-white/5 rounded-sm text-xs font-mono text-white hover:bg-white/10 hover:border-brand-gold/50 transition-all uppercase tracking-widest">
                   Inbox (Messages)
                </Link>
+                <Link href="/admin/blog" className="block px-4 py-3 bg-white/5 border border-white/5 rounded-sm text-xs font-mono text-white hover:bg-white/10 hover:border-brand-gold/50 transition-all uppercase tracking-widest">
+                   Transmission Log (Blog)
+                </Link>
           </nav>
 
           <div className="p-4 border-t border-brand-gold/10">
