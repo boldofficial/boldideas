@@ -76,8 +76,16 @@ const Header: React.FC = () => {
           >
             Services
           </Link>
-          
-
+          <Link
+            href="/blog"
+            className={`text-[10px] font-black uppercase tracking-widest transition-colors ${
+              pathname.startsWith("/blog")
+                ? "text-brand-gold"
+                : "text-brand-navy/60 hover:text-brand-gold"
+            }`}
+          >
+            Blog
+          </Link>
 
           <Link
             href="/contact"
