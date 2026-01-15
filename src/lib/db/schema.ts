@@ -36,3 +36,16 @@ export const messages = pgTable('messages', {
   status: text('status').default('new'), // 'new', 'read', 'replied'
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const posts = pgTable('posts', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  slug: text('slug').notNull().unique(),
+  title: text('title').notNull(),
+  content: jsonb('content'),
+  excerpt: text('excerpt'),
+  coverImage: text('cover_image'),
+  status: text('status').default('draft'),
+  publishedAt: timestamp('published_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
