@@ -1,0 +1,428 @@
+'use server'
+
+import { db } from '@/lib/db';
+import { milestones, internalProjects, tasks, documents, comments, users, projectMembers } from '@/lib/db/schema';
+import { eq, desc, asc, and } from 'drizzle-orm';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { createNotification } from './notifications';
+import { recordActivity } from './activity';
+
+export async function deleteProject(formData: FormData) {
+    const projectId = formData.get('projectId') as string;
+    try {
+        await db.delete(internalProjects).where(eq(internalProjects.id, projectId));
+    } catch (error) {
+        return { success: false, error: 'Failed to delete project' };
+    }
+    redirect('/admin/projects');
+}
+
+export async function updateProject(formData: FormData) {
+    const projectId = formData.get('projectId') as string;
+    const title = formData.get('title') as string;
+    const status = formData.get('status') as string;
+    const type = formData.get('type') as string;
+    const description = formData.get('description') as string;
+    const budget = formData.get('budget') as string;
+    const startDate = formData.get('startDate') as string;
+    const dueDate = formData.get('dueDate') as string;
+
+    const managerId = formData.get('managerId') as string;
+
+    try {
+        await db.update(internalProjects).set({
+            title,
+            status,
+            type,
+            description,
+            budget,
+            managerId: managerId === 'unassigned' ? null : managerId,
+            startDate: startDate ? new Date(startDate) : null,
+            dueDate: dueDate ? new Date(dueDate) : null,
+            updatedAt: new Date(),
+        }).where(eq(internalProjects.id, projectId));
+        revalidatePath(`/admin/projects/${projectId}`);
+
+        // Log Activity
+        const managerIdVal = managerId === 'unassigned' ? null : managerId;
+        await recordActivity({
+            userId: managerIdVal || 'system',
+            action: 'project_updated',
+            projectId,
+            details: { title, status }
+        });
+
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Failed to update project' };
+    }
+}
+
+export async function addProjectFile(formData: FormData) {
+    const projectId = formData.get('projectId') as string;
+    const name = formData.get('name') as string;
+    const url = formData.get('url') as string;
+
+    try {
+        await db.insert(documents).values({ projectId, name, url, type: 'link' }); // Treat as link for now
+        revalidatePath(`/admin/projects/${projectId}`);
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Failed to add file' };
+    }
+}
+
+export async function getProjectFiles(projectId: string) {
+    try {
+        const data = await db.select().from(documents).where(eq(documents.projectId, projectId)).orderBy(desc(documents.createdAt));
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: 'Failed to fetch files' };
+    }
+}
+
+export async function postProjectComment(formData: FormData) {
+    const projectId = formData.get('projectId') as string;
+    const content = formData.get('content') as string;
+    const attachmentUrl = formData.get('attachmentUrl') as string;
+    const taskId = formData.get('taskId') as string || null;
+    const userId = formData.get('userId') as string;
+
+    if (!content && !attachmentUrl) return { success: false };
+
+    try {
+        await db.insert(comments).values({
+            projectId,
+            content: content || 'Sent an attachment',
+            userId: userId || null,
+            taskId: taskId || null,
+            attachmentUrl: attachmentUrl || null
+        });
+        if (projectId) revalidatePath(`/admin/projects/${projectId}`);
+        revalidatePath('/admin/tasks');
+        revalidatePath('/staff');
+
+        // Log Activity
+        await recordActivity({
+            userId: userId || 'system',
+            projectId: projectId || undefined,
+            taskId: taskId || undefined,
+            action: taskId ? 'task_comment_posted' : 'project_comment_posted',
+            details: { preview: content?.substring(0, 50) }
+        });
+
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Failed to post comment' };
+    }
+}
+
+export async function getTaskComments(taskId: string) {
+    try {
+        const data = await db.select({
+            id: comments.id,
+            content: comments.content,
+            attachmentUrl: comments.attachmentUrl,
+            taskId: comments.taskId,
+            createdAt: comments.createdAt,
+            userName: users.name,
+            userAvatar: users.avatarUrl
+        })
+            .from(comments)
+            .leftJoin(users, eq(comments.userId, users.id))
+            .where(eq(comments.taskId, taskId))
+            .orderBy(desc(comments.createdAt));
+
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: 'Failed to fetch task comments' };
+    }
+}
+
+export async function getProjectComments(projectId: string) {
+    try {
+        const data = await db.select({
+            id: comments.id,
+            content: comments.content,
+            attachmentUrl: comments.attachmentUrl,
+            taskId: comments.taskId,
+            createdAt: comments.createdAt,
+            userName: users.name,
+            userAvatar: users.avatarUrl
+        })
+            .from(comments)
+            .leftJoin(users, eq(comments.userId, users.id))
+            .where(eq(comments.projectId, projectId))
+            .orderBy(desc(comments.createdAt));
+
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: 'Failed to fetch comments' };
+    }
+}
+
+export async function getProjectMilestones(projectId: string) {
+    try {
+        const data = await db.select()
+            .from(milestones)
+            .where(eq(milestones.projectId, projectId))
+            .orderBy(asc(milestones.dueDate));
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: 'Failed to fetch milestones' };
+    }
+}
+
+export async function createMilestone(formData: FormData) {
+    const projectId = formData.get('projectId') as string;
+    const title = formData.get('title') as string;
+    const dueDate = formData.get('dueDate') as string;
+
+    try {
+        await db.insert(milestones).values({
+            projectId,
+            title,
+            dueDate: dueDate ? new Date(dueDate) : null,
+            status: 'pending'
+        });
+        revalidatePath(`/admin/projects/${projectId}`);
+        revalidatePath('/client');
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Failed to create milestone' };
+    }
+}
+
+export async function getProjectTasks(projectId: string) {
+    try {
+        const data = await db.select({
+            id: tasks.id,
+            projectId: tasks.projectId,
+            title: tasks.title,
+            description: tasks.description,
+            status: tasks.status,
+            priority: tasks.priority, // Check if tasks has priority
+            dueDate: tasks.dueDate,
+            assigneeId: tasks.assigneeId,
+            attachmentUrl: tasks.attachmentUrl,
+            createdAt: tasks.createdAt,
+            assigneeName: users.name,
+            assigneeAvatar: users.avatarUrl
+        })
+            .from(tasks)
+            .leftJoin(users, eq(tasks.assigneeId, users.id))
+            .where(eq(tasks.projectId, projectId))
+            .orderBy(desc(tasks.createdAt));
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: 'Failed to fetch tasks' };
+    }
+}
+
+import { supabaseAdmin } from '@/lib/supabase-admin';
+
+export async function createProjectTask(formData: FormData) {
+    const projectId = formData.get('projectId') as string;
+    const title = formData.get('title') as string;
+    const description = formData.get('description') as string;
+    const assigneeId = formData.get('assigneeId') as string || null;
+    const dueDate = formData.get('dueDate') as string;
+    const file = formData.get('file') as File;
+
+    let attachmentUrl = null;
+
+    if (file && file.size > 0 && file.name !== 'undefined') {
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `task-${Date.now()}.${fileExt}`;
+            const filePath = `${projectId || 'standalone'}/${fileName}`;
+
+            // Ensure bucket exists
+            const { data: buckets } = await supabaseAdmin.storage.listBuckets();
+            if (!buckets?.find(b => b.name === 'project-files')) {
+                await supabaseAdmin.storage.createBucket('project-files', { public: true });
+            }
+
+            const arrayBuffer = await file.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+
+            const { error: uploadError } = await supabaseAdmin.storage
+                .from('project-files')
+                .upload(filePath, buffer, {
+                    contentType: file.type,
+                    upsert: true
+                });
+
+            if (uploadError) {
+                console.error("Task File Upload Error:", uploadError);
+            } else {
+                const { data: { publicUrl } } = supabaseAdmin.storage
+                    .from('project-files')
+                    .getPublicUrl(filePath);
+                attachmentUrl = publicUrl;
+            }
+        } catch (err) {
+            console.error("File processing error:", err);
+        }
+    }
+
+    try {
+        await db.insert(tasks).values({
+            projectId: projectId && projectId !== 'null' ? projectId : null,
+            title,
+            description: description || null,
+            assigneeId: assigneeId === 'unassigned' ? null : assigneeId,
+            dueDate: dueDate ? new Date(dueDate) : null,
+            attachmentUrl: attachmentUrl,
+            status: 'todo',
+        });
+
+        // Send notification to assignee if set
+        if (assigneeId && assigneeId !== 'unassigned' && projectId && projectId !== 'null') {
+            // Get project title for notification
+            const [project] = await db.select({ title: internalProjects.title })
+                .from(internalProjects)
+                .where(eq(internalProjects.id, projectId));
+
+            await createNotification(
+                assigneeId,
+                'task_assigned',
+                `New task assigned: ${title}`,
+                `You've been assigned a new task on project "${project?.title || 'Unknown'}"`,
+                `/admin/projects/${projectId}`
+            );
+        }
+
+        if (projectId && projectId !== 'null') revalidatePath(`/admin/projects/${projectId}`);
+        revalidatePath('/admin/tasks');
+        revalidatePath('/staff');
+
+        // Log Activity
+        await recordActivity({
+            userId: assigneeId === 'unassigned' || !assigneeId ? 'system' : assigneeId,
+            projectId: projectId || undefined,
+            action: 'task_created',
+            details: { title, priority: 'medium' } // Default priority in your schema seems to be medium
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error: 'Failed to create task' };
+    }
+}
+
+export async function updateTaskStatus(taskId: string, status: string, projectId: string) {
+    try {
+        await db.update(tasks).set({ status }).where(eq(tasks.id, taskId));
+        if (projectId && projectId !== 'null') revalidatePath(`/admin/projects/${projectId}`);
+        revalidatePath('/admin/tasks');
+        revalidatePath('/staff');
+
+        // Log Activity
+        await recordActivity({
+            userId: null, // System activity - no specific user
+            projectId: projectId || undefined,
+            taskId: taskId || undefined,
+            action: status === 'done' ? 'task_completed' : 'task_status_updated',
+            details: { newStatus: status }
+        });
+
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Failed to update task' };
+    }
+}
+
+export async function deleteProjectTask(formData: FormData) {
+    const taskId = formData.get('taskId') as string;
+    const projectId = formData.get('projectId') as string;
+    try {
+        await db.delete(tasks).where(eq(tasks.id, taskId));
+        if (projectId && projectId !== 'null') revalidatePath(`/admin/projects/${projectId}`);
+        revalidatePath('/admin/tasks');
+        revalidatePath('/staff');
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Failed to delete task' };
+    }
+}
+
+export async function updateProjectTask(formData: FormData) {
+    const taskId = formData.get('taskId') as string;
+    const projectId = formData.get('projectId') as string;
+    const title = formData.get('title') as string;
+    const description = formData.get('description') as string;
+    const assigneeId = formData.get('assigneeId') as string;
+    const dueDate = formData.get('dueDate') as string;
+
+    try {
+        await db.update(tasks).set({
+            title,
+            description,
+            assigneeId: assigneeId === 'unassigned' ? null : assigneeId,
+            dueDate: dueDate ? new Date(dueDate) : null,
+        }).where(eq(tasks.id, taskId));
+
+        if (projectId && projectId !== 'null') revalidatePath(`/admin/projects/${projectId}`);
+        revalidatePath('/admin/tasks');
+        revalidatePath('/staff');
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Failed to update task' };
+    }
+}
+
+export async function getProjectMembers(projectId: string) {
+    try {
+        const data = await db.select({
+            id: projectMembers.id,
+            userId: projectMembers.userId,
+            role: projectMembers.role,
+            addedAt: projectMembers.joinedAt,
+            name: users.name,
+            email: users.email,
+            avatarUrl: users.avatarUrl
+        })
+            .from(projectMembers)
+            .leftJoin(users, eq(projectMembers.userId, users.id))
+            .where(eq(projectMembers.projectId, projectId));
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: 'Failed to fetch members' };
+    }
+}
+
+export async function addProjectMember(formData: FormData) {
+    const projectId = formData.get('projectId') as string;
+    const userId = formData.get('userId') as string;
+    const role = formData.get('role') as string || 'member';
+
+    try {
+        const existing = await db.select().from(projectMembers)
+            .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)));
+
+        if (existing.length > 0) return { success: false, error: 'User already added' };
+
+        await db.insert(projectMembers).values({ projectId, userId, role });
+        revalidatePath(`/admin/projects/${projectId}`);
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Failed to add member' };
+    }
+}
+
+export async function removeProjectMember(formData: FormData) {
+    const memberId = formData.get('memberId') as string;
+    const projectId = formData.get('projectId') as string;
+
+    try {
+        await db.delete(projectMembers).where(eq(projectMembers.id, memberId));
+        revalidatePath(`/admin/projects/${projectId}`);
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Failed to remove member' };
+    }
+}
+

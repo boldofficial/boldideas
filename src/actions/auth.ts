@@ -14,7 +14,7 @@ export async function setupAdminAction(formData: FormData) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const name = formData.get('name') as string;
-    
+
     if (!email || !password || !name) {
         return { success: false, error: "Missing required fields." };
     }
@@ -37,13 +37,13 @@ export async function setupAdminAction(formData: FormData) {
         });
 
         if (authError) {
-             // Handle "User already exists" safely
-             if (authError.message.includes("already registered") || authError.status === 400) {
-                 return { error: "User exists. Redirecting to login...", redirect: '/auth/signin' };
-             }
-             throw authError;
+            // Handle "User already exists" safely
+            if (authError.message.includes("already registered") || authError.status === 400) {
+                return { error: "User exists. Redirecting to login...", redirect: '/auth/signin' };
+            }
+            throw authError;
         }
-        
+
         if (!authData.user) throw new Error("Failed to create user in Auth system.");
 
         // 3. Insert Public User (Drizzle) - Normal Flow
@@ -96,7 +96,7 @@ export async function sendPasswordResetAction(email: string) {
             type: 'recovery',
             email: email,
             options: {
-                 redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`
+                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`
             }
         });
 
@@ -165,14 +165,61 @@ export async function claimOrphanedAdminRole(userId: string) {
 
         // 2. Double check validity of the user in public table
         // We can just try to update. If they don't exist, it does nothing.
-        
+
         await db.update(users)
             .set({ role: 'admin' })
             .where(eq(users.id, userId));
-            
+
         return { success: true };
     } catch (error) {
         console.error("Claim Admin Error:", error);
         return { success: false };
+    }
+}
+
+/**
+ * Server Action to Register a new user.
+ */
+export async function signUpAction(formData: FormData) {
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const name = formData.get('name') as string;
+
+    if (!email || !password || !name) {
+        return { success: false, error: "Missing required fields." };
+    }
+
+    try {
+        // 1. Create Auth User (Supabase Admin SDK)
+        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true,
+            user_metadata: { name }
+        });
+
+        if (authError) {
+            if (authError.message.includes("already registered") || authError.status === 400) {
+                return { error: "User already exists. Redirecting to login...", redirect: '/auth/signin' };
+            }
+            throw authError;
+        }
+
+        if (!authData.user) throw new Error("Failed to create user in Auth system.");
+
+        // 2. Insert Public User (Drizzle)
+        await db.insert(users).values({
+            id: authData.user.id,
+            email,
+            role: 'user', // Default role for manual signups
+            name,
+            isActive: true
+        });
+
+        return { success: true };
+
+    } catch (error: any) {
+        console.error("Sign Up Error:", error);
+        return { success: false, error: error.message };
     }
 }

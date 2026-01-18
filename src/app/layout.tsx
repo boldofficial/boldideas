@@ -23,8 +23,8 @@ export default function RootLayout({
       <body
         className={`${plusJakartaSans.variable} antialiased text-slate-800`}
       >
-          {children}
-          <AdminInitCheck />
+        {children}
+        <AdminInitCheck />
       </body>
     </html>
   );

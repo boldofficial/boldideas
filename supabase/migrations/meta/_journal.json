@@ -29,6 +29,20 @@
       "when": 1768310566786,
       "tag": "0003_create_posts_table",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1768686402229,
+      "tag": "0004_slippery_hydra",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1768742501826,
+      "tag": "0005_polite_blazing_skull",
+      "breakpoints": true
     }
   ]
 }
