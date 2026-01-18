@@ -79,6 +79,9 @@ export async function getStaffTasks(userId: string) {
             status: tasks.status,
             priority: tasks.priority,
             dueDate: tasks.dueDate,
+            attachmentUrl: tasks.attachmentUrl,
+            estimatedMinutes: tasks.estimatedMinutes,
+            subtasks: tasks.subtasks,
             projectId: tasks.projectId,
             projectTitle: internalProjects.title,
         })

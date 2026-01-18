@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db';
 import { milestones, internalProjects, tasks, documents, comments, users, projectMembers } from '@/lib/db/schema';
-import { eq, desc, asc, and } from 'drizzle-orm';
+import { eq, desc, asc, and, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createNotification } from './notifications';
@@ -85,19 +85,49 @@ export async function getProjectFiles(projectId: string) {
 export async function postProjectComment(formData: FormData) {
     const projectId = formData.get('projectId') as string;
     const content = formData.get('content') as string;
-    const attachmentUrl = formData.get('attachmentUrl') as string;
+    const file = formData.get('file') as File;
+    const attachmentUrlManual = formData.get('attachmentUrl') as string;
     const taskId = formData.get('taskId') as string || null;
     const userId = formData.get('userId') as string;
+
+    let attachmentUrl = attachmentUrlManual || null;
+
+    if (file && file.size > 0 && file.name !== 'undefined') {
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `comment-${Date.now()}.${fileExt}`;
+            const filePath = `comments/${taskId || 'general'}/${fileName}`;
+
+            const arrayBuffer = await file.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+
+            const { error: uploadError } = await supabaseAdmin.storage
+                .from('project-files')
+                .upload(filePath, buffer, {
+                    contentType: file.type,
+                    upsert: true
+                });
+
+            if (!uploadError) {
+                const { data: { publicUrl } } = supabaseAdmin.storage
+                    .from('project-files')
+                    .getPublicUrl(filePath);
+                attachmentUrl = publicUrl;
+            }
+        } catch (err) {
+            console.error("Comment File upload error:", err);
+        }
+    }
 
     if (!content && !attachmentUrl) return { success: false };
 
     try {
         await db.insert(comments).values({
-            projectId,
+            projectId: (projectId && projectId !== 'null') ? projectId : null,
             content: content || 'Sent an attachment',
             userId: userId || null,
             taskId: taskId || null,
-            attachmentUrl: attachmentUrl || null
+            attachmentUrl: attachmentUrl
         });
         if (projectId) revalidatePath(`/admin/projects/${projectId}`);
         revalidatePath('/admin/tasks');
@@ -153,7 +183,11 @@ export async function getProjectComments(projectId: string) {
         })
             .from(comments)
             .leftJoin(users, eq(comments.userId, users.id))
-            .where(eq(comments.projectId, projectId))
+            .where(
+                projectId === 'null'
+                    ? sql`${comments.projectId} IS NULL`
+                    : eq(comments.projectId, projectId)
+            )
             .orderBy(desc(comments.createdAt));
 
         return { success: true, data };
@@ -206,13 +240,19 @@ export async function getProjectTasks(projectId: string) {
             dueDate: tasks.dueDate,
             assigneeId: tasks.assigneeId,
             attachmentUrl: tasks.attachmentUrl,
+            estimatedMinutes: tasks.estimatedMinutes,
+            subtasks: tasks.subtasks,
             createdAt: tasks.createdAt,
             assigneeName: users.name,
             assigneeAvatar: users.avatarUrl
         })
             .from(tasks)
             .leftJoin(users, eq(tasks.assigneeId, users.id))
-            .where(eq(tasks.projectId, projectId))
+            .where(
+                projectId === 'null'
+                    ? sql`${tasks.projectId} IS NULL`
+                    : eq(tasks.projectId, projectId)
+            )
             .orderBy(desc(tasks.createdAt));
         return { success: true, data };
     } catch (error) {
@@ -228,6 +268,8 @@ export async function createProjectTask(formData: FormData) {
     const description = formData.get('description') as string;
     const assigneeId = formData.get('assigneeId') as string || null;
     const dueDate = formData.get('dueDate') as string;
+    const estimatedMinutes = parseInt(formData.get('estimatedMinutes') as string || '0');
+    const subtasks = formData.get('subtasks') ? JSON.parse(formData.get('subtasks') as string) : [];
     const file = formData.get('file') as File;
 
     let attachmentUrl = null;
@@ -275,6 +317,8 @@ export async function createProjectTask(formData: FormData) {
             assigneeId: assigneeId === 'unassigned' ? null : assigneeId,
             dueDate: dueDate ? new Date(dueDate) : null,
             attachmentUrl: attachmentUrl,
+            estimatedMinutes: estimatedMinutes,
+            subtasks: subtasks,
             status: 'todo',
         });
 
@@ -303,7 +347,7 @@ export async function createProjectTask(formData: FormData) {
             userId: assigneeId === 'unassigned' || !assigneeId ? 'system' : assigneeId,
             projectId: projectId || undefined,
             action: 'task_created',
-            details: { title, priority: 'medium' } // Default priority in your schema seems to be medium
+            details: { title, priority: 'medium', estimatedMinutes } // Default priority in your schema seems to be medium
         });
 
         return { success: true };
@@ -356,14 +400,20 @@ export async function updateProjectTask(formData: FormData) {
     const description = formData.get('description') as string;
     const assigneeId = formData.get('assigneeId') as string;
     const dueDate = formData.get('dueDate') as string;
+    const estimatedMinutes = parseInt(formData.get('estimatedMinutes') as string || '0');
+    const subtasks = formData.get('subtasks') ? JSON.parse(formData.get('subtasks') as string) : null;
 
     try {
-        await db.update(tasks).set({
+        const updateData: any = {
             title,
             description,
             assigneeId: assigneeId === 'unassigned' ? null : assigneeId,
             dueDate: dueDate ? new Date(dueDate) : null,
-        }).where(eq(tasks.id, taskId));
+            estimatedMinutes,
+        };
+        if (subtasks) updateData.subtasks = subtasks;
+
+        await db.update(tasks).set(updateData).where(eq(tasks.id, taskId));
 
         if (projectId && projectId !== 'null') revalidatePath(`/admin/projects/${projectId}`);
         revalidatePath('/admin/tasks');

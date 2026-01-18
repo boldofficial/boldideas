@@ -107,6 +107,8 @@ export const tasks = pgTable('tasks', {
   assigneeId: uuid('assignee_id').references(() => users.id),
   dueDate: timestamp('due_date'),
   attachmentUrl: text('attachment_url'),
+  estimatedMinutes: integer('estimated_minutes').default(0),
+  subtasks: jsonb('subtasks').default([]),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });

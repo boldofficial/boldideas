@@ -204,27 +204,27 @@ export default function ProjectDetailClient({ project, milestones: initialMilest
                                 {!isAddingTask ? (
                                     <button
                                         onClick={() => setIsAddingTask(true)}
-                                        className="bg-brand-navy text-white px-4 py-2 rounded text-sm font-bold uppercase hover:bg-brand-gold transition-colors flex items-center gap-2"
+                                        className="bg-brand-navy text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-black transition-all flex items-center gap-2"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-                                        Add New Task
+                                        <Plus className="w-4 h-4" />
+                                        New Task
                                     </button>
                                 ) : (
                                     <form action={async (formData) => {
                                         await createProjectTask(formData);
                                         setIsAddingTask(false);
-                                    }} className="w-full bg-white p-4 rounded border border-slate-200 shadow-sm space-y-4 animate-in fade-in slide-in-from-top-2">
+                                    }} className="w-full bg-white p-6 rounded-xl border border-slate-200 shadow-lg space-y-6 animate-in fade-in slide-in-from-top-2">
                                         <input type="hidden" name="projectId" value={project.id} />
 
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Task Title</label>
-                                            <input name="title" placeholder="What needs to be done?" className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-brand-navy outline-none" required />
+                                            <label className="block text-xs font-semibold text-slate-700 mb-2">Title</label>
+                                            <input name="title" placeholder="What needs to be done?" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:border-brand-navy outline-none transition-all" required />
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <div>
-                                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Assign To</label>
-                                                <select name="assigneeId" className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-brand-navy outline-none">
+                                                <label className="block text-xs font-semibold text-slate-700 mb-2">Assignee</label>
+                                                <select name="assigneeId" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:border-brand-navy outline-none">
                                                     <option value="unassigned">Unassigned</option>
                                                     {usersList.map((u: any) => (
                                                         <option key={u.id} value={u.id}>{u.name || u.email}</option>
@@ -232,23 +232,23 @@ export default function ProjectDetailClient({ project, milestones: initialMilest
                                                 </select>
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Due Date</label>
-                                                <input type="datetime-local" name="dueDate" className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-brand-navy outline-none" />
+                                                <label className="block text-xs font-semibold text-slate-700 mb-2">Due Date</label>
+                                                <input type="datetime-local" name="dueDate" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:border-brand-navy outline-none" />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Attachment (Optional)</label>
-                                                <input type="file" name="file" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                                                <label className="block text-xs font-semibold text-slate-700 mb-2">Attachment</label>
+                                                <input type="file" name="file" className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-600 hover:file:bg-slate-200 cursor-pointer" />
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Description</label>
-                                            <textarea name="description" placeholder="Additional details..." rows={3} className="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-brand-navy outline-none"></textarea>
+                                            <label className="block text-xs font-semibold text-slate-700 mb-2">Description</label>
+                                            <textarea name="description" placeholder="Additional details..." rows={3} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:border-brand-navy outline-none resize-none"></textarea>
                                         </div>
 
-                                        <div className="flex justify-end gap-2 pt-2">
-                                            <button type="button" onClick={() => setIsAddingTask(false)} className="px-3 py-1 text-slate-500 hover:bg-slate-100 rounded text-sm font-bold">Cancel</button>
-                                            <button type="submit" className="bg-brand-navy text-white px-4 py-1 rounded text-sm font-bold uppercase hover:bg-brand-gold transition-colors">Create Task</button>
+                                        <div className="flex justify-end gap-3 pt-2">
+                                            <button type="button" onClick={() => setIsAddingTask(false)} className="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg text-sm font-bold transition-all">Cancel</button>
+                                            <button type="submit" className="bg-brand-navy text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-black transition-all">Create Task</button>
                                         </div>
                                     </form>
                                 )}
@@ -274,13 +274,13 @@ export default function ProjectDetailClient({ project, milestones: initialMilest
                                                 {task.status === 'done' && <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>}
                                             </button>
                                             <div className="flex flex-col">
-                                                <span className={`${task.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700 font-medium'}`}>{task.title}</span>
-                                                {task.dueDate && <span className={`text-[10px] ${new Date(task.dueDate) < new Date() ? 'text-red-500 font-bold' : 'text-slate-400'}`}>Due: {new Date(task.dueDate).toLocaleString()}</span>}
+                                                <span className={`${task.status === 'done' ? 'line-through text-slate-400 font-medium' : 'text-slate-800 font-bold'}`}>{task.title}</span>
+                                                {task.dueDate && <span className={`text-[10px] uppercase font-bold tracking-wider mt-0.5 ${new Date(task.dueDate) < new Date() ? 'text-red-500' : 'text-slate-400'}`}>{new Date(task.dueDate).toLocaleDateString()}</span>}
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            {task.assigneeName && <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{task.assigneeName}</span>}
-                                            <span className={`text-xs uppercase font-mono px-2 py-0.5 rounded ${task.priority === 'high' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-500'}`}>{task.priority}</span>
+                                            {task.assigneeName && <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded">{task.assigneeName}</span>}
+                                            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${task.priority === 'urgent' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>{task.priority}</span>
                                         </div>
                                     </div>
 
@@ -419,7 +419,7 @@ export default function ProjectDetailClient({ project, milestones: initialMilest
                                 projectId={project.id}
                                 userId={user.id}
                                 initialComments={initialComments.filter(c => !c.taskId)}
-                                title="Project_Tactical_Comms"
+                                title="Team Communication"
                                 className="h-full"
                             />
                         )}
@@ -438,14 +438,14 @@ export default function ProjectDetailClient({ project, milestones: initialMilest
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2 mb-0.5">
-                                        <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${selectedTask.status === 'done' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 border rounded uppercase tracking-wider ${selectedTask.status === 'done' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
                                             {selectedTask.status.replace('_', ' ')}
                                         </span>
-                                        <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${selectedTask.priority === 'urgent' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-500'}`}>
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 border rounded uppercase tracking-wider ${selectedTask.priority === 'urgent' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
                                             {selectedTask.priority}
                                         </span>
                                     </div>
-                                    <h2 className="text-xl font-black text-slate-800 tracking-tight italic">{selectedTask.title}</h2>
+                                    <h2 className="text-xl font-bold text-slate-900 tracking-tight">{selectedTask.title}</h2>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -453,14 +453,14 @@ export default function ProjectDetailClient({ project, milestones: initialMilest
                                     <>
                                         <button
                                             onClick={() => setIsEditingTask(true)}
-                                            className="p-2 text-slate-400 hover:text-brand-navy hover:bg-slate-100 rounded-full transition-all"
-                                            title="Edit Directive"
+                                            className="p-2 text-slate-400 hover:text-brand-navy hover:bg-slate-100 rounded-lg transition-all"
+                                            title="Edit Task"
                                         >
                                             <Edit2 className="w-5 h-5" />
                                         </button>
                                         <button
                                             onClick={async () => {
-                                                if (confirm('Authorize directive termination?')) {
+                                                if (confirm('Delete this task?')) {
                                                     const fd = new FormData();
                                                     fd.append('taskId', selectedTask.id);
                                                     fd.append('projectId', project.id);
@@ -469,16 +469,19 @@ export default function ProjectDetailClient({ project, milestones: initialMilest
                                                     router.refresh();
                                                 }
                                             }}
-                                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-full transition-all"
-                                            title="Terminate Directive"
+                                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                            title="Delete Task"
                                         >
                                             <Trash2 className="w-5 h-5" />
                                         </button>
+                                        <div className="w-px h-6 bg-slate-200 mx-2" />
                                     </>
                                 )}
-                                <div className="w-px h-6 bg-slate-200 mx-2" />
-                                <button onClick={() => setSelectedTask(null)} className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-100 rounded-full transition-all">
-                                    <X className="w-6 h-6" />
+                                <button
+                                    onClick={() => setSelectedTask(null)}
+                                    className="text-slate-400 hover:text-slate-600 p-2 transition-all hover:bg-slate-100 rounded-lg border border-slate-200 shadow-sm bg-white"
+                                >
+                                    <X className="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
@@ -488,31 +491,31 @@ export default function ProjectDetailClient({ project, milestones: initialMilest
                             {/* Task Content (Left) */}
                             <div className="w-full md:w-1/2 p-8 overflow-y-auto border-r border-slate-100 space-y-8">
                                 <section>
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Mission Parameters</h4>
+                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Task Details</h4>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Operative</p>
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Assignee</p>
                                             <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-brand-navy flex items-center justify-center text-[10px] text-white font-bold">
+                                                <div className="w-6 h-6 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] text-slate-600 font-bold">
                                                     {selectedTask.assigneeName?.[0] || 'U'}
                                                 </div>
-                                                <p className="text-xs font-black text-slate-700 uppercase">{selectedTask.assigneeName || 'Unassigned'}</p>
+                                                <p className="text-xs font-bold text-slate-700">{selectedTask.assigneeName || 'Unassigned'}</p>
                                             </div>
                                         </div>
                                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Target Date</p>
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Due Date</p>
                                             <div className="flex items-center gap-2 text-slate-700">
                                                 <Calendar className="w-4 h-4 text-slate-400" />
-                                                <p className="text-xs font-mono font-bold">{selectedTask.dueDate ? new Date(selectedTask.dueDate).toLocaleDateString() : 'OPEN_ENDED'}</p>
+                                                <p className="text-xs font-bold">{selectedTask.dueDate ? new Date(selectedTask.dueDate).toLocaleDateString() : 'None'}</p>
                                             </div>
                                         </div>
                                     </div>
                                 </section>
 
                                 <section>
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                        <Shield className="w-4 h-4" />
-                                        Directive Brief
+                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                        <FileText className="w-4 h-4" />
+                                        Description
                                     </h4>
                                     <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm min-h-[120px]">
                                         <p className="text-sm text-slate-600 leading-relaxed font-medium">
@@ -523,19 +526,19 @@ export default function ProjectDetailClient({ project, milestones: initialMilest
 
                                 {selectedTask.attachmentUrl ? (
                                     <section>
-                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Implementation Assets</h4>
-                                        <a href={selectedTask.attachmentUrl} target="_blank" className="flex items-center justify-between p-4 bg-brand-navy/5 border border-brand-navy/10 rounded-xl hover:bg-brand-navy/10 transition-all text-brand-navy group">
+                                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Attachments</h4>
+                                        <a href={selectedTask.attachmentUrl} target="_blank" className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-brand-navy hover:text-white transition-all shadow-sm group">
                                             <div className="flex items-center gap-3">
                                                 <FileText className="w-5 h-5" />
-                                                <span className="text-xs font-black uppercase tracking-tight">Deployment_File.pdf</span>
+                                                <span className="text-xs font-bold">Download Attachment</span>
                                             </div>
-                                            <span className="text-xs opacity-0 group-hover:opacity-100 transition-all">ACCESS →</span>
+                                            <span className="text-xs font-bold opacity-0 group-hover:opacity-100 transition-all">VIEW →</span>
                                         </a>
                                     </section>
                                 ) : (
-                                    <div className="py-10 border-2 border-dashed border-slate-100 rounded-2xl flex flex-col items-center justify-center text-slate-300">
-                                        <Shield className="w-8 h-8 mb-2 opacity-20" />
-                                        <span className="text-[8px] font-black uppercase tracking-widest">No Assets Attached</span>
+                                    <div className="py-10 border border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-400">
+                                        <FileText className="w-8 h-8 mb-2 opacity-20" />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">No Attachments</span>
                                     </div>
                                 )}
 
@@ -563,92 +566,95 @@ export default function ProjectDetailClient({ project, milestones: initialMilest
                                         projectId={project.id}
                                         userId={user.id}
                                         initialComments={initialComments.filter(c => c.taskId === selectedTask.id)}
-                                        title="Mission_Signal_History"
+                                        title="Team Communication"
                                         className="h-full rounded-none border-0 shadow-none"
                                     />
                                 )}
                             </div>
                         </div>
-                    </div>
-                </div>
-            )}
+                    </div >
+                </div >
+            )
+            }
 
             {/* Edit Task Flyout (Admin Only) */}
-            {isEditingTask && selectedTask && (
-                <div className="fixed inset-0 z-[70] overflow-hidden">
-                    <div className="absolute inset-0 bg-brand-navy/40 backdrop-blur-sm transition-opacity" onClick={() => setIsEditingTask(false)} />
-                    <div className="fixed inset-y-0 right-0 max-w-full flex">
-                        <div className="w-screen max-w-md animate-slide-in-right">
-                            <div className="h-full flex flex-col bg-white shadow-2xl border-l border-slate-200">
-                                <div className="p-8 bg-brand-navy text-white relative overflow-hidden">
-                                    <div className="relative z-10">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <div className="w-10 h-10 bg-brand-gold rounded-lg flex items-center justify-center shadow-lg transform -rotate-6">
-                                                <Edit2 className="w-6 h-6 text-brand-navy" />
+            {
+                isEditingTask && selectedTask && (
+                    <div className="fixed inset-0 z-[70] overflow-hidden">
+                        <div className="absolute inset-0 bg-brand-navy/40 backdrop-blur-sm transition-opacity" onClick={() => setIsEditingTask(false)} />
+                        <div className="fixed inset-y-0 right-0 max-w-full flex">
+                            <div className="w-screen max-w-md animate-slide-in-right">
+                                <div className="h-full flex flex-col bg-white shadow-2xl border-l border-slate-200">
+                                    <div className="p-8 bg-brand-navy text-white relative overflow-hidden">
+                                        <div className="relative z-10">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <div className="w-10 h-10 bg-brand-gold rounded-lg flex items-center justify-center shadow-lg transform -rotate-6">
+                                                    <Edit2 className="w-6 h-6 text-brand-navy" />
+                                                </div>
+                                                <h3 className="text-2xl font-black uppercase tracking-tighter italic">Edit Protocal</h3>
                                             </div>
-                                            <h3 className="text-2xl font-black uppercase tracking-tighter italic">Edit Protocal</h3>
+                                            <p className="text-[10px] font-mono text-slate-400 uppercase tracking-widest pl-1">Directive_Modification_Active</p>
                                         </div>
-                                        <p className="text-[10px] font-mono text-slate-400 uppercase tracking-widest pl-1">Directive_Modification_Active</p>
+                                        <button onClick={() => setIsEditingTask(false)} className="absolute top-6 right-6 text-slate-400 hover:text-white">
+                                            <X className="w-6 h-6" />
+                                        </button>
+                                        <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-brand-gold/10 rounded-full blur-3xl" />
                                     </div>
-                                    <button onClick={() => setIsEditingTask(false)} className="absolute top-6 right-6 text-slate-400 hover:text-white">
-                                        <X className="w-6 h-6" />
-                                    </button>
-                                    <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-brand-gold/10 rounded-full blur-3xl" />
-                                </div>
-                                <form
-                                    action={async (fd) => {
-                                        fd.append('taskId', selectedTask.id);
-                                        fd.append('projectId', project.id);
-                                        await updateProjectTask(fd);
-                                        setIsEditingTask(false);
-                                        setSelectedTask(null);
-                                        router.refresh();
-                                    }}
-                                    className="flex-1 overflow-y-auto p-8 space-y-8"
-                                >
-                                    <div className="space-y-6">
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Objective Title</label>
-                                            <input name="title" defaultValue={selectedTask.title} required className="w-full bg-slate-50 border-b-2 border-slate-100 p-4 text-sm font-bold focus:border-brand-gold outline-none transition-all" />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Description</label>
-                                            <textarea name="description" defaultValue={selectedTask.description || ''} className="w-full bg-slate-50 border-b-2 border-slate-100 p-4 text-sm font-medium focus:border-brand-gold outline-none min-h-[140px] resize-none" />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-6">
+                                    <form
+                                        action={async (fd) => {
+                                            fd.append('taskId', selectedTask.id);
+                                            fd.append('projectId', project.id);
+                                            await updateProjectTask(fd);
+                                            setIsEditingTask(false);
+                                            setSelectedTask(null);
+                                            router.refresh();
+                                        }}
+                                        className="flex-1 overflow-y-auto p-8 space-y-8"
+                                    >
+                                        <div className="space-y-6">
                                             <div>
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Priority</label>
-                                                <select name="priority" defaultValue={selectedTask.priority} className="w-full bg-slate-50 border-b-2 border-slate-100 py-4 px-2 text-[10px] font-black uppercase outline-none">
-                                                    <option value="medium">Medium</option>
-                                                    <option value="high">High</option>
-                                                    <option value="urgent">Urgent</option>
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Objective Title</label>
+                                                <input name="title" defaultValue={selectedTask.title} required className="w-full bg-slate-50 border-b-2 border-slate-100 p-4 text-sm font-bold focus:border-brand-gold outline-none transition-all" />
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Description</label>
+                                                <textarea name="description" defaultValue={selectedTask.description || ''} className="w-full bg-slate-50 border-b-2 border-slate-100 p-4 text-sm font-medium focus:border-brand-gold outline-none min-h-[140px] resize-none" />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-6">
+                                                <div>
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Priority</label>
+                                                    <select name="priority" defaultValue={selectedTask.priority} className="w-full bg-slate-50 border-b-2 border-slate-100 py-4 px-2 text-[10px] font-black uppercase outline-none">
+                                                        <option value="medium">Medium</option>
+                                                        <option value="high">High</option>
+                                                        <option value="urgent">Urgent</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Due Date</label>
+                                                    <input name="dueDate" type="date" defaultValue={selectedTask.dueDate ? new Date(selectedTask.dueDate).toISOString().split('T')[0] : ''} className="w-full bg-slate-50 border-b-2 border-slate-100 py-4 px-2 text-[10px] font-black outline-none" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Assignee</label>
+                                                <select name="assigneeId" defaultValue={selectedTask.assigneeId || 'unassigned'} className="w-full bg-slate-50 border-b-2 border-slate-100 py-4 px-2 text-[10px] font-black uppercase outline-none">
+                                                    <option value="unassigned">Unassigned</option>
+                                                    {usersList.map((u: any) => (
+                                                        <option key={u.id} value={u.id}>{u.name || u.email}</option>
+                                                    ))}
                                                 </select>
                                             </div>
-                                            <div>
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Due Date</label>
-                                                <input name="dueDate" type="date" defaultValue={selectedTask.dueDate ? new Date(selectedTask.dueDate).toISOString().split('T')[0] : ''} className="w-full bg-slate-50 border-b-2 border-slate-100 py-4 px-2 text-[10px] font-black outline-none" />
-                                            </div>
                                         </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Assignee</label>
-                                            <select name="assigneeId" defaultValue={selectedTask.assigneeId || 'unassigned'} className="w-full bg-slate-50 border-b-2 border-slate-100 py-4 px-2 text-[10px] font-black uppercase outline-none">
-                                                <option value="unassigned">Unassigned</option>
-                                                {usersList.map((u: any) => (
-                                                    <option key={u.id} value={u.id}>{u.name || u.email}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <button type="submit" className="w-full bg-brand-navy text-brand-gold py-5 rounded-xl text-xs font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-black transition-all flex items-center justify-center gap-3">
-                                        Update Directive Hub
-                                    </button>
-                                </form>
+                                        <button type="submit" className="w-full bg-brand-navy text-brand-gold py-5 rounded-xl text-xs font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-black transition-all flex items-center justify-center gap-3">
+                                            Update Directive Hub
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
 
