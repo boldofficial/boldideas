@@ -2,7 +2,7 @@
  * Breadcrumbs component - Navigation breadcrumb trail
  * @module components/ui
  */
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { ChevronRight, Home } from 'lucide-react';
 
 export interface BreadcrumbItem {
@@ -20,7 +20,7 @@ export function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
     <nav aria-label="Breadcrumb" className={`flex items-center gap-2 text-sm ${className}`}>
       {/* Home Icon */}
       <Link 
-        to="/" 
+        href="/" 
         className="text-muted-foreground hover:text-foreground transition-colors"
         aria-label="Home"
       >
@@ -36,7 +36,7 @@ export function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
             
             {item.href && !isLast ? (
               <Link
-                to={item.href}
+                href={item.href}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 {item.label}
