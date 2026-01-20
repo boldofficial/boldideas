@@ -10,6 +10,7 @@ import {
 import { createProjectTask, updateProjectTask, deleteProjectTask, updateTaskStatus, getTaskComments } from '@/actions/pm';
 import { useAuthStore } from '@/store/authStore';
 import CommentSystem from '@/components/shared/CommentSystem';
+import TaskDetailModal from './TaskDetailModal';
 import { useEffect } from 'react';
 
 interface Task {
@@ -495,158 +496,20 @@ export default function TaskBoard({ initialTasks, users }: TaskBoardProps) {
                 </div>
             )}
             {/* Task Detail Modal */}
-            {selectedTask && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-fade-in">
-                    <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border border-slate-200">
-                        {/* Modal Header */}
-                        <div className="bg-slate-50 p-6 flex justify-between items-center border-b border-slate-200">
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border ${getPriorityStyle(selectedTask.priority)}`}>
-                                        {selectedTask.priority || 'Normal'}
-                                    </span>
-                                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border border-slate-200 bg-white text-slate-500">
-                                        {selectedTask.status?.replace('_', ' ') || 'Todo'}
-                                    </span>
-                                </div>
-                                <h2 className="text-xl font-bold text-slate-900">{selectedTask.title}</h2>
-                                {selectedTask.projectId && selectedTask.projectId !== 'null' && (
-                                    <div className="flex items-center gap-1.5 mt-1 text-slate-400">
-                                        <Folder className="w-3.5 h-3.5" />
-                                        <span className="text-[11px] font-medium">Assigned to Project</span>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => {
-                                        setEditingTask(selectedTask);
-                                        setSelectedTask(null);
-                                    }}
-                                    className="text-slate-400 hover:text-brand-navy p-2 transition-all hover:bg-slate-100 rounded-lg border border-slate-200 shadow-sm bg-white"
-                                    title="Edit Task"
-                                >
-                                    <Edit2 className="w-5 h-5" />
-                                </button>
-                                <button
-                                    onClick={() => setSelectedTask(null)}
-                                    className="text-slate-400 hover:text-slate-600 p-2 transition-all hover:bg-slate-100 rounded-lg border border-slate-200 shadow-sm bg-white"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Modal Content Split */}
-                        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-                            {/* Left Area - Task Info */}
-                            <div className="flex-1 overflow-y-auto p-8 bg-white scrollbar-hide">
-                                <div className="max-w-xl space-y-8">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center gap-3">
-                                            <Calendar className="w-4 h-4 text-slate-400" />
-                                            <div>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Due Date</p>
-                                                <p className="text-xs font-bold text-slate-800">{selectedTask.dueDate ? new Date(selectedTask.dueDate).toLocaleDateString() : 'Open Date'}</p>
-                                            </div>
-                                        </div>
-                                        <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center gap-3">
-                                            <User className="w-4 h-4 text-slate-400" />
-                                            <div>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Assignee</p>
-                                                <p className="text-xs font-bold text-slate-800">{selectedTask.assigneeName || 'Unassigned'}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                                            Description
-                                        </h3>
-                                        <div className="p-5 bg-white rounded-xl border border-slate-100 text-sm text-slate-600 leading-relaxed">
-                                            {selectedTask.description || 'No description provided.'}
-                                        </div>
-                                    </div>
-
-                                    {/* Sub-tasks */}
-                                    {selectedTask.subtasks && selectedTask.subtasks.length > 0 && (
-                                        <div className="space-y-3">
-                                            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                                                Checklist
-                                            </h3>
-                                            <div className="space-y-2">
-                                                {selectedTask.subtasks.map((sub: any, idx: number) => (
-                                                    <div key={idx} className="flex items-center gap-3 p-4 bg-white border border-slate-100 rounded-xl shadow-sm">
-                                                        {sub.completed ? (
-                                                            <CheckCircle className="w-5 h-5 text-emerald-500" />
-                                                        ) : (
-                                                            <Circle className="w-5 h-5 text-slate-200" />
-                                                        )}
-                                                        <span className={`text-sm font-bold ${sub.completed ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
-                                                            {sub.title}
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Quick Actions */}
-                                    <div className="pt-6 border-t border-slate-100 space-y-3">
-                                        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Update Status</h3>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {['todo', 'in_progress', 'review', 'done'].map((status) => (
-                                                <button
-                                                    key={status}
-                                                    onClick={async () => {
-                                                        const res = await updateTaskStatus(selectedTask.id, status, selectedTask.projectId || 'null');
-                                                        if (res.success) {
-                                                            setSelectedTask({ ...selectedTask, status });
-                                                            setTasks(prev => prev.map(t => t.id === selectedTask.id ? { ...t, status } : t));
-                                                        }
-                                                    }}
-                                                    disabled={selectedTask.status === status}
-                                                    className={`px-4 py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all border ${selectedTask.status === status
-                                                        ? 'bg-brand-navy text-white border-transparent'
-                                                        : 'bg-white text-slate-400 border-slate-200 hover:border-brand-navy hover:text-brand-navy'
-                                                        } disabled:opacity-50`}
-                                                >
-                                                    {status.replace('_', ' ')}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Right Area - Comments */}
-                            <div className="w-full lg:w-[450px] border-l border-slate-100 flex flex-col bg-slate-50/30 overflow-hidden">
-                                {user && (
-                                    <CommentSystem
-                                        key={selectedTask.id}
-                                        taskId={selectedTask.id}
-                                        projectId={selectedTask.projectId || 'null'}
-                                        userId={user.id}
-                                        initialComments={comments}
-                                        title="Team Communication"
-                                        className="h-full rounded-none border-0 shadow-none"
-                                    />
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Modal Footer */}
-                        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end px-6">
-                            <button
-                                onClick={() => setSelectedTask(null)}
-                                className="px-10 py-3 bg-brand-navy text-brand-gold rounded-xl font-bold text-xs uppercase tracking-[0.2em] shadow-lg hover:shadow-brand-navy/20 active:scale-95 transition-all"
-                            >
-                                Close View
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <TaskDetailModal
+                task={selectedTask}
+                onClose={() => setSelectedTask(null)}
+                onEdit={(task) => {
+                    setEditingTask(task);
+                    setSelectedTask(null);
+                }}
+                onStatusChange={(taskId, status) => {
+                    setSelectedTask(prev => prev ? { ...prev, status } : null);
+                    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+                }}
+                userId={user?.id}
+                comments={comments}
+            />
         </div>
     );
 }
