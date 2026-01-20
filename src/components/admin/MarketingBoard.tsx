@@ -2,24 +2,25 @@
 
 import { useState, useTransition } from 'react';
 import {
-    Mail,
-    Send,
-    Layers,
-    Zap,
-    BarChart3,
-    Plus,
-    Trash2,
-    Calendar,
-    Users,
-    Eye,
-    Clock,
-    ExternalLink,
-    ChevronRight,
-    Search,
-    Filter
+    Mail, Send, Layers, Zap, BarChart3, Plus, Trash2,
+    Clock, ExternalLink, ChevronRight, MoreVertical, Users, Eye, MousePointer
 } from 'lucide-react';
 import { createCampaign, deleteCampaign, createSequence, createAutomation } from '@/actions/marketing';
 import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 
 interface Props {
     campaigns: any[];
@@ -28,332 +29,435 @@ interface Props {
 }
 
 export default function MarketingBoard({ campaigns, sequences, automations }: Props) {
-    const [activeTab, setActiveTab] = useState<'campaigns' | 'sequences' | 'automations' | 'analytics'>('campaigns');
     const [isAddingCampaign, setIsAddingCampaign] = useState(false);
     const [isAddingSequence, setIsAddingSequence] = useState(false);
-    const [isAddingAutomation, setIsAddingAutomation] = useState(false);
     const [previewContent, setPreviewContent] = useState('');
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
 
     const stats = {
         totalSent: campaigns.filter(c => c.status === 'sent').length,
-        avgOpenRate: '24.8%', // Mock
+        avgOpenRate: 24.8,
         activeSequences: sequences.filter(s => s.status === 'active').length,
-        totalLeads: 0 // Would fetch from leads table
+        totalAutomations: automations.length
     };
 
     return (
-        <div className="flex flex-col h-full space-y-8 animate-in fade-in duration-500">
-            {/* Cyberpunk Header Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {[
-                    { label: 'Total Sent', value: stats.totalSent, icon: Send, color: 'text-blue-400' },
-                    { label: 'Avg Open Rate', value: stats.avgOpenRate, icon: Eye, color: 'text-emerald-400' },
-                    { label: 'Active Sequences', value: stats.activeSequences, icon: Layers, color: 'text-purple-400' },
-                    { label: 'Automations', value: automations.length, icon: Zap, color: 'text-amber-400' },
-                ].map((stat, i) => (
-                    <div key={i} className="bg-brand-navy p-6 rounded-2xl border border-white/5 relative overflow-hidden group hover:border-brand-gold/50 transition-all duration-300">
-                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                            <stat.icon size={80} />
+        <div className="space-y-8">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="border-l-4 border-l-brand-navy">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Sent</CardTitle>
+                        <Send className="h-4 w-4 text-brand-navy" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold text-brand-navy">{stats.totalSent}</div>
+                        <p className="text-xs text-muted-foreground mt-1">Campaigns delivered</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-brand-gold">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Avg Open Rate</CardTitle>
+                        <Eye className="h-4 w-4 text-brand-gold" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold text-brand-navy">{stats.avgOpenRate}%</div>
+                        <Progress value={stats.avgOpenRate} className="mt-2 h-1" />
+                    </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-brand-navy">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Active Sequences</CardTitle>
+                        <Layers className="h-4 w-4 text-brand-navy" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold text-brand-navy">{stats.activeSequences}</div>
+                        <p className="text-xs text-muted-foreground mt-1">Drip campaigns running</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-brand-gold">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Automations</CardTitle>
+                        <Zap className="h-4 w-4 text-brand-gold" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold text-brand-navy">{stats.totalAutomations}</div>
+                        <p className="text-xs text-muted-foreground mt-1">Triggers configured</p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Main Tabs Content */}
+            <Tabs defaultValue="campaigns" className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <TabsList className="bg-slate-100">
+                        <TabsTrigger value="campaigns" className="gap-2 data-[state=active]:bg-brand-navy data-[state=active]:text-white">
+                            <Mail className="h-4 w-4" /> Campaigns
+                        </TabsTrigger>
+                        <TabsTrigger value="sequences" className="gap-2 data-[state=active]:bg-brand-navy data-[state=active]:text-white">
+                            <Layers className="h-4 w-4" /> Sequences
+                        </TabsTrigger>
+                        <TabsTrigger value="automations" className="gap-2 data-[state=active]:bg-brand-navy data-[state=active]:text-white">
+                            <Zap className="h-4 w-4" /> Automations
+                        </TabsTrigger>
+                        <TabsTrigger value="analytics" className="gap-2 data-[state=active]:bg-brand-navy data-[state=active]:text-white">
+                            <BarChart3 className="h-4 w-4" /> Analytics
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
+
+                {/* Campaigns Tab */}
+                <TabsContent value="campaigns" className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-lg font-semibold">Email Campaigns</h2>
+                            <p className="text-sm text-muted-foreground">Manage and track your email campaigns</p>
                         </div>
-                        <div className="relative z-10">
-                            <p className="text-xs text-slate-400 mb-1">{stat.label}</p>
-                            <div className="flex items-end gap-2">
-                                <span className="text-3xl font-bold text-white">{stat.value}</span>
-                                <stat.icon size={16} className={`${stat.color} mb-2`} />
-                            </div>
+                        <Button onClick={() => setIsAddingCampaign(true)} className="bg-brand-navy hover:bg-brand-navy/90">
+                            <Plus className="h-4 w-4 mr-2" /> New Campaign
+                        </Button>
+                    </div>
+
+                    <div className="grid lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2 space-y-4">
+                            {campaigns.length === 0 ? (
+                                <Card className="p-12 text-center">
+                                    <Mail className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                    <h3 className="font-semibold mb-2">No campaigns yet</h3>
+                                    <p className="text-sm text-muted-foreground mb-4">Create your first email campaign to get started</p>
+                                    <Button onClick={() => setIsAddingCampaign(true)}>
+                                        <Plus className="h-4 w-4 mr-2" /> Create Campaign
+                                    </Button>
+                                </Card>
+                            ) : (
+                                campaigns.map((camp) => (
+                                    <Card key={camp.id} className="hover:shadow-md transition-shadow">
+                                        <CardHeader className="pb-3">
+                                            <div className="flex items-start justify-between">
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <Badge variant={
+                                                            camp.status === 'sent' ? 'default' :
+                                                            camp.status === 'scheduled' ? 'secondary' : 'outline'
+                                                        }>
+                                                            {camp.status}
+                                                        </Badge>
+                                                        <span className="text-xs text-muted-foreground font-mono">
+                                                            #{camp.id.split('-')[0]}
+                                                        </span>
+                                                    </div>
+                                                    <CardTitle className="text-lg">{camp.subject}</CardTitle>
+                                                </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-muted-foreground hover:text-destructive"
+                                                    onClick={() => {
+                                                        if (confirm('Delete this campaign?')) {
+                                                            startTransition(async () => {
+                                                                await deleteCampaign(camp.id);
+                                                                router.refresh();
+                                                            });
+                                                        }
+                                                    }}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="grid grid-cols-4 gap-4 py-4 border-y">
+                                                <div className="text-center">
+                                                    <p className="text-xs text-muted-foreground mb-1">Recipients</p>
+                                                    <p className="font-bold">{camp.recipientCount || 0}</p>
+                                                </div>
+                                                <div className="text-center">
+                                                    <p className="text-xs text-muted-foreground mb-1">Opens</p>
+                                                    <p className="font-bold text-emerald-600">{camp.openCount || 0}</p>
+                                                </div>
+                                                <div className="text-center">
+                                                    <p className="text-xs text-muted-foreground mb-1">Clicks</p>
+                                                    <p className="font-bold text-blue-600">{camp.clickCount || 0}</p>
+                                                </div>
+                                                <div className="text-center">
+                                                    <p className="text-xs text-muted-foreground mb-1">Audience</p>
+                                                    <p className="font-bold text-xs uppercase">{camp.audience || 'ALL'}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center justify-between mt-4 text-sm">
+                                                <span className="text-muted-foreground flex items-center gap-1">
+                                                    <Clock className="h-3 w-3" />
+                                                    {camp.sentAt ? new Date(camp.sentAt).toLocaleString() : 'Pending'}
+                                                </span>
+                                                <Button
+                                                    variant="link"
+                                                    size="sm"
+                                                    className="text-brand-navy p-0"
+                                                    onClick={() => setPreviewContent(camp.content)}
+                                                >
+                                                    View Content <ExternalLink className="h-3 w-3 ml-1" />
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))
+                            )}
+                        </div>
+
+                        {/* Sidebar Metrics */}
+                        <div className="space-y-4">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base">Email Health</CardTitle>
+                                    <CardDescription>Platform performance metrics</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div>
+                                        <div className="flex justify-between text-sm mb-2">
+                                            <span>Deliverability</span>
+                                            <span className="font-semibold text-emerald-600">99.2%</span>
+                                        </div>
+                                        <Progress value={99.2} className="h-2" />
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between text-sm mb-2">
+                                            <span>Engagement</span>
+                                            <span className="font-semibold text-amber-600">High</span>
+                                        </div>
+                                        <Progress value={75} className="h-2" />
+                                    </div>
+                                    <Separator />
+                                    <div className="text-xs text-muted-foreground">
+                                        Provider: <span className="font-semibold">Resend API</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base">Quick Actions</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-2">
+                                    <Button variant="outline" className="w-full justify-start" onClick={() => setIsAddingCampaign(true)}>
+                                        <Plus className="h-4 w-4 mr-2" /> New Campaign
+                                    </Button>
+                                    <Button variant="outline" className="w-full justify-start" onClick={() => setIsAddingSequence(true)}>
+                                        <Layers className="h-4 w-4 mr-2" /> New Sequence
+                                    </Button>
+                                </CardContent>
+                            </Card>
                         </div>
                     </div>
-                ))}
-            </div>
+                </TabsContent>
 
-            {/* Navigation & Controls */}
-            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                <div className="flex gap-8">
-                    {[
-                        { id: 'campaigns', label: 'Campaigns', icon: Mail },
-                        { id: 'sequences', label: 'Sequences', icon: Layers },
-                        { id: 'automations', label: 'Automations', icon: Zap },
-                        { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-                    ].map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
-                            className={`flex items-center gap-2 pb-4 text-sm font-medium transition-all relative ${activeTab === tab.id
-                                ? 'text-brand-navy opacity-100'
-                                : 'text-slate-400 opacity-60 hover:opacity-100'
-                                }`}
-                        >
-                            <tab.icon size={16} />
-                            {tab.label}
-                            {activeTab === tab.id && (
-                                <div className="absolute bottom-0 left-0 w-full h-1 bg-brand-gold rounded-full animate-in slide-in-from-left duration-300" />
-                            )}
-                        </button>
-                    ))}
-                </div>
+                {/* Sequences Tab */}
+                <TabsContent value="sequences" className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-lg font-semibold">Email Sequences</h2>
+                            <p className="text-sm text-muted-foreground">Automated drip campaigns</p>
+                        </div>
+                        <Button onClick={() => setIsAddingSequence(true)} className="bg-brand-navy hover:bg-brand-navy/90">
+                            <Layers className="h-4 w-4 mr-2" /> New Sequence
+                        </Button>
+                    </div>
 
-                <div className="flex gap-3">
-                    {activeTab === 'campaigns' && (
-                        <button
-                            onClick={() => setIsAddingCampaign(true)}
-                            className="bg-brand-navy text-white px-6 py-2 rounded-xl text-sm font-medium hover:bg-brand-gold hover:text-brand-navy transition-all flex items-center gap-2 shadow-lg shadow-brand-navy/20"
-                        >
-                            <Plus size={16} /> New Campaign
-                        </button>
-                    )}
-                    {activeTab === 'sequences' && (
-                        <button
-                            onClick={() => setIsAddingSequence(true)}
-                            className="bg-purple-600 text-white px-6 py-2 rounded-xl text-sm font-medium hover:bg-purple-700 transition-all flex items-center gap-2 shadow-lg shadow-purple-600/20"
-                        >
-                            <Layers size={16} /> Create Sequence
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* Tab Content */}
-            <div className="flex-1 min-h-[600px]">
-                {activeTab === 'campaigns' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 space-y-4">
-                            {campaigns.map((camp) => (
-                                <div key={camp.id} className="bg-white p-6 rounded-2xl border border-slate-100 hover:border-brand-navy/20 transition-all group relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 h-full w-1 bg-slate-200 group-hover:bg-brand-gold transition-colors" />
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${camp.status === 'sent' ? 'bg-emerald-100 text-emerald-700' :
-                                                    camp.status === 'scheduled' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'
-                                                    }`}>
-                                                    {camp.status}
-                                                </span>
-                                                <span className="text-[10px] font-mono text-slate-400">ID://{camp.id.split('-')[0]}</span>
+                    {sequences.length === 0 ? (
+                        <Card className="p-12 text-center">
+                            <Layers className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                            <h3 className="font-semibold mb-2">No sequences yet</h3>
+                            <p className="text-sm text-muted-foreground mb-4">Create automated email sequences for leads</p>
+                            <Button onClick={() => setIsAddingSequence(true)}>
+                                <Plus className="h-4 w-4 mr-2" /> Create Sequence
+                            </Button>
+                        </Card>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {sequences.map((seq) => (
+                                <Card key={seq.id} className="border-t-4 border-t-brand-gold">
+                                    <CardHeader>
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <CardTitle className="text-base">{seq.name}</CardTitle>
+                                                <Badge variant="outline" className="mt-1">{seq.status}</Badge>
                                             </div>
-                                            <h3 className="text-xl font-bold text-slate-800">{camp.subject}</h3>
+                                            <Layers className="h-5 w-5 text-brand-gold" />
                                         </div>
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => {
-                                                    if (confirm('Authorize deletion?')) {
-                                                        startTransition(async () => {
-                                                            await deleteCampaign(camp.id);
-                                                            router.refresh();
-                                                        });
-                                                    }
-                                                }}
-                                                className="p-2 text-slate-300 hover:text-red-500 transition-colors"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-3">
+                                            {seq.steps?.slice(0, 3).map((step: any, idx: number) => (
+                                                <div key={idx} className="flex items-center gap-3">
+                                                    <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold">
+                                                        {idx + 1}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-medium truncate">{step.subject}</p>
+                                                        <p className="text-xs text-muted-foreground">+{step.delayDays}d delay</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {seq.steps?.length > 3 && (
+                                                <p className="text-xs text-muted-foreground text-center">
+                                                    +{seq.steps.length - 3} more steps
+                                                </p>
+                                            )}
                                         </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-4 gap-4 py-4 border-y border-slate-50">
-                                        <div className="text-center">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Recipients</p>
-                                            <p className="text-sm font-black text-slate-700">{camp.recipientCount || 0}</p>
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Opens</p>
-                                            <p className="text-sm font-black text-emerald-600">{camp.openCount || 0}</p>
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Clicks</p>
-                                            <p className="text-sm font-black text-blue-600">{camp.clickCount || 0}</p>
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Audience</p>
-                                            <p className="text-[10px] font-black text-slate-700 uppercase">{camp.audience || 'ALL'}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-4 flex items-center justify-between text-xs text-slate-400">
-                                        <span className="flex items-center gap-1"><Clock size={12} /> {camp.sentAt ? new Date(camp.sentAt).toLocaleString() : 'Pending'}</span>
-                                        <button
-                                            onClick={() => setPreviewContent(camp.content)}
-                                            className="text-brand-navy hover:text-brand-gold font-medium flex items-center gap-1"
-                                        >
-                                            View Source <ExternalLink size={10} />
-                                        </button>
-                                    </div>
-                                </div>
+                                        <Button variant="outline" className="w-full mt-4" size="sm">
+                                            Manage Sequence
+                                        </Button>
+                                    </CardContent>
+                                </Card>
                             ))}
                         </div>
+                    )}
+                </TabsContent>
 
-                        {/* Quick Insight Sidebar */}
-                        <div className="space-y-6">
-                            <div className="bg-brand-navy text-white p-8 rounded-3xl relative overflow-hidden shadow-2xl shadow-brand-navy/40">
-                                <div className="absolute top-0 right-0 p-4 opacity-10">
-                                    <BarChart3 size={100} />
-                                </div>
-                                <h3 className="text-xl font-bold text-white mb-6">Email Health</h3>
-                                <div className="space-y-6 relative z-10">
-                                    <div>
-                                        <div className="flex justify-between text-xs text-slate-400 mb-2">
-                                            <span>Deliverability</span>
-                                            <span>99.2%</span>
-                                        </div>
-                                        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                            <div className="h-full bg-emerald-400 rounded-full" style={{ width: '99%' }} />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div className="flex justify-between text-xs text-slate-400 mb-2">
-                                            <span>Engagement</span>
-                                            <span>High</span>
-                                        </div>
-                                        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                            <div className="h-full bg-brand-gold rounded-full" style={{ width: '75%' }} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                {/* Automations Tab */}
+                <TabsContent value="automations" className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-lg font-semibold">Automations</h2>
+                            <p className="text-sm text-muted-foreground">Trigger-based email actions</p>
                         </div>
+                        <Button className="bg-brand-gold text-brand-navy hover:bg-brand-gold/90">
+                            <Zap className="h-4 w-4 mr-2" /> New Automation
+                        </Button>
                     </div>
-                )}
 
-                {activeTab === 'sequences' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {sequences.map((seq) => (
-                            <div key={seq.id} className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all group relative overflow-hidden">
-                                <div className="absolute top-0 left-0 w-full h-2 bg-purple-600" />
-                                <div className="flex justify-between items-start mb-6">
-                                    <div>
-                                        <h4 className="text-lg font-bold text-slate-800">{seq.name}</h4>
-                                        <p className="text-xs text-slate-400">{seq.status}</p>
-                                    </div>
-                                    <Layers className="text-purple-600 opacity-20 group-hover:opacity-100 transition-opacity" />
-                                </div>
-                                <div className="space-y-4 mb-8">
-                                    {seq.steps?.map((step: any, idx: number) => (
-                                        <div key={idx} className="flex items-center gap-3">
-                                            <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black">{idx + 1}</div>
-                                            <div className="flex-1">
-                                                <p className="text-xs font-bold text-slate-700 truncate">{step.subject}</p>
-                                                <p className="text-xs text-slate-400">+ {step.delayDays}d delay</p>
+                    {automations.length === 0 ? (
+                        <Card className="p-12 text-center">
+                            <Zap className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                            <h3 className="font-semibold mb-2">No automations yet</h3>
+                            <p className="text-sm text-muted-foreground mb-4">Set up trigger-based email automations</p>
+                            <Button>
+                                <Plus className="h-4 w-4 mr-2" /> Create Automation
+                            </Button>
+                        </Card>
+                    ) : (
+                        <div className="space-y-3">
+                            {automations.map((auto) => (
+                                <Card key={auto.id}>
+                                    <CardContent className="flex items-center justify-between p-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-brand-gold/20 flex items-center justify-center">
+                                                <Zap className="h-5 w-5 text-brand-gold" />
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold">{auto.name}</p>
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                    <Badge variant="outline" className="text-brand-gold border-brand-gold">IF: {auto.triggerType}</Badge>
+                                                    <ChevronRight className="h-3 w-3" />
+                                                    <Badge variant="outline" className="text-brand-navy border-brand-navy">THEN: {auto.actionType}</Badge>
+                                                </div>
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-                                <button className="w-full py-3 bg-slate-50 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-purple-50 hover:text-purple-600 transition-all border border-dashed border-slate-200">
-                                    Manage_Drip_Nodes
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {activeTab === 'automations' && (
-                    <div className="space-y-4">
-                        {automations.map((auto) => (
-                            <div key={auto.id} className="bg-white p-6 rounded-2xl border border-slate-100 flex items-center justify-between group hover:border-amber-400/30 transition-all">
-                                <div className="flex items-center gap-6">
-                                    <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 relative overflow-hidden">
-                                        <Zap className="relative z-10" />
-                                        <div className="absolute inset-0 bg-amber-200 opacity-0 group-hover:opacity-20 transition-opacity" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-slate-800">{auto.name}</h4>
-                                        <div className="flex items-center gap-2 text-xs text-slate-400">
-                                            <span className="text-amber-600 font-bold">IF:</span> {auto.triggerType}
-                                            <ChevronRight size={10} />
-                                            <span className="text-blue-600 font-bold">THEN:</span> {auto.actionType}
+                                        <div className="flex items-center gap-4">
+                                            <Switch checked={auto.isActive} />
+                                            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
                                         </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-10 h-5 rounded-full relative transition-colors cursor-pointer ${auto.isActive ? 'bg-emerald-500' : 'bg-slate-200'}`}>
-                                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${auto.isActive ? 'right-1' : 'left-1'}`} />
-                                    </div>
-                                    <button className="p-2 text-slate-300 hover:text-red-500 transition-colors">
-                                        <Trash2 size={18} />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            {/* Slide-over Flyouts (Simplified placeholders for brevity, would be full forms) */}
-            {isAddingCampaign && (
-                <div className="fixed inset-0 z-[100] overflow-hidden">
-                    <div className="absolute inset-0 bg-brand-navy/60 backdrop-blur-sm" onClick={() => setIsAddingCampaign(false)} />
-                    <div className="fixed inset-y-0 right-0 w-full max-w-2xl bg-white shadow-2xl animate-slide-in-right flex flex-col">
-                        <div className="p-8 bg-brand-navy text-white relative">
-                            <h2 className="text-3xl font-bold text-white">New Campaign</h2>
-                            <p className="text-xs text-slate-400 mt-2">Create a new email campaign</p>
-                            <button onClick={() => setIsAddingCampaign(false)} className="absolute top-8 right-8 text-white/50 hover:text-white">
-                                <Plus size={32} className="rotate-45" />
-                            </button>
+                                    </CardContent>
+                                </Card>
+                            ))}
                         </div>
-                        <form
-                            action={async (fd) => {
-                                await createCampaign(fd);
-                                setIsAddingCampaign(false);
-                                router.refresh();
-                            }}
-                            className="flex-1 overflow-y-auto p-8 space-y-8"
-                        >
+                    )}
+                </TabsContent>
+
+                {/* Analytics Tab */}
+                <TabsContent value="analytics">
+                    <Card className="p-12 text-center">
+                        <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="font-semibold mb-2">Analytics Coming Soon</h3>
+                        <p className="text-sm text-muted-foreground">Detailed campaign analytics and insights</p>
+                    </Card>
+                </TabsContent>
+            </Tabs>
+
+            {/* New Campaign Sheet */}
+            <Sheet open={isAddingCampaign} onOpenChange={setIsAddingCampaign}>
+                <SheetContent className="w-full sm:max-w-xl p-0 flex flex-col">
+                    <SheetHeader className="p-6 border-b bg-brand-navy text-white">
+                        <SheetTitle className="text-white text-xl">New Campaign</SheetTitle>
+                        <SheetDescription className="text-slate-300">Create a new email campaign</SheetDescription>
+                    </SheetHeader>
+                    <form
+                        action={async (fd) => {
+                            await createCampaign(fd);
+                            setIsAddingCampaign(false);
+                            router.refresh();
+                        }}
+                        className="flex-1 flex flex-col overflow-hidden"
+                    >
+                        <ScrollArea className="flex-1 p-6">
                             <div className="space-y-6">
-                                <div>
-                                    <label className="text-xs font-medium text-slate-500 mb-2 block">Subject Line</label>
-                                    <input name="subject" required className="w-full bg-slate-50 border-b-2 border-slate-100 p-4 text-sm focus:border-brand-gold outline-none transition-all" placeholder="Enter email subject..." />
+                                <div className="space-y-2">
+                                    <Label htmlFor="subject">Subject Line</Label>
+                                    <Input id="subject" name="subject" required placeholder="Enter email subject..." />
                                 </div>
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="text-xs font-medium text-slate-500 mb-2 block">Audience</label>
-                                        <select name="audience" className="w-full bg-slate-50 border-b-2 border-slate-100 py-4 px-2 text-sm outline-none">
-                                            <option value="all">All Contacts</option>
-                                            <option value="leads">Active Leads</option>
-                                            <option value="clients">Clients</option>
-                                            <option value="staff">Staff</option>
-                                        </select>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Audience</Label>
+                                        <Select name="audience" defaultValue="all">
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select audience" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All Contacts</SelectItem>
+                                                <SelectItem value="leads">Active Leads</SelectItem>
+                                                <SelectItem value="clients">Clients</SelectItem>
+                                                <SelectItem value="staff">Staff</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
-                                    <div>
-                                        <label className="text-xs font-medium text-slate-500 mb-2 block">Schedule</label>
-                                        <input name="scheduledAt" type="datetime-local" className="w-full bg-slate-50 border-b-2 border-slate-100 py-3 px-2 text-sm outline-none" />
+                                    <div className="space-y-2">
+                                        <Label htmlFor="scheduledAt">Schedule</Label>
+                                        <Input id="scheduledAt" name="scheduledAt" type="datetime-local" />
                                     </div>
                                 </div>
-                                <div className="flex-1 flex flex-col min-h-[400px]">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <label className="text-xs font-medium text-slate-500 block">HTML Content</label>
-                                        <button type="button" onClick={() => window.open('/admin/marketing/preview', '_blank')} className="text-xs font-medium text-brand-navy border border-brand-navy/20 px-2 py-1 rounded hover:bg-slate-50 transition-all">Preview →</button>
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <Label>HTML Content</Label>
+                                        <Button type="button" variant="outline" size="sm" onClick={() => window.open('/admin/marketing/preview', '_blank')}>
+                                            Preview
+                                        </Button>
                                     </div>
-                                    <textarea
+                                    <Textarea
                                         name="content"
                                         required
-                                        className="flex-1 w-full bg-slate-900 text-emerald-400 font-mono text-xs p-6 rounded-2xl resize-none outline-none border-2 border-slate-800 focus:border-emerald-500/30 transition-all"
+                                        className="min-h-[300px] font-mono text-sm"
                                         placeholder="<html><body>Your email content...</body></html>"
                                     />
                                 </div>
                             </div>
-                            <button type="submit" className="w-full bg-brand-navy text-brand-gold py-5 rounded-2xl text-sm font-medium shadow-2xl shadow-brand-navy/40 hover:scale-[1.01] transition-all">
+                        </ScrollArea>
+                        <div className="p-6 border-t">
+                            <Button type="submit" className="w-full bg-brand-navy hover:bg-brand-navy/90">
                                 Save Campaign
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
+                            </Button>
+                        </div>
+                    </form>
+                </SheetContent>
+            </Sheet>
 
-            {/* Code Preview Modal */}
-            {previewContent && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-8">
-                    <div className="absolute inset-0 bg-brand-navy/90 backdrop-blur-xl" onClick={() => setPreviewContent('')} />
-                    <div className="relative w-full max-w-4xl max-h-full bg-slate-900 rounded-3xl border border-white/5 overflow-hidden flex flex-col shadow-2xl">
-                        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/5">
-                            <span className="text-xs text-emerald-400">Source Preview</span>
-                            <button onClick={() => setPreviewContent('')} className="text-white/50 hover:text-white"><Plus size={24} className="rotate-45" /></button>
-                        </div>
-                        <div className="flex-1 p-8 overflow-y-auto">
-                            <pre className="text-emerald-300 font-mono text-xs whitespace-pre-wrap">{previewContent}</pre>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Content Preview Dialog */}
+            <Dialog open={!!previewContent} onOpenChange={() => setPreviewContent('')}>
+                <DialogContent className="max-w-4xl max-h-[80vh]">
+                    <DialogHeader>
+                        <DialogTitle>Email Content Preview</DialogTitle>
+                    </DialogHeader>
+                    <ScrollArea className="h-[60vh]">
+                        <pre className="bg-slate-900 text-emerald-400 p-6 rounded-lg font-mono text-xs whitespace-pre-wrap">
+                            {previewContent}
+                        </pre>
+                    </ScrollArea>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
