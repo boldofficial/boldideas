@@ -355,3 +355,15 @@ export const activityLog = pgTable('activity_log', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+// --- Client Portal Tables ---
+
+export const projectFiles = pgTable('project_files', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  projectId: uuid('project_id').references(() => internalProjects.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  url: text('url').notNull(),
+  type: text('type').default('document'), // 'deliverable', 'document', 'asset', 'image'
+  sizeBytes: integer('size_bytes'),
+  uploadedBy: uuid('uploaded_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow(),
+});
