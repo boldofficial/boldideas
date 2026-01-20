@@ -12,14 +12,15 @@ export default async function MarketingPage() {
     const { data: automations } = await getAutomations();
 
     return (
-        <div className="p-8 h-full">
-            <div className="flex justify-between items-center mb-10">
+        <div className="space-y-8">
+            <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Marketing_Ops</h1>
-                    <p className="text-xs font-mono text-slate-400 mt-1 uppercase tracking-widest">Outbound_Transmission_Control_Center</p>
+                    <h1 className="text-3xl font-bold text-slate-900">Email Marketing</h1>
+                    <p className="text-muted-foreground mt-1">Campaign management and automation</p>
                 </div>
-                <div className="flex flex-col items-end">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-1 rounded">Provider: RESEND_API</span>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-slate-100 px-3 py-1.5 rounded-full">
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                    Provider: Resend API
                 </div>
             </div>
 
