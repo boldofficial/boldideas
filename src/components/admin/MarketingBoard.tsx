@@ -45,48 +45,49 @@ export default function MarketingBoard({ campaigns, sequences, automations }: Pr
     return (
         <div className="space-y-8">
             {/* Stats Cards */}
+            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="border-l-4 border-l-brand-navy">
+                <Card className="border border-slate-100 shadow-sm hover:shadow-md transition-all">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Sent</CardTitle>
-                        <Send className="h-4 w-4 text-brand-navy" />
+                        <CardTitle className="text-sm font-medium text-slate-500">Total Sent</CardTitle>
+                        <Send className="h-4 w-4 text-brand-navy/60" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-brand-navy">{stats.totalSent}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Campaigns delivered</p>
+                        <p className="text-xs text-slate-400 mt-1">Campaigns delivered</p>
                     </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-l-brand-gold">
+                <Card className="border border-slate-100 shadow-sm hover:shadow-md transition-all">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Avg Open Rate</CardTitle>
-                        <Eye className="h-4 w-4 text-brand-gold" />
+                        <CardTitle className="text-sm font-medium text-slate-500">Avg Open Rate</CardTitle>
+                        <Eye className="h-4 w-4 text-brand-navy/60" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-brand-navy">{stats.avgOpenRate}%</div>
-                        <Progress value={stats.avgOpenRate} className="mt-2 h-1" />
+                        <Progress value={stats.avgOpenRate} className="mt-2 h-1 bg-slate-100" indicatorClassName="bg-brand-navy" />
                     </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-l-brand-navy">
+                <Card className="border border-slate-100 shadow-sm hover:shadow-md transition-all">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Active Sequences</CardTitle>
-                        <Layers className="h-4 w-4 text-brand-navy" />
+                        <CardTitle className="text-sm font-medium text-slate-500">Active Sequences</CardTitle>
+                        <Layers className="h-4 w-4 text-brand-navy/60" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-brand-navy">{stats.activeSequences}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Drip campaigns running</p>
+                        <p className="text-xs text-slate-400 mt-1">Drip campaigns running</p>
                     </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-l-brand-gold">
+                <Card className="border border-slate-100 shadow-sm hover:shadow-md transition-all">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Automations</CardTitle>
-                        <Zap className="h-4 w-4 text-brand-gold" />
+                        <CardTitle className="text-sm font-medium text-slate-500">Automations</CardTitle>
+                        <Zap className="h-4 w-4 text-brand-navy/60" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-brand-navy">{stats.totalAutomations}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Triggers configured</p>
+                        <p className="text-xs text-slate-400 mt-1">Triggers configured</p>
                     </CardContent>
                 </Card>
             </div>
@@ -94,17 +95,29 @@ export default function MarketingBoard({ campaigns, sequences, automations }: Pr
             {/* Main Tabs Content */}
             <Tabs defaultValue="campaigns" className="space-y-6">
                 <div className="flex items-center justify-between">
-                    <TabsList className="bg-slate-100">
-                        <TabsTrigger value="campaigns" className="gap-2 data-[state=active]:bg-brand-navy data-[state=active]:text-white">
+                    <TabsList className="bg-transparent p-0 border-b border-slate-200 w-full justify-start h-auto rounded-none space-x-6">
+                        <TabsTrigger 
+                            value="campaigns" 
+                            className="gap-2 rounded-none border-b-2 border-transparent px-2 py-3 data-[state=active]:border-brand-navy data-[state=active]:bg-transparent data-[state=active]:text-brand-navy data-[state=active]:shadow-none text-slate-500 hover:text-brand-navy transition-colors"
+                        >
                             <Mail className="h-4 w-4" /> Campaigns
                         </TabsTrigger>
-                        <TabsTrigger value="sequences" className="gap-2 data-[state=active]:bg-brand-navy data-[state=active]:text-white">
+                        <TabsTrigger 
+                            value="sequences" 
+                            className="gap-2 rounded-none border-b-2 border-transparent px-2 py-3 data-[state=active]:border-brand-navy data-[state=active]:bg-transparent data-[state=active]:text-brand-navy data-[state=active]:shadow-none text-slate-500 hover:text-brand-navy transition-colors"
+                        >
                             <Layers className="h-4 w-4" /> Sequences
                         </TabsTrigger>
-                        <TabsTrigger value="automations" className="gap-2 data-[state=active]:bg-brand-navy data-[state=active]:text-white">
+                        <TabsTrigger 
+                            value="automations" 
+                            className="gap-2 rounded-none border-b-2 border-transparent px-2 py-3 data-[state=active]:border-brand-navy data-[state=active]:bg-transparent data-[state=active]:text-brand-navy data-[state=active]:shadow-none text-slate-500 hover:text-brand-navy transition-colors"
+                        >
                             <Zap className="h-4 w-4" /> Automations
                         </TabsTrigger>
-                        <TabsTrigger value="analytics" className="gap-2 data-[state=active]:bg-brand-navy data-[state=active]:text-white">
+                        <TabsTrigger 
+                            value="analytics" 
+                            className="gap-2 rounded-none border-b-2 border-transparent px-2 py-3 data-[state=active]:border-brand-navy data-[state=active]:bg-transparent data-[state=active]:text-brand-navy data-[state=active]:shadow-none text-slate-500 hover:text-brand-navy transition-colors"
+                        >
                             <BarChart3 className="h-4 w-4" /> Analytics
                         </TabsTrigger>
                     </TabsList>
@@ -114,8 +127,8 @@ export default function MarketingBoard({ campaigns, sequences, automations }: Pr
                 <TabsContent value="campaigns" className="space-y-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h2 className="text-lg font-semibold">Email Campaigns</h2>
-                            <p className="text-sm text-muted-foreground">Manage and track your email campaigns</p>
+                            <h2 className="text-lg font-semibold text-brand-navy">Email Campaigns</h2>
+                            <p className="text-sm text-slate-500">Manage and track your email campaigns</p>
                         </div>
                         <Button onClick={() => setIsAddingCampaign(true)} className="bg-brand-navy hover:bg-brand-navy/90">
                             <Plus className="h-4 w-4 mr-2" /> New Campaign
@@ -176,12 +189,12 @@ export default function MarketingBoard({ campaigns, sequences, automations }: Pr
                                                     <p className="font-bold">{camp.recipientCount || 0}</p>
                                                 </div>
                                                 <div className="text-center">
-                                                    <p className="text-xs text-muted-foreground mb-1">Opens</p>
-                                                    <p className="font-bold text-emerald-600">{camp.openCount || 0}</p>
+                                                    <p className="text-xs text-slate-400 mb-1">Opens</p>
+                                                    <p className="font-bold text-brand-navy">{camp.openCount || 0}</p>
                                                 </div>
                                                 <div className="text-center">
-                                                    <p className="text-xs text-muted-foreground mb-1">Clicks</p>
-                                                    <p className="font-bold text-blue-600">{camp.clickCount || 0}</p>
+                                                    <p className="text-xs text-slate-400 mb-1">Clicks</p>
+                                                    <p className="font-bold text-brand-navy">{camp.clickCount || 0}</p>
                                                 </div>
                                                 <div className="text-center">
                                                     <p className="text-xs text-muted-foreground mb-1">Audience</p>
@@ -218,21 +231,21 @@ export default function MarketingBoard({ campaigns, sequences, automations }: Pr
                                 <CardContent className="space-y-4">
                                     <div>
                                         <div className="flex justify-between text-sm mb-2">
-                                            <span>Deliverability</span>
-                                            <span className="font-semibold text-emerald-600">99.2%</span>
+                                            <span className="text-slate-500">Deliverability</span>
+                                            <span className="font-semibold text-brand-navy">99.2%</span>
                                         </div>
-                                        <Progress value={99.2} className="h-2" />
+                                        <Progress value={99.2} className="h-1.5 bg-slate-100" indicatorClassName="bg-brand-navy" />
                                     </div>
                                     <div>
                                         <div className="flex justify-between text-sm mb-2">
-                                            <span>Engagement</span>
-                                            <span className="font-semibold text-amber-600">High</span>
+                                            <span className="text-slate-500">Engagement</span>
+                                            <span className="font-semibold text-brand-navy">High</span>
                                         </div>
-                                        <Progress value={75} className="h-2" />
+                                        <Progress value={75} className="h-1.5 bg-slate-100" indicatorClassName="bg-brand-gold" />
                                     </div>
                                     <Separator />
-                                    <div className="text-xs text-muted-foreground">
-                                        Provider: <span className="font-semibold">Resend API</span>
+                                    <div className="text-xs text-slate-500">
+                                        Provider: <span className="font-semibold text-brand-navy">Resend API</span>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -296,13 +309,13 @@ export default function MarketingBoard({ campaigns, sequences, automations }: Pr
                                                         {idx + 1}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-medium truncate">{step.subject}</p>
-                                                        <p className="text-xs text-muted-foreground">+{step.delayDays}d delay</p>
+                                                        <p className="text-sm font-medium truncate text-brand-navy">{step.subject}</p>
+                                                        <p className="text-xs text-slate-400">+{step.delayDays}d delay</p>
                                                     </div>
                                                 </div>
                                             ))}
                                             {seq.steps?.length > 3 && (
-                                                <p className="text-xs text-muted-foreground text-center">
+                                                <p className="text-xs text-slate-400 text-center">
                                                     +{seq.steps.length - 3} more steps
                                                 </p>
                                             )}
@@ -348,11 +361,11 @@ export default function MarketingBoard({ campaigns, sequences, automations }: Pr
                                                 <Zap className="h-5 w-5 text-brand-gold" />
                                             </div>
                                             <div>
-                                                <p className="font-semibold">{auto.name}</p>
-                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                    <Badge variant="outline" className="text-brand-gold border-brand-gold">IF: {auto.triggerType}</Badge>
-                                                    <ChevronRight className="h-3 w-3" />
-                                                    <Badge variant="outline" className="text-brand-navy border-brand-navy">THEN: {auto.actionType}</Badge>
+                                                <p className="font-semibold text-brand-navy">{auto.name}</p>
+                                                <div className="flex items-center gap-2 text-sm text-slate-500">
+                                                    <Badge variant="outline" className="text-brand-navy border-slate-200">IF: {auto.triggerType}</Badge>
+                                                    <ChevronRight className="h-3 w-3 text-slate-400" />
+                                                    <Badge variant="outline" className="text-brand-navy border-slate-200">THEN: {auto.actionType}</Badge>
                                                 </div>
                                             </div>
                                         </div>
