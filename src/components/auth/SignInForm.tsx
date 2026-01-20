@@ -5,12 +5,14 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/authStore';
+import { Eye, EyeOff } from 'lucide-react';
 
 const SignInForm: React.FC = () => {
     const router = useRouter();
     const { checkAuth } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -101,16 +103,25 @@ const SignInForm: React.FC = () => {
                             <label className="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400">
                                 Access Code
                             </label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="********"
-                                required
-                                suppressHydrationWarning
-                                className="w-full bg-black/20 border border-white/10 focus:border-brand-gold text-white p-3 rounded-sm text-sm font-mono placeholder:text-white/10 outline-none transition-colors"
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="********"
+                                    required
+                                    suppressHydrationWarning
+                                    className="w-full bg-black/20 border border-white/10 focus:border-brand-gold text-white p-3 pr-10 rounded-sm text-sm font-mono placeholder:text-white/10 outline-none transition-colors"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-brand-gold transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
                         </div>
 
                         <button
@@ -128,3 +139,4 @@ const SignInForm: React.FC = () => {
 };
 
 export default SignInForm;
+

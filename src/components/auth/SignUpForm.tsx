@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { signUpAction } from '@/actions/auth';
 import { useRouter } from 'next/navigation';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function SignUpForm() {
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [message, setMessage] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
 
     async function handleSubmit(formData: FormData) {
@@ -75,7 +77,14 @@ export default function SignUpForm() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
                     </div>
-                    <input name="password" type="password" required className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded text-sm placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all bg-white/50 backdrop-blur-sm" placeholder="••••••••" />
+                    <input name="password" type={showPassword ? "text" : "password"} required className="block w-full pl-10 pr-10 py-3 border border-gray-200 rounded text-sm placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all bg-white/50 backdrop-blur-sm" placeholder="••••••••" />
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-[#D4AF37] transition-colors"
+                    >
+                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
                 </div>
             </div>
 

@@ -1,23 +1,19 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { Eye, EyeOff } from 'lucide-react';
 
 const ResetPasswordForm: React.FC = () => {
     const router = useRouter();
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-
-    // We rely on Supabase handling the #access_token in the URL automatically?
-    // Usually Supabase client detects the hash.
-    // However, for server-side auth or manual handling, updateUser is needed.
-    // If we came from the magic link, we are effectively signed in.
-    
-    // We update the password for the *current* user.
     
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -78,30 +74,48 @@ const ResetPasswordForm: React.FC = () => {
                             <label className="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400">
                                New Passcode
                             </label>
-                            <input 
-                                type="password" 
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="********"
-                                required
-                                minLength={8}
-                                className="w-full bg-black/20 border border-white/10 focus:border-brand-gold text-white p-3 rounded-sm text-sm font-mono placeholder:text-white/10 outline-none transition-colors"
-                            />
+                            <div className="relative">
+                                <input 
+                                    type={showPassword ? "text" : "password"}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="********"
+                                    required
+                                    minLength={8}
+                                    className="w-full bg-black/20 border border-white/10 focus:border-brand-gold text-white p-3 pr-10 rounded-sm text-sm font-mono placeholder:text-white/10 outline-none transition-colors"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-brand-gold transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
                        </div>
 
                        <div className="space-y-1">
                             <label className="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400">
                                Confirm New Passcode
                             </label>
-                            <input 
-                                type="password" 
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="********"
-                                required
-                                minLength={8}
-                                className="w-full bg-black/20 border border-white/10 focus:border-brand-gold text-white p-3 rounded-sm text-sm font-mono placeholder:text-white/10 outline-none transition-colors"
-                            />
+                            <div className="relative">
+                                <input 
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="********"
+                                    required
+                                    minLength={8}
+                                    className="w-full bg-black/20 border border-white/10 focus:border-brand-gold text-white p-3 pr-10 rounded-sm text-sm font-mono placeholder:text-white/10 outline-none transition-colors"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-brand-gold transition-colors"
+                                >
+                                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
                        </div>
 
                        <button 
