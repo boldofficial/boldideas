@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
 import { getUserProfile } from '@/actions/users';
 import NotificationBell from '@/components/NotificationBell';
-import { LayoutDashboard, FolderKanban, MessageCircle, LogOut } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, MessageCircle, LogOut, Ticket } from 'lucide-react';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -56,6 +56,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const navItems = [
     { href: '/client', label: 'Dashboard', icon: LayoutDashboard, exactMatch: true },
     { href: '/client/projects', label: 'My Projects', icon: FolderKanban },
+    { href: '/client/tickets', label: 'Tickets', icon: Ticket },
     { href: '/client/messages', label: 'Messages', icon: MessageCircle },
   ];
 

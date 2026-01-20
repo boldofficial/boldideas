@@ -4,6 +4,7 @@ import { useEffect, useState, use } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { getClientProject, getClientProjectTasks, getProjectFiles } from '@/actions/clientPortal';
 import { getProjectMilestones } from '@/actions/pm';
+import { getClientTickets } from '@/actions/tickets';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,8 +20,12 @@ import {
   User,
   ListTodo,
   Milestone,
-  Files
+  Files,
+  Ticket,
+  Plus,
+  AlertCircle
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ProjectDetail {
   id: string;
@@ -68,6 +73,7 @@ export default function ClientProjectDetailPage({ params }: { params: Promise<{ 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [files, setFiles] = useState<ProjectFile[]>([]);
   const [milestones, setMilestones] = useState<MilestoneItem[]>([]);
+  const [tickets, setTickets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -87,15 +93,17 @@ export default function ClientProjectDetailPage({ params }: { params: Promise<{ 
       setProject(projectRes.data as ProjectDetail);
 
       // Fetch related data in parallel
-      const [tasksRes, filesRes, milestonesRes] = await Promise.all([
+      const [tasksRes, filesRes, milestonesRes, ticketsRes] = await Promise.all([
         getClientProjectTasks(id, user.id),
         getProjectFiles(id, user.id),
         getProjectMilestones(id),
+        getClientTickets(user.id, id),
       ]);
 
       setTasks(tasksRes.data || []);
       setFiles(filesRes.data || []);
       setMilestones(milestonesRes.data || []);
+      setTickets(ticketsRes.data || []);
       setLoading(false);
     };
 
@@ -276,6 +284,13 @@ export default function ClientProjectDetailPage({ params }: { params: Promise<{ 
             <Files className="w-4 h-4 mr-2" />
             Files ({files.length})
           </TabsTrigger>
+          <TabsTrigger 
+            value="tickets" 
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-brand-navy data-[state=active]:bg-transparent px-6 py-3"
+          >
+            <Ticket className="w-4 h-4 mr-2" />
+            Tickets ({tickets.length})
+          </TabsTrigger>
         </TabsList>
 
         {/* Tasks Tab */}
@@ -420,6 +435,85 @@ export default function ClientProjectDetailPage({ params }: { params: Promise<{ 
                 </table>
               </CardContent>
             </Card>
+          )}
+        </TabsContent>
+
+        {/* Tickets Tab */}
+        <TabsContent value="tickets" className="mt-6">
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-sm text-slate-500">
+              {tickets.length === 0 
+                ? 'No tickets for this project yet' 
+                : `${tickets.length} ticket${tickets.length > 1 ? 's' : ''} for this project`}
+            </p>
+            <Link href={`/client/tickets/new?project=${id}`}>
+              <Button className="bg-brand-navy hover:bg-brand-gold hover:text-brand-navy transition-all">
+                <Plus className="w-4 h-4 mr-2" />
+                Raise Ticket
+              </Button>
+            </Link>
+          </div>
+
+          {tickets.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-slate-400">
+                <Ticket className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                <p>No support tickets for this project</p>
+                <p className="text-sm mt-2">Click "Raise Ticket" to create one</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {tickets.map((ticket: any) => (
+                <Link key={ticket.id} href={`/client/tickets/${ticket.id}`}>
+                  <Card className="hover:shadow-md transition-all cursor-pointer border-l-4 border-l-transparent hover:border-l-brand-gold">
+                    <CardContent className="py-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-4 flex-1">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            ticket.status === 'open' ? 'bg-blue-100 text-blue-600' :
+                            ticket.status === 'in_progress' ? 'bg-amber-100 text-amber-600' :
+                            ticket.status === 'resolved' ? 'bg-emerald-100 text-emerald-600' :
+                            'bg-slate-100 text-slate-600'
+                          }`}>
+                            {ticket.status === 'open' ? <AlertCircle className="w-5 h-5" /> :
+                             ticket.status === 'in_progress' ? <Clock className="w-5 h-5" /> :
+                             <CheckCircle2 className="w-5 h-5" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-brand-navy truncate">{ticket.subject}</h3>
+                            <p className="text-sm text-slate-500 line-clamp-1 mt-1">
+                              {ticket.description}
+                            </p>
+                            <p className="text-xs text-slate-400 mt-2">
+                              {ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : '-'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <Badge className={
+                            ticket.status === 'open' ? 'bg-blue-100 text-blue-700' :
+                            ticket.status === 'in_progress' ? 'bg-amber-100 text-amber-700' :
+                            ticket.status === 'resolved' ? 'bg-emerald-100 text-emerald-700' :
+                            'bg-slate-100 text-slate-600'
+                          }>
+                            {ticket.status?.replace('_', ' ')}
+                          </Badge>
+                          <Badge variant="outline" className={
+                            ticket.priority === 'urgent' ? 'bg-red-100 text-red-700 border-red-200' :
+                            ticket.priority === 'high' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                            ticket.priority === 'medium' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                            'bg-slate-100 text-slate-600 border-slate-200'
+                          }>
+                            {ticket.priority}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
           )}
         </TabsContent>
       </Tabs>
