@@ -31,7 +31,7 @@ export async function getUsersCount() {
 
 export async function updateUserRole(userId: string, role: string) {
     // Validate role
-    const validRoles = ['admin', 'staff', 'user'];
+    const validRoles = ['admin', 'staff', 'client', 'user'];
     if (!validRoles.includes(role)) {
         return { success: false, error: 'Invalid role' };
     }
