@@ -4,8 +4,14 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import BlogEditor from '@/components/admin/BlogEditor';
 import { createPost, updatePost } from '@/actions/blog';
-import { Loader2, ArrowLeft, Save, Globe } from 'lucide-react';
+import { Loader2, ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface PostFormProps {
     initialData?: {
@@ -25,6 +31,7 @@ const PostForm: React.FC<PostFormProps> = ({ initialData, isEditMode = false }) 
     const [content, setContent] = useState(initialData?.content || {});
     const [title, setTitle] = useState(initialData?.title || '');
     const [slug, setSlug] = useState(initialData?.slug || '');
+    const [status, setStatus] = useState(initialData?.status || 'draft');
     const [manuallyEditedSlug, setManuallyEditedSlug] = useState(!!initialData?.slug);
 
     // Slugify helper
@@ -44,7 +51,6 @@ const PostForm: React.FC<PostFormProps> = ({ initialData, isEditMode = false }) 
         setTitle(newTitle);
         
         // Only auto-update slug if user hasn't manually edited it
-        // OR if it's a new post (no initial data) and user hasn't touched slug yet
         if (!manuallyEditedSlug) {
             setSlug(slugify(newTitle));
         }
@@ -66,6 +72,7 @@ const PostForm: React.FC<PostFormProps> = ({ initialData, isEditMode = false }) 
         // Ensure managed state values are used
         formData.set('title', title);
         formData.set('slug', slug);
+        formData.set('status', status);
 
         let res;
         if (isEditMode && initialData?.id) {
@@ -84,14 +91,15 @@ const PostForm: React.FC<PostFormProps> = ({ initialData, isEditMode = false }) 
     };
 
     return (
-        <div className="max-w-5xl mx-auto p-8">
-            <div className="mb-8 flex items-center justify-between">
-                <Link href="/admin/blog" className="text-slate-500 hover:text-brand-navy flex items-center text-sm font-mono transition-colors">
+        <div className="max-w-5xl mx-auto p-8 space-y-8">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <Link href="/admin/blog" className="text-slate-500 hover:text-brand-navy flex items-center text-sm transition-colors">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    BACK_TO_LOG
+                    Back to Blog
                 </Link>
-                <h1 className="text-2xl font-black text-brand-navy uppercase tracking-tight">
-                    {isEditMode ? 'Edit_Transmission' : 'New_Transmission'}
+                <h1 className="text-2xl font-bold text-brand-navy">
+                    {isEditMode ? 'Edit Post' : 'New Post'}
                 </h1>
             </div>
 
@@ -100,81 +108,88 @@ const PostForm: React.FC<PostFormProps> = ({ initialData, isEditMode = false }) 
                     {/* Main Content Area */}
                     <div className="lg:col-span-2 space-y-6">
                         <div className="space-y-2">
-                           <label className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Title</label>
-                           <input 
+                           <Label htmlFor="title">Title</Label>
+                           <Input 
+                               id="title"
                                name="title"
                                required
                                value={title}
                                onChange={handleTitleChange}
-                               placeholder="ENTER_TITLE" 
-                               className="w-full text-2xl font-bold bg-transparent border-b border-brand-navy/10 pb-2 focus:outline-none focus:border-brand-gold text-brand-navy placeholder:text-slate-300 transition-colors"
+                               placeholder="Enter post title..." 
+                               className="text-lg"
                            />
                         </div>
                         
                         <div className="space-y-2">
-                           <div className="flex justify-between items-center">
-                               <label className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Content_Body</label>
-                           </div>
+                           <Label>Content</Label>
                            <BlogEditor value={content} onChange={setContent} />
                         </div>
                     </div>
 
                     {/* Sidebar Metadata */}
                     <div className="space-y-6">
-                        <div className="bg-white p-6 rounded-sm border border-brand-navy/10 shadow-sm space-y-6">
-                            <div className="space-y-2">
-                               <label className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Slug</label>
-                               <input 
-                                   name="slug"
-                                   required
-                                   value={slug}
-                                   onChange={handleSlugChange}
-                                   placeholder="url-slug" 
-                                   className="w-full bg-slate-50 p-2 rounded-sm border border-slate-200 text-sm font-mono text-brand-navy focus:outline-none focus:border-brand-gold"
-                               />
-                            </div>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">Post Settings</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-2">
+                                   <Label htmlFor="slug">URL Slug</Label>
+                                   <Input 
+                                       id="slug"
+                                       name="slug"
+                                       required
+                                       value={slug}
+                                       onChange={handleSlugChange}
+                                       placeholder="url-slug" 
+                                       className="font-mono text-sm"
+                                   />
+                                </div>
 
-                            <div className="space-y-2">
-                               <label className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Excerpt</label>
-                               <textarea 
-                                   name="excerpt"
-                                   defaultValue={initialData?.excerpt || ''}
-                                   rows={3}
-                                   placeholder="Brief summary..." 
-                                   className="w-full bg-slate-50 p-2 rounded-sm border border-slate-200 text-sm text-brand-navy focus:outline-none focus:border-brand-gold resize-none"
-                               />
-                            </div>
+                                <div className="space-y-2">
+                                   <Label htmlFor="excerpt">Excerpt</Label>
+                                   <Textarea 
+                                       id="excerpt"
+                                       name="excerpt"
+                                       defaultValue={initialData?.excerpt || ''}
+                                       rows={3}
+                                       placeholder="Brief summary..." 
+                                   />
+                                </div>
 
-                            <div className="space-y-2">
-                               <label className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Status</label>
-                               <select 
-                                   name="status"
-                                   defaultValue={initialData?.status || 'draft'}
-                                   className="w-full bg-slate-50 p-2 rounded-sm border border-slate-200 text-sm font-mono text-brand-navy focus:outline-none focus:border-brand-gold"
-                               >
-                                   <option value="draft">DRAFT</option>
-                                   <option value="published">PUBLISHED</option>
-                               </select>
-                            </div>
+                                <div className="space-y-2">
+                                   <Label>Status</Label>
+                                   <Select value={status} onValueChange={setStatus}>
+                                       <SelectTrigger>
+                                           <SelectValue placeholder="Select status" />
+                                       </SelectTrigger>
+                                       <SelectContent>
+                                           <SelectItem value="draft">Draft</SelectItem>
+                                           <SelectItem value="published">Published</SelectItem>
+                                       </SelectContent>
+                                   </Select>
+                                   <input type="hidden" name="status" value={status} />
+                                </div>
 
-                            <button 
-                                type="submit" 
-                                disabled={submitting}
-                                className="w-full bg-brand-navy text-white py-3 rounded-sm font-bold hover:bg-brand-gold hover:text-brand-navy transition-all flex items-center justify-center text-xs tracking-widest uppercase disabled:opacity-70 disabled:cursor-not-allowed group"
-                            >
-                                {submitting ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        SAVING...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="w-4 h-4 mr-2" />
-                                        SAVE_TRANSMISSION
-                                    </>
-                                )}
-                            </button>
-                        </div>
+                                <Button 
+                                    type="submit" 
+                                    disabled={submitting}
+                                    className="w-full bg-brand-navy hover:bg-brand-navy/90"
+                                >
+                                    {submitting ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Saving...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Save className="w-4 h-4 mr-2" />
+                                            Save Post
+                                        </>
+                                    )}
+                                </Button>
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
             </form>
