@@ -367,3 +367,28 @@ export const projectFiles = pgTable('project_files', {
   uploadedBy: uuid('uploaded_by').references(() => users.id),
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+// --- Client Ticket System ---
+
+export const tickets = pgTable('tickets', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  clientId: uuid('client_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  projectId: uuid('project_id').references(() => internalProjects.id, { onDelete: 'set null' }),
+  assignedTo: uuid('assigned_to').references(() => users.id, { onDelete: 'set null' }),
+  subject: text('subject').notNull(),
+  description: text('description').notNull(),
+  priority: text('priority').default('medium'), // 'low' | 'medium' | 'high' | 'urgent'
+  status: text('status').default('open'), // 'open' | 'in_progress' | 'resolved' | 'closed'
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const ticketAttachments = pgTable('ticket_attachments', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  ticketId: uuid('ticket_id').references(() => tickets.id, { onDelete: 'cascade' }).notNull(),
+  name: text('name').notNull(),
+  url: text('url').notNull(),
+  sizeBytes: integer('size_bytes'),
+  uploadedBy: uuid('uploaded_by').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').defaultNow(),
+});
