@@ -42,6 +42,8 @@ const SignInForm: React.FC = () => {
                 router.push('/admin');
             } else if (role === 'staff') {
                 router.push('/staff');
+            } else if (role === 'client') {
+                router.push('/client');
             } else {
                 router.push('/');
             }
