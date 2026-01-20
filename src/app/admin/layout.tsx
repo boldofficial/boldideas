@@ -157,6 +157,16 @@ export default function AdminLayout({
               Tasks
             </Link>
             <Link 
+              href="/admin/tickets" 
+              className={`block px-4 py-2 rounded text-sm transition-colors ${
+                pathname?.startsWith('/admin/tickets') 
+                  ? 'bg-brand-gold/20 text-brand-gold font-semibold' 
+                  : 'text-slate-300 hover:text-brand-gold hover:bg-white/5'
+              }`}
+            >
+              Tickets
+            </Link>
+            <Link 
               href="/admin/marketing" 
               className={`block px-4 py-2 rounded text-sm transition-colors ${
                 pathname?.startsWith('/admin/marketing') 
