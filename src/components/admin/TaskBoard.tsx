@@ -11,6 +11,7 @@ import { createProjectTask, updateProjectTask, deleteProjectTask, updateTaskStat
 import { useAuthStore } from '@/store/authStore';
 import CommentSystem from '@/components/shared/CommentSystem';
 import TaskDetailModal from './TaskDetailModal';
+import TaskEditSheet from './TaskEditSheet';
 import { useEffect } from 'react';
 
 interface Task {
@@ -364,137 +365,12 @@ export default function TaskBoard({ initialTasks, users }: TaskBoardProps) {
                     </div>
                 </div>
             )}
-            {/* Task Edit Flyout */}
-            {editingTask && (
-                <div className="fixed inset-0 z-50 overflow-hidden">
-                    <div className="absolute inset-0 bg-brand-navy/40 backdrop-blur-sm transition-opacity" onClick={() => setEditingTask(null)} />
-
-                    <div className="fixed inset-y-0 right-0 max-w-full flex">
-                        <div className="w-screen max-w-md animate-slide-in-right">
-                            <div className="h-full flex flex-col bg-white shadow-2xl border-l border-slate-200">
-                                {/* Header */}
-                                <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                                    <div>
-                                        <h3 className="text-xl font-bold text-slate-800">Edit Task</h3>
-                                        <p className="text-xs text-slate-500 mt-1">Update task parameters</p>
-                                    </div>
-                                    <button
-                                        onClick={() => setEditingTask(null)}
-                                        className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-100 rounded-full"
-                                    >
-                                        <X className="w-5 h-5" />
-                                    </button>
-                                </div>
-
-                                <form onSubmit={handleUpdateTask} encType="multipart/form-data" className="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-hide">
-                                    <div className="space-y-6">
-                                        <div>
-                                            <label className="text-xs font-semibold text-slate-700 mb-2 block">
-                                                Title
-                                            </label>
-                                            <input
-                                                name="title"
-                                                required
-                                                defaultValue={editingTask.title}
-                                                className="w-full bg-slate-50 border border-slate-200 p-3 rounded-lg text-sm focus:border-brand-navy outline-none transition-all placeholder:text-slate-300"
-                                                placeholder="What needs to be done?"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="text-xs font-semibold text-slate-700 mb-2 block">
-                                                Description
-                                            </label>
-                                            <textarea
-                                                name="description"
-                                                defaultValue={editingTask.description || ''}
-                                                className="w-full bg-slate-50 border border-slate-200 p-3 rounded-lg text-sm focus:border-brand-navy outline-none min-h-[140px] transition-all resize-none placeholder:text-slate-300"
-                                                placeholder="Add more details about this task..."
-                                            />
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="text-xs font-semibold text-slate-500 mb-2 block">
-                                                    Priority
-                                                </label>
-                                                <select name="priority" defaultValue={editingTask.priority || 'medium'} className="w-full bg-slate-50 border border-slate-200 px-3 py-2.5 rounded-lg text-sm focus:border-brand-navy outline-none">
-                                                    <option value="medium">Medium</option>
-                                                    <option value="high">High</option>
-                                                    <option value="urgent">Urgent</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="text-xs font-semibold text-slate-500 mb-2 block">
-                                                    Due Date
-                                                </label>
-                                                <input
-                                                    name="dueDate"
-                                                    type="date"
-                                                    defaultValue={editingTask.dueDate ? new Date(editingTask.dueDate).toISOString().split('T')[0] : ''}
-                                                    className="w-full bg-slate-50 border border-slate-200 px-3 py-2.5 rounded-lg text-sm focus:border-brand-navy outline-none"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="text-xs font-semibold text-slate-500 mb-2 block">
-                                                    Est. Minutes
-                                                </label>
-                                                <input
-                                                    name="estimatedMinutes"
-                                                    type="number"
-                                                    defaultValue={editingTask.estimatedMinutes || 0}
-                                                    className="w-full bg-slate-50 border border-slate-200 px-3 py-2.5 rounded-lg text-sm focus:border-brand-navy outline-none"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="text-xs font-semibold text-slate-500 mb-2 block">
-                                                    Assignee
-                                                </label>
-                                                <select name="assigneeId" defaultValue={editingTask.assigneeId || 'unassigned'} className="w-full bg-slate-50 border border-slate-200 px-3 py-2.5 rounded-lg text-sm focus:border-brand-navy outline-none">
-                                                    <option value="unassigned">Unassigned</option>
-                                                    {users.map(u => (
-                                                        <option key={u.id} value={u.id}>{u.name}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="text-xs font-semibold text-slate-500 mb-2 block">
-                                                Steps / Checklist
-                                            </label>
-                                            <textarea
-                                                defaultValue={editingTask.subtasks?.map((s: any) => s.title).join('\n') || ''}
-                                                onChange={(e) => {
-                                                    const lines = e.target.value.split('\n').filter(l => l.trim());
-                                                    const subtasks = lines.map(l => ({ title: l, completed: false }));
-                                                    const input = e.target.form?.querySelector('input[name="subtasks"]') as HTMLInputElement;
-                                                    if (input) input.value = JSON.stringify(subtasks);
-                                                }}
-                                                className="w-full bg-slate-50 border border-slate-200 p-3 rounded-lg text-sm focus:border-brand-navy outline-none min-h-[80px] transition-all resize-none placeholder:text-slate-300"
-                                                placeholder="List steps here..."
-                                            />
-                                            <input type="hidden" name="subtasks" defaultValue={JSON.stringify(editingTask.subtasks || [])} />
-                                        </div>
-                                    </div>
-
-                                    <div className="pt-6">
-                                        <button
-                                            type="submit"
-                                            className="w-full bg-brand-navy text-white py-3.5 rounded-xl font-bold hover:bg-black transition-all shadow-lg active:scale-[0.98]"
-                                        >
-                                            Update Task
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Task Edit Sheet */}
+            <TaskEditSheet
+                task={editingTask}
+                onClose={() => setEditingTask(null)}
+                users={users}
+            />
             {/* Task Detail Modal */}
             <TaskDetailModal
                 task={selectedTask}
