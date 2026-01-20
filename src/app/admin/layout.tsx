@@ -81,46 +81,123 @@ export default function AdminLayout({
         </div>
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          {/* ... nav links ... */}
-          <Link href="/admin" className="block px-4 py-3 bg-white/5 border border-white/5 rounded text-sm text-white hover:bg-white/10 hover:border-brand-gold/50 transition-all">
+          {/* Main Links */}
+          <Link 
+            href="/admin" 
+            className={`block px-4 py-3 rounded text-sm transition-all ${
+              pathname === '/admin' 
+                ? 'bg-brand-gold text-brand-navy font-semibold' 
+                : 'bg-white/5 border border-white/5 text-white hover:bg-white/10 hover:border-brand-gold/50'
+            }`}
+          >
             Dashboard
           </Link>
-          <Link href="/admin/messages" className="block px-4 py-3 bg-white/5 border border-white/5 rounded text-sm text-white hover:bg-white/10 hover:border-brand-gold/50 transition-all">
+          <Link 
+            href="/admin/messages" 
+            className={`block px-4 py-3 rounded text-sm transition-all ${
+              pathname === '/admin/messages' 
+                ? 'bg-brand-gold text-brand-navy font-semibold' 
+                : 'bg-white/5 border border-white/5 text-white hover:bg-white/10 hover:border-brand-gold/50'
+            }`}
+          >
             Messages
           </Link>
-          <Link href="/admin/inbox" className="block px-4 py-3 bg-white/5 border border-white/5 rounded text-sm text-white hover:bg-white/10 hover:border-brand-gold/50 transition-all">
+          <Link 
+            href="/admin/inbox" 
+            className={`block px-4 py-3 rounded text-sm transition-all ${
+              pathname === '/admin/inbox' 
+                ? 'bg-brand-gold text-brand-navy font-semibold' 
+                : 'bg-white/5 border border-white/5 text-white hover:bg-white/10 hover:border-brand-gold/50'
+            }`}
+          >
             Contact Inbox
           </Link>
-          <Link href="/admin/blog" className="block px-4 py-3 bg-white/5 border border-white/5 rounded text-sm text-white hover:bg-white/10 hover:border-brand-gold/50 transition-all">
+          <Link 
+            href="/admin/blog" 
+            className={`block px-4 py-3 rounded text-sm transition-all ${
+              pathname?.startsWith('/admin/blog') 
+                ? 'bg-brand-gold text-brand-navy font-semibold' 
+                : 'bg-white/5 border border-white/5 text-white hover:bg-white/10 hover:border-brand-gold/50'
+            }`}
+          >
             Blog
           </Link>
 
           {/* Agency OS Modules */}
           <div className="pt-4 pb-2">
             <p className="px-4 text-xs text-slate-500 uppercase tracking-wide mb-2">Modules</p>
-            <Link href="/admin/crm" className="block px-4 py-2 text-slate-300 hover:text-brand-gold hover:bg-white/5 rounded text-sm transition-colors">
+            <Link 
+              href="/admin/crm" 
+              className={`block px-4 py-2 rounded text-sm transition-colors ${
+                pathname?.startsWith('/admin/crm') 
+                  ? 'bg-brand-gold/20 text-brand-gold font-semibold' 
+                  : 'text-slate-300 hover:text-brand-gold hover:bg-white/5'
+              }`}
+            >
               CRM / Leads
             </Link>
-            <Link href="/admin/projects" className="block px-4 py-2 text-slate-300 hover:text-brand-gold hover:bg-white/5 rounded text-sm transition-colors">
+            <Link 
+              href="/admin/projects" 
+              className={`block px-4 py-2 rounded text-sm transition-colors ${
+                pathname?.startsWith('/admin/projects') 
+                  ? 'bg-brand-gold/20 text-brand-gold font-semibold' 
+                  : 'text-slate-300 hover:text-brand-gold hover:bg-white/5'
+              }`}
+            >
               Projects
             </Link>
-            <Link href="/admin/tasks" className="block px-4 py-2 text-slate-300 hover:text-brand-gold hover:bg-white/5 rounded text-sm transition-colors">
+            <Link 
+              href="/admin/tasks" 
+              className={`block px-4 py-2 rounded text-sm transition-colors ${
+                pathname === '/admin/tasks' 
+                  ? 'bg-brand-gold/20 text-brand-gold font-semibold' 
+                  : 'text-slate-300 hover:text-brand-gold hover:bg-white/5'
+              }`}
+            >
               Tasks
             </Link>
-            <Link href="/admin/marketing" className="block px-4 py-2 text-slate-300 hover:text-brand-gold hover:bg-white/5 rounded text-sm transition-colors">
+            <Link 
+              href="/admin/marketing" 
+              className={`block px-4 py-2 rounded text-sm transition-colors ${
+                pathname?.startsWith('/admin/marketing') 
+                  ? 'bg-brand-gold/20 text-brand-gold font-semibold' 
+                  : 'text-slate-300 hover:text-brand-gold hover:bg-white/5'
+              }`}
+            >
               Email Marketing
             </Link>
-            <Link href="/admin/calendar" className="block px-4 py-2 text-slate-300 hover:text-brand-gold hover:bg-white/5 rounded text-sm transition-colors">
+            <Link 
+              href="/admin/calendar" 
+              className={`block px-4 py-2 rounded text-sm transition-colors ${
+                pathname === '/admin/calendar' 
+                  ? 'bg-brand-gold/20 text-brand-gold font-semibold' 
+                  : 'text-slate-300 hover:text-brand-gold hover:bg-white/5'
+              }`}
+            >
               Calendar
             </Link>
 
             {/* Restricted Modules - Admin Only */}
             {role === 'admin' && (
               <>
-                <Link href="/admin/finance" className="block px-4 py-2 text-slate-300 hover:text-brand-gold hover:bg-white/5 rounded text-sm transition-colors">
+                <Link 
+                  href="/admin/finance" 
+                  className={`block px-4 py-2 rounded text-sm transition-colors ${
+                    pathname?.startsWith('/admin/finance') 
+                      ? 'bg-brand-gold/20 text-brand-gold font-semibold' 
+                      : 'text-slate-300 hover:text-brand-gold hover:bg-white/5'
+                  }`}
+                >
                   Finance
                 </Link>
-                <Link href="/admin/team" className="block px-4 py-2 text-slate-300 hover:text-brand-gold hover:bg-white/5 rounded text-sm transition-colors">
+                <Link 
+                  href="/admin/team" 
+                  className={`block px-4 py-2 rounded text-sm transition-colors ${
+                    pathname?.startsWith('/admin/team') 
+                      ? 'bg-brand-gold/20 text-brand-gold font-semibold' 
+                      : 'text-slate-300 hover:text-brand-gold hover:bg-white/5'
+                  }`}
+                >
                   Team
                 </Link>
               </>
