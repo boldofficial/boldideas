@@ -93,6 +93,7 @@ export default function TaskEditSheet({ task, onClose, users }: Props) {
                                             <SelectValue placeholder="Select priority" />
                                         </SelectTrigger>
                                         <SelectContent>
+                                            <SelectItem value="low">Low</SelectItem>
                                             <SelectItem value="medium">Medium</SelectItem>
                                             <SelectItem value="high">High</SelectItem>
                                             <SelectItem value="urgent">Urgent</SelectItem>
@@ -152,6 +153,16 @@ export default function TaskEditSheet({ task, onClose, users }: Props) {
                                     className="min-h-[80px] resize-none bg-slate-50 border-slate-200"
                                 />
                                 <input type="hidden" name="subtasks" defaultValue={JSON.stringify(task.subtasks || [])} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="file" className="text-xs font-semibold text-slate-500">Attachment</Label>
+                                <Input
+                                    id="file"
+                                    name="file"
+                                    type="file"
+                                    className="cursor-pointer bg-slate-50 border-slate-200"
+                                />
                             </div>
                         </div>
                     </ScrollArea>

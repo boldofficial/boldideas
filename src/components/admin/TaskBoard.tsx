@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Plus, Search, Filter, MoreVertical, Edit2, Trash2,
     CheckCircle2, Clock, AlertCircle, User, Calendar,
@@ -12,7 +12,7 @@ import { useAuthStore } from '@/store/authStore';
 import CommentSystem from '@/components/shared/CommentSystem';
 import TaskDetailModal from './TaskDetailModal';
 import TaskEditSheet from './TaskEditSheet';
-import { useEffect } from 'react';
+import TaskFormModal from './TaskFormModal';
 
 interface Task {
     id: string;
@@ -59,18 +59,6 @@ export default function TaskBoard({ initialTasks, users }: TaskBoardProps) {
     const filteredTasks = tasks.filter(t =>
         t.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    const handleCreateTask = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        formData.append('projectId', 'null'); // Standalone task
-
-        const result = await createProjectTask(formData);
-        if (result.success) {
-            setIsCreateModalOpen(false);
-            window.location.reload(); // Quickest way to sync for now
-        }
-    };
 
     const handleUpdateTask = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -226,145 +214,12 @@ export default function TaskBoard({ initialTasks, users }: TaskBoardProps) {
                 )}
             </div>
 
-            {/* Task Creation Flyout */}
-            {isCreateModalOpen && (
-                <div className="fixed inset-0 z-50 overflow-hidden">
-                    <div className="absolute inset-0 bg-brand-navy/40 backdrop-blur-sm transition-opacity" onClick={() => setIsCreateModalOpen(false)} />
-
-                    <div className="fixed inset-y-0 right-0 max-w-full flex">
-                        <div className="w-screen max-w-md animate-slide-in-right">
-                            <div className="h-full flex flex-col bg-white shadow-2xl border-l border-slate-200">
-                                {/* Header */}
-                                <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                                    <div>
-                                        <h3 className="text-xl font-bold text-slate-800">New Task</h3>
-                                        <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
-                                    </div>
-                                    <button
-                                        onClick={() => setIsCreateModalOpen(false)}
-                                        className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-100 rounded-full"
-                                    >
-                                        <X className="w-5 h-5" />
-                                    </button>
-                                </div>
-
-                                {/* Form */}
-                                <form onSubmit={handleCreateTask} encType="multipart/form-data" className="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-hide">
-                                    <div className="space-y-6">
-                                        <div>
-                                            <label className="text-xs font-semibold text-slate-700 mb-2 block">
-                                                Title
-                                            </label>
-                                            <input
-                                                name="title"
-                                                required
-                                                className="w-full bg-slate-50 border border-slate-200 p-3 rounded-lg text-sm focus:border-brand-navy outline-none transition-all placeholder:text-slate-300"
-                                                placeholder="What needs to be done?"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="text-xs font-semibold text-slate-700 mb-2 block">
-                                                Description
-                                            </label>
-                                            <textarea
-                                                name="description"
-                                                className="w-full bg-slate-50 border border-slate-200 p-3 rounded-lg text-sm focus:border-brand-navy outline-none min-h-[140px] transition-all resize-none placeholder:text-slate-300"
-                                                placeholder="Add more details about this task..."
-                                            />
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="text-xs font-semibold text-slate-700 mb-2 block text-slate-500">
-                                                    Priority
-                                                </label>
-                                                <select name="priority" className="w-full bg-slate-50 border border-slate-200 px-3 py-2.5 rounded-lg text-sm focus:border-brand-navy outline-none">
-                                                    <option value="medium">Medium</option>
-                                                    <option value="high">High</option>
-                                                    <option value="urgent">Urgent</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="text-xs font-semibold text-slate-700 mb-2 block text-slate-500">
-                                                    Due Date
-                                                </label>
-                                                <input
-                                                    name="dueDate"
-                                                    type="date"
-                                                    className="w-full bg-slate-50 border border-slate-200 px-3 py-2.5 rounded-lg text-sm focus:border-brand-navy outline-none"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="text-xs font-semibold text-slate-500 mb-2 block">
-                                                    Est. Minutes
-                                                </label>
-                                                <input
-                                                    name="estimatedMinutes"
-                                                    type="number"
-                                                    defaultValue="0"
-                                                    className="w-full bg-slate-50 border border-slate-200 px-3 py-2.5 rounded-lg text-sm focus:border-brand-navy outline-none"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="text-xs font-semibold text-slate-500 mb-2 block">
-                                                    Attachment
-                                                </label>
-                                                <input
-                                                    name="file"
-                                                    type="file"
-                                                    className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-600 hover:file:bg-slate-200 cursor-pointer"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="text-xs font-semibold text-slate-700 mb-2 block text-slate-500">
-                                                Steps / Checklist
-                                            </label>
-                                            <textarea
-                                                onChange={(e) => {
-                                                    const lines = e.target.value.split('\n').filter(l => l.trim());
-                                                    const subtasks = lines.map(l => ({ title: l, completed: false }));
-                                                    const input = e.target.form?.querySelector('input[name="subtasks"]') as HTMLInputElement;
-                                                    if (input) input.value = JSON.stringify(subtasks);
-                                                }}
-                                                className="w-full bg-slate-50 border border-slate-200 p-3 rounded-lg text-sm focus:border-brand-navy outline-none min-h-[80px] transition-all resize-none placeholder:text-slate-300"
-                                                placeholder="List steps here..."
-                                            />
-                                            <input type="hidden" name="subtasks" defaultValue="[]" />
-                                        </div>
-
-                                        <div>
-                                            <label className="text-xs font-semibold text-slate-700 mb-2 block text-slate-500">
-                                                Assignee
-                                            </label>
-                                            <select name="assigneeId" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-lg text-sm focus:border-brand-navy outline-none">
-                                                <option value="unassigned">Unassigned</option>
-                                                {users.map(u => (
-                                                    <option key={u.id} value={u.id}>{u.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div className="pt-6">
-                                        <button
-                                            type="submit"
-                                            className="w-full bg-brand-navy text-white py-3.5 rounded-xl font-bold hover:bg-black transition-all shadow-lg active:scale-[0.98]"
-                                        >
-                                            Create Task
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Task Creation Modal */}
+            <TaskFormModal
+                open={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                users={users}
+            />
             {/* Task Edit Sheet */}
             <TaskEditSheet
                 task={editingTask}
