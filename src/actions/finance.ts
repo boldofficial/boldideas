@@ -138,3 +138,69 @@ export async function addInvoiceItem(data: {
         return { success: false, error: 'Failed to add invoice item' };
     }
 }
+
+export async function updateInvoice(invoiceId: string, data: any, items: any[]) {
+    try {
+        // 1. Update main invoice
+        await db.update(invoices)
+            .set({
+                ...data,
+                updatedAt: new Date()
+            })
+            .where(eq(invoices.id, invoiceId));
+
+        // 2. Refresh items: Delete old and insert new (simpler than tracking changes)
+        await db.delete(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
+        
+        if (items.length > 0) {
+            await db.insert(invoiceItems).values(
+                items.map(item => ({
+                    title: item.title,
+                    description: item.description,
+                    quantity: String(item.quantity),
+                    unitPrice: String(item.unitPrice),
+                    amount: String(item.amount),
+                    invoiceId
+                }))
+            );
+        }
+
+        revalidatePath('/admin/finance');
+        revalidatePath(`/admin/finance/invoice/${invoiceId}`);
+
+        // Log Activity
+        await recordActivity({
+            userId: null,
+            action: 'invoice_updated',
+            details: { id: invoiceId.slice(0, 8), invoiceNumber: data.invoiceNumber }
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('updateInvoice error:', error);
+        return { success: false, error: 'Failed to update invoice' };
+    }
+}
+
+export async function deleteInvoice(invoiceId: string) {
+    try {
+        // Get invoice number first for logging
+        const [invoice] = await db.select().from(invoices).where(eq(invoices.id, invoiceId)).limit(1);
+        
+        await db.delete(invoices).where(eq(invoices.id, invoiceId));
+        
+        revalidatePath('/admin/finance');
+
+        // Log Activity
+        await recordActivity({
+            userId: null,
+            action: 'invoice_deleted',
+            details: { id: invoiceId.slice(0, 8), invoiceNumber: invoice?.invoiceNumber }
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('deleteInvoice error:', error);
+        return { success: false, error: 'Failed to delete invoice' };
+    }
+}

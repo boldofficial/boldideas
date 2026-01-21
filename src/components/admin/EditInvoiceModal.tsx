@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { createInvoice, addInvoiceItem } from '@/actions/finance';
+import { updateInvoice } from '@/actions/finance';
 import { 
-    Plus, X, Trash2, DollarSign, Calendar, User, CreditCard, 
-    FileText, Check, AlertCircle 
+    X, Trash2, DollarSign, Calendar, User, CreditCard, 
+    Check, AlertCircle, Plus 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-    Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface InvoiceItem {
+    id?: string;
     title: string;
     description: string;
     quantity: number;
@@ -25,16 +26,28 @@ interface InvoiceItem {
     amount: number;
 }
 
-export default function CreateInvoiceModal({ clients }: { clients: any[] }) {
-    const [isOpen, setIsOpen] = useState(false);
+interface EditInvoiceModalProps {
+    invoice: any;
+    clients: any[];
+    onClose: () => void;
+    onSuccess: () => void;
+}
+
+export default function EditInvoiceModal({ invoice, clients, onClose, onSuccess }: EditInvoiceModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [discountAmount, setDiscountAmount] = useState<number>(0);
-    const [discountType, setDiscountType] = useState<'fixed' | 'percentage'>('fixed');
-    const [currency, setCurrency] = useState<string>('USD');
-    const [clientId, setClientId] = useState<string>('unassigned');
-    const [items, setItems] = useState<InvoiceItem[]>([
-        { title: '', description: '', quantity: 1, unitPrice: 0, amount: 0 }
-    ]);
+    const [discountAmount, setDiscountAmount] = useState<number>(Number(invoice.discountAmount || 0));
+    const [discountType, setDiscountType] = useState<'fixed' | 'percentage'>(invoice.discountType as 'fixed' | 'percentage' || 'fixed');
+    const [currency, setCurrency] = useState<string>(invoice.currency || 'USD');
+    const [clientId, setClientId] = useState<string>(invoice.clientId || 'unassigned');
+    const [items, setItems] = useState<InvoiceItem[]>(
+        invoice.items?.map((item: any) => ({
+            title: item.title || '',
+            description: item.description || '',
+            quantity: Number(item.quantity || 0),
+            unitPrice: Number(item.unitPrice || 0),
+            amount: Number(item.amount || 0)
+        })) || []
+    );
 
     const addItem = () => {
         setItems([...items, { title: '', description: '', quantity: 1, unitPrice: 0, amount: 0 }]);
@@ -71,58 +84,54 @@ export default function CreateInvoiceModal({ clients }: { clients: any[] }) {
         setIsSubmitting(true);
 
         const formData = new FormData(e.currentTarget);
-        formData.set('totalAmount', totalAmount.toString());
-        formData.set('discountAmount', discountAmount.toString());
-        formData.set('discountType', discountType);
-        formData.set('clientId', clientId === 'unassigned' ? '' : clientId);
-        formData.set('currency', currency);
+        const updateData = {
+            clientId: clientId === 'unassigned' ? null : clientId,
+            currency: currency,
+            dueDate: formData.get('dueDate') ? new Date(formData.get('dueDate') as string) : null,
+            notes: formData.get('notes'),
+            totalAmount: totalAmount.toString(),
+            discountAmount: discountAmount.toString(),
+            discountType: discountType
+        };
 
-        const result = await createInvoice(formData);
+        const result = await updateInvoice(invoice.id, updateData, items);
 
-        if (result.success && result.id) {
-            for (const item of items) {
-                await addInvoiceItem({
-                    invoiceId: result.id,
-                    title: item.title,
-                    description: item.description,
-                    quantity: item.quantity.toString(),
-                    unitPrice: item.unitPrice.toString(),
-                    amount: item.amount.toString()
-                });
-            }
-            toast.success('Invoice created successfully');
-            setIsOpen(false);
-            setItems([{ title: '', description: '', quantity: 1, unitPrice: 0, amount: 0 }]);
-            setDiscountAmount(0);
-            window.location.reload();
+        if (result.success) {
+            toast.success('Invoice updated successfully');
+            onSuccess();
+            onClose();
         } else {
-            toast.error('Failed to create invoice');
+            toast.error(result.error || 'Failed to update invoice');
         }
         setIsSubmitting(false);
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-                <Button 
-                    className="bg-brand-navy text-brand-gold px-6 font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-brand-navy/20 h-10 italic"
-                >
-                    <Plus className="w-4 h-4 mr-2" /> New Invoice
-                </Button>
-            </DialogTrigger>
+        <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="max-w-4xl p-0 overflow-hidden bg-white border-none shadow-2xl">
                 <DialogHeader className="p-6 border-b bg-slate-50/80">
-                    <div>
-                        <DialogTitle className="font-black text-2xl text-brand-navy uppercase tracking-tight italic">Create New Invoice</DialogTitle>
-                        <DialogDescription className="text-[10px] font-mono text-slate-400 mt-1 uppercase tracking-widest">
-                            Professional Billing Transmission // Digital Secure Infrastructure
-                        </DialogDescription>
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <DialogTitle className="font-black text-2xl text-brand-navy uppercase tracking-tight italic">Edit Invoice</DialogTitle>
+                            <DialogDescription className="text-[10px] font-mono text-slate-400 mt-1 uppercase tracking-widest">
+                                Reference: {invoice.invoiceNumber || invoice.id.slice(0, 8)}
+                            </DialogDescription>
+                        </div>
                     </div>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="flex flex-col">
                     <ScrollArea className="max-h-[70vh]">
                         <div className="p-6 space-y-8">
+                            {invoice.status === 'paid' && (
+                                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3 text-amber-700 animate-pulse">
+                                    <AlertCircle className="w-5 h-5 shrink-0" />
+                                    <p className="text-xs font-bold uppercase tracking-tight">
+                                        Warning: This invoice is marked as PAID. Modifying amounts may cause receipt inconsistencies.
+                                    </p>
+                                </div>
+                            )}
+
                             <div className="grid md:grid-cols-3 gap-8">
                                 <div className="space-y-4">
                                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-1">Client Information</h4>
@@ -136,7 +145,7 @@ export default function CreateInvoiceModal({ clients }: { clients: any[] }) {
                                                 </div>
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="unassigned">Select Client</SelectItem>
+                                                <SelectItem value="unassigned">Unassigned</SelectItem>
                                                 {clients.map((c: any) => (
                                                     <SelectItem key={c.id} value={c.id}>{c.name || c.email}</SelectItem>
                                                 ))}
@@ -171,6 +180,7 @@ export default function CreateInvoiceModal({ clients }: { clients: any[] }) {
                                             <Input
                                                 name="dueDate"
                                                 type="date"
+                                                defaultValue={invoice.dueDate ? new Date(invoice.dueDate).toISOString().split('T')[0] : ''}
                                                 className="pl-10 bg-slate-50 border-slate-200 text-xs font-bold h-10"
                                                 required
                                             />
@@ -184,6 +194,7 @@ export default function CreateInvoiceModal({ clients }: { clients: any[] }) {
                                         <Label className="text-[10px] uppercase font-bold text-slate-500">Internal Remarks</Label>
                                         <Textarea
                                             name="notes"
+                                            defaultValue={invoice.notes || ''}
                                             placeholder="Terms, bank info, or notes..."
                                             className="bg-slate-50 border-slate-200 text-xs font-medium resize-none min-h-[92px]"
                                         />
@@ -322,12 +333,12 @@ export default function CreateInvoiceModal({ clients }: { clients: any[] }) {
                                 {isSubmitting ? (
                                     <div className="flex items-center gap-2">
                                         <div className="w-4 h-4 border-2 border-brand-gold/30 border-t-brand-gold rounded-full animate-spin"></div>
-                                        <span>Transmitting</span>
+                                        <span>Saving</span>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2">
-                                        <FileText className="w-5 h-5" />
-                                        <span>Create Invoice</span>
+                                        <Check className="w-5 h-5" />
+                                        <span>Apply Changes</span>
                                     </div>
                                 )}
                             </Button>

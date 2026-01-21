@@ -46,7 +46,7 @@ export default async function FinancePage() {
                     analytics ? <FinanceDashboard analytics={analytics} /> : <p>Loading analytics...</p>
                 }
                 invoicesContent={
-                    <InvoiceManager initialInvoices={invoices || []} />
+                    <InvoiceManager initialInvoices={invoices || []} clients={clients || []} />
                 }
                 expensesContent={
                     <ExpenseManager initialExpenses={expenses || []} />

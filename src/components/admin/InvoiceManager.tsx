@@ -2,14 +2,17 @@
 
 import React, { useState } from 'react';
 import { DollarSign, FileText, Plus, Search, Filter, MoreVertical, CheckCircle2, Clock, AlertCircle, X, Download, Eye } from 'lucide-react';
-import { updateInvoiceStatus } from '@/actions/finance';
+import { updateInvoiceStatus, deleteInvoice, getInvoiceDetails } from '@/actions/finance';
 import { recordActivity } from '@/actions/activity';
+import EditInvoiceModal from './EditInvoiceModal';
+import { toast } from 'sonner';
 
 interface Invoice {
     id: string;
     invoiceNumber: string | null;
     totalAmount: string | null;
     status: string | null;
+    issueDate?: Date | null;
     dueDate: Date | null;
     createdAt: Date | null;
     clientId: string | null;
@@ -17,21 +20,50 @@ interface Invoice {
     notes: string | null;
     paidAt: Date | null;
     updatedAt: Date | null;
+    amountPaid?: string | null;
+    discountAmount?: string | null;
+    discountType?: string | null;
 }
 
-export default function InvoiceManager({ initialInvoices }: { initialInvoices: Invoice[] }) {
+export default function InvoiceManager({ initialInvoices, clients }: { initialInvoices: Invoice[], clients: any[] }) {
     const [invoices, setInvoices] = useState(initialInvoices);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [editingInvoice, setEditingInvoice] = useState<any | null>(null);
+    const [isFetchingDetails, setIsFetchingDetails] = useState(false);
 
     const handleStatusUpdate = async (id: string, newStatus: string) => {
         setUpdatingId(id);
         const result = await updateInvoiceStatus(id, newStatus);
         if (result.success) {
             setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, status: newStatus, paidAt: newStatus === 'paid' ? new Date() : inv.paidAt } : inv));
+            toast.success(`Invoice marked as ${newStatus}`);
         }
         setUpdatingId(null);
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this invoice? This action cannot be undone.')) return;
+        
+        const result = await deleteInvoice(id);
+        if (result.success) {
+            setInvoices(prev => prev.filter(inv => inv.id !== id));
+            toast.success('Invoice deleted');
+        } else {
+            toast.error('Failed to delete invoice');
+        }
+    };
+
+    const handleEditClick = async (id: string) => {
+        setIsFetchingDetails(true);
+        const result = await getInvoiceDetails(id);
+        if (result.success) {
+            setEditingInvoice(result.data);
+        } else {
+            toast.error('Failed to fetch invoice details');
+        }
+        setIsFetchingDetails(false);
     };
 
     const filteredInvoices = invoices.filter(inv => {
@@ -239,15 +271,30 @@ export default function InvoiceManager({ initialInvoices }: { initialInvoices: I
                                                     <MoreVertical className="w-4 h-4" />
                                                 </button>
                                                 <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-slate-200 rounded-md shadow-lg z-20 hidden group-hover/menu:block">
+                                                    <div className="p-2 border-b border-slate-100 italic text-[9px] text-slate-400 uppercase font-black">Status Control</div>
                                                     {['draft', 'sent', 'paid', 'overdue', 'cancelled'].map(status => (
                                                         <button
                                                             key={status}
                                                             onClick={() => handleStatusUpdate(inv.id, status)}
-                                                            className="w-full text-left px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-brand-navy transition-colors first:rounded-t-md last:rounded-b-md capitalize"
+                                                            className="w-full text-left px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-brand-navy transition-colors capitalize"
                                                         >
                                                             Mark as {status}
                                                         </button>
                                                     ))}
+                                                    <div className="p-2 border-t border-slate-100 italic text-[9px] text-slate-400 uppercase font-black">Management</div>
+                                                    <button
+                                                        onClick={() => handleEditClick(inv.id)}
+                                                        disabled={isFetchingDetails}
+                                                        className="w-full text-left px-4 py-2 text-xs font-bold text-brand-navy hover:bg-slate-50 transition-colors"
+                                                    >
+                                                        {isFetchingDetails ? 'Fetching...' : 'Edit Details'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(inv.id)}
+                                                        className="w-full text-left px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
+                                                    >
+                                                        Delete Invoice
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -268,6 +315,18 @@ export default function InvoiceManager({ initialInvoices }: { initialInvoices: I
                     </table>
                 </div>
             </div>
+            {editingInvoice && (
+                <EditInvoiceModal
+                    invoice={editingInvoice}
+                    clients={clients}
+                    onClose={() => setEditingInvoice(null)}
+                    onSuccess={() => {
+                        // Just refresh the entire list or update the specific one
+                        // Refreshing the page is easiest to get all analytics right
+                        window.location.reload();
+                    }}
+                />
+            )}
         </div>
     );
 }

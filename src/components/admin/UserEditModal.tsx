@@ -2,6 +2,15 @@
 
 import { updateUser, type UserUpdateData } from '@/actions/team';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { User, Mail, MapPin, Image as ImageIcon, Check } from 'lucide-react';
 
 type UserData = {
     id: string;
@@ -40,69 +49,136 @@ export default function UserEditModal({ user, onClose }: Props) {
         if (formData.address !== user.address) updateData.address = formData.address;
         if (formData.avatarUrl !== user.avatarUrl) updateData.avatarUrl = formData.avatarUrl;
         
-        if (Object.keys(updateData).length > 0) {
-            await updateUser(user.id, updateData);
+        try {
+            if (Object.keys(updateData).length > 0) {
+                await updateUser(user.id, updateData);
+            }
+            toast.success('User profile updated');
+            onClose();
+        } catch (error) {
+            toast.error('Failed to update user');
+        } finally {
+            setIsSaving(false);
         }
-        setIsSaving(false);
-        onClose();
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-lg shadow-xl p-6 max-w-lg w-full mx-4 animate-fade-in">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-brand-navy">Edit User</h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
-                </div>
+        <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-lg p-0 overflow-hidden bg-white border-none shadow-2xl">
+                <DialogHeader className="p-6 border-b bg-slate-50/80">
+                    <div>
+                        <DialogTitle className="font-black text-2xl text-brand-navy uppercase tracking-tight italic">Edit Profile</DialogTitle>
+                        <DialogDescription className="text-[10px] font-mono text-slate-400 mt-1 uppercase tracking-widest">
+                            User Identity Module // {user.email}
+                        </DialogDescription>
+                    </div>
+                </DialogHeader>
                 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-bold text-slate-600 mb-1">Email</label>
-                        <input type="email" value={user.email} disabled
-                            className="w-full p-3 border border-slate-200 rounded bg-slate-50 text-slate-500 cursor-not-allowed" />
-                        <p className="text-xs text-slate-400 mt-1">Email cannot be changed here</p>
+                <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                    <div className="space-y-4">
+                        <div className="space-y-2 opacity-60">
+                            <Label className="text-[10px] uppercase font-bold text-slate-500">Email Address (Locked)</Label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Input 
+                                    type="email" 
+                                    value={user.email} 
+                                    disabled 
+                                    className="pl-10 bg-slate-100 border-slate-200 text-xs font-medium cursor-not-allowed" 
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <Label className="text-[10px] uppercase font-bold text-slate-500">Full Name</Label>
+                            <div className="relative">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Input 
+                                    type="text" 
+                                    name="name" 
+                                    value={formData.name} 
+                                    onChange={handleChange}
+                                    placeholder="Full Name"
+                                    className="pl-10 bg-white border-slate-200 text-xs font-bold text-brand-navy" 
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <Label className="text-[10px] uppercase font-bold text-slate-500">Professional Bio</Label>
+                            <Textarea 
+                                name="bio" 
+                                value={formData.bio} 
+                                onChange={handleChange} 
+                                rows={3}
+                                placeholder="Short bio..."
+                                className="bg-white border-slate-200 text-xs font-medium resize-none" 
+                            />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] uppercase font-bold text-slate-500">Location</Label>
+                                <div className="relative">
+                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <Input 
+                                        type="text" 
+                                        name="address" 
+                                        value={formData.address} 
+                                        onChange={handleChange}
+                                        placeholder="City, Country"
+                                        className="pl-10 bg-white border-slate-200 text-xs font-bold text-brand-navy" 
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <Label className="text-[10px] uppercase font-bold text-slate-500">Avatar URI</Label>
+                                <div className="relative">
+                                    <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <Input 
+                                        type="url" 
+                                        name="avatarUrl" 
+                                        value={formData.avatarUrl} 
+                                        onChange={handleChange}
+                                        placeholder="https://..."
+                                        className="pl-10 bg-white border-slate-200 text-xs font-bold text-brand-navy" 
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div>
-                        <label className="block text-sm font-bold text-slate-600 mb-1">Name</label>
-                        <input type="text" name="name" value={formData.name} onChange={handleChange}
-                            placeholder="Full Name"
-                            className="w-full p-3 border border-slate-200 rounded focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none" />
-                    </div>
-                    
-                    <div>
-                        <label className="block text-sm font-bold text-slate-600 mb-1">Bio</label>
-                        <textarea name="bio" value={formData.bio} onChange={handleChange} rows={3}
-                            placeholder="Short bio..."
-                            className="w-full p-3 border border-slate-200 rounded focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none resize-none" />
-                    </div>
-                    
-                    <div>
-                        <label className="block text-sm font-bold text-slate-600 mb-1">Address</label>
-                        <input type="text" name="address" value={formData.address} onChange={handleChange}
-                            placeholder="Address"
-                            className="w-full p-3 border border-slate-200 rounded focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none" />
-                    </div>
-                    
-                    <div>
-                        <label className="block text-sm font-bold text-slate-600 mb-1">Avatar URL</label>
-                        <input type="url" name="avatarUrl" value={formData.avatarUrl} onChange={handleChange}
-                            placeholder="https://..."
-                            className="w-full p-3 border border-slate-200 rounded focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none" />
-                    </div>
-                    
-                    <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                        <button type="button" onClick={onClose} disabled={isSaving}
-                            className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded transition-colors">
+                    <DialogFooter className="pt-2">
+                        <Button 
+                            type="button" 
+                            variant="ghost" 
+                            onClick={onClose} 
+                            disabled={isSaving}
+                            className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600"
+                        >
                             Cancel
-                        </button>
-                        <button type="submit" disabled={isSaving}
-                            className="px-4 py-2 text-sm font-bold text-white bg-brand-navy hover:bg-brand-gold hover:text-brand-navy rounded transition-colors disabled:opacity-50">
-                            {isSaving ? 'Saving...' : 'Save Changes'}
-                        </button>
-                    </div>
+                        </Button>
+                        <Button 
+                            type="submit" 
+                            disabled={isSaving}
+                            className="bg-brand-navy text-brand-gold px-8 font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand-navy/20"
+                        >
+                            {isSaving ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 border-2 border-brand-gold/30 border-t-brand-gold rounded-full animate-spin"></div>
+                                    <span>Syncing</span>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <Check className="w-5 h-5" />
+                                    <span>Save Profile</span>
+                                </div>
+                            )}
+                        </Button>
+                    </DialogFooter>
                 </form>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 }

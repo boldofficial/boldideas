@@ -1,4 +1,4 @@
-import { getInvoiceDetails } from '@/actions/finance';
+import { getInvoiceDetails, getClients } from '@/actions/finance';
 import { getReceiptByInvoice, getPaymentsByInvoice, getCompanySettings } from '@/actions/financeEnhancements';
 import { ChevronLeft, Download, Printer, CheckCircle2, AlertCircle, Clock, FileText, Globe, Mail, Phone, Landmark } from 'lucide-react';
 import Link from 'next/link';
@@ -8,11 +8,12 @@ import Image from 'next/image';
 
 export default async function InvoiceDetailPage({ params }: { params: { id: string } }) {
     const { id } = await params;
-    const [{ data: invoice, success }, { data: receipt }, { data: payments }, { data: settings }] = await Promise.all([
+    const [{ data: invoice, success }, { data: receipt }, { data: payments }, { data: settings }, { data: clients }] = await Promise.all([
         getInvoiceDetails(id),
         getReceiptByInvoice(id),
         getPaymentsByInvoice(id),
-        getCompanySettings()
+        getCompanySettings(),
+        getClients()
     ]);
 
     if (!success || !invoice) {
@@ -50,12 +51,8 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
                     Back to Finance
                 </Link>
                 <InvoiceActionsClient
-                    invoiceId={invoice.id}
-                    invoiceNumber={invoice.invoiceNumber || ''}
-                    totalAmount={invoice.totalAmount || '0'}
-                    amountPaid={invoice.amountPaid || '0'}
-                    currency={invoice.currency || 'USD'}
-                    status={invoice.status || 'draft'}
+                    invoice={invoice}
+                    clients={clients || []}
                     receiptId={receipt?.id}
                 />
             </div>
