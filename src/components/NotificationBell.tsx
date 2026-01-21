@@ -95,14 +95,14 @@ export default function NotificationBell() {
                     />
 
                     {/* Dropdown */}
-                    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-2xl border border-slate-200 z-50 overflow-hidden">
+                    <div className="absolute left-0 top-full mt-4 w-80 bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-200 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-left">
                         {/* Header */}
-                        <div className="bg-brand-navy p-4 flex justify-between items-center">
-                            <h3 className="text-white font-bold text-sm uppercase tracking-widest">Notifications</h3>
+                        <div className="bg-brand-navy p-4 flex justify-between items-center border-b-2 border-brand-gold">
+                            <h3 className="text-white font-bold text-xs uppercase tracking-[0.2em]">Notifications</h3>
                             {unreadCount > 0 && (
                                 <button
                                     onClick={handleMarkAllRead}
-                                    className="text-brand-gold text-[10px] uppercase tracking-widest hover:underline flex items-center gap-1"
+                                    className="text-brand-gold text-[9px] font-bold uppercase tracking-widest hover:text-white transition-colors flex items-center gap-1.5"
                                 >
                                     <Check className="w-3 h-3" /> Mark all read
                                 </button>
@@ -110,55 +110,85 @@ export default function NotificationBell() {
                         </div>
 
                         {/* List */}
-                        <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                        <div className="max-h-[400px] overflow-y-auto divide-y divide-slate-100 bg-white">
                             {loading ? (
-                                <div className="p-8 text-center text-slate-400 text-xs">Loading...</div>
+                                <div className="p-12 text-center">
+                                    <div className="w-6 h-6 border-2 border-brand-gold border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Scanning...</p>
+                                </div>
                             ) : notifications.length === 0 ? (
-                                <div className="p-8 text-center text-slate-400 text-xs font-mono uppercase">
-                                    No notifications yet
+                                <div className="p-12 text-center">
+                                    <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <Bell className="w-5 h-5 text-slate-200" />
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                        No active transmissions
+                                    </p>
                                 </div>
                             ) : (
                                 notifications.slice(0, 10).map((notification) => (
                                     <div
                                         key={notification.id}
-                                        className={`p-4 hover:bg-slate-50 transition-colors cursor-pointer ${!notification.isRead ? 'bg-brand-gold/5 border-l-4 border-l-brand-gold' : ''
+                                        className={`group p-4 hover:bg-slate-50 transition-all cursor-pointer relative ${!notification.isRead ? 'bg-brand-gold/5' : ''
                                             }`}
                                         onClick={() => handleMarkRead(notification.id)}
                                     >
+                                        {!notification.isRead && (
+                                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-gold"></div>
+                                        )}
+                                        
                                         {notification.link ? (
                                             <Link href={notification.link} onClick={() => setIsOpen(false)}>
-                                                <div className="flex gap-3">
-                                                    <span className="text-lg">{getTypeIcon(notification.type)}</span>
+                                                <div className="flex gap-4">
+                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${
+                                                        !notification.isRead ? 'bg-brand-navy text-brand-gold' : 'bg-slate-100 text-slate-400'
+                                                    }`}>
+                                                        <span className="text-lg">{getTypeIcon(notification.type)}</span>
+                                                    </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className={`text-sm ${!notification.isRead ? 'font-bold text-brand-navy' : 'text-slate-600'}`}>
+                                                        <p className={`text-[13px] leading-tight mb-1 ${!notification.isRead ? 'font-bold text-brand-navy' : 'text-slate-600 font-medium'}`}>
                                                             {notification.title}
                                                         </p>
                                                         {notification.message && (
-                                                            <p className="text-xs text-slate-400 truncate mt-1">
+                                                            <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
                                                                 {notification.message}
                                                             </p>
                                                         )}
-                                                        <p className="text-[10px] text-slate-300 mt-2 font-mono">
-                                                            {notification.createdAt ? new Date(notification.createdAt).toLocaleString() : ''}
-                                                        </p>
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            <p className="text-[9px] text-slate-300 font-bold uppercase tracking-tighter">
+                                                                {notification.createdAt ? new Date(notification.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : ''}
+                                                            </p>
+                                                            {!notification.isRead && (
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </Link>
                                         ) : (
-                                            <div className="flex gap-3">
-                                                <span className="text-lg">{getTypeIcon(notification.type)}</span>
+                                            <div className="flex gap-4">
+                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+                                                        !notification.isRead ? 'bg-brand-navy text-brand-gold' : 'bg-slate-100 text-slate-400'
+                                                    }`}>
+                                                    <span className="text-lg">{getTypeIcon(notification.type)}</span>
+                                                </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className={`text-sm ${!notification.isRead ? 'font-bold text-brand-navy' : 'text-slate-600'}`}>
+                                                    <p className={`text-[13px] leading-tight mb-1 ${!notification.isRead ? 'font-bold text-brand-navy' : 'text-slate-600 font-medium'}`}>
                                                         {notification.title}
                                                     </p>
                                                     {notification.message && (
-                                                        <p className="text-xs text-slate-400 truncate mt-1">
+                                                        <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
                                                             {notification.message}
                                                         </p>
                                                     )}
-                                                    <p className="text-[10px] text-slate-300 mt-2 font-mono">
-                                                        {notification.createdAt ? new Date(notification.createdAt).toLocaleString() : ''}
-                                                    </p>
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <p className="text-[9px] text-slate-300 font-bold uppercase tracking-tighter">
+                                                            {notification.createdAt ? new Date(notification.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : ''}
+                                                        </p>
+                                                        {!notification.isRead && (
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}
@@ -168,13 +198,14 @@ export default function NotificationBell() {
                         </div>
 
                         {/* Footer */}
-                        {notifications.length > 10 && (
-                            <div className="p-3 bg-slate-50 border-t border-slate-100 text-center">
-                                <span className="text-xs text-slate-400">
-                                    Showing 10 of {notifications.length} notifications
-                                </span>
-                            </div>
-                        )}
+                        <div className="p-3 bg-slate-50 border-t border-slate-100 text-center flex items-center justify-between px-4">
+                            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                                {notifications.length} Total
+                            </span>
+                            <button className="text-[9px] text-brand-navy font-black uppercase tracking-[0.1em] hover:text-brand-gold transition-colors">
+                                View Archive
+                            </button>
+                        </div>
                     </div>
                 </>
             )}
