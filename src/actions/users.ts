@@ -26,6 +26,7 @@ export async function updateUserProfile(userId: string, formData: FormData) {
 
         revalidatePath('/staff');
         revalidatePath('/admin');
+        revalidatePath('/client');
         return { success: true };
     } catch (error) {
         console.error("Update Profile Error:", error);

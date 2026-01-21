@@ -5,7 +5,9 @@ import { useAuthStore } from '@/store/authStore';
 import { getUserProfile } from '@/actions/users';
 import ProfileSettings from '@/components/common/ProfileSettings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, Shield } from 'lucide-react';
+import { Settings, Shield, ChevronRight, Activity, Terminal } from 'lucide-react';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 
 export default function AdminSettingsPage() {
     const { user } = useAuthStore();
@@ -27,73 +29,118 @@ export default function AdminSettingsPage() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center p-20">
-                <div className="w-8 h-8 border-4 border-brand-gold border-t-transparent rounded-full animate-spin"></div>
+            <div className="flex items-center justify-center p-20 min-h-[400px]">
+                <div className="w-10 h-10 border-4 border-brand-gold border-t-transparent rounded-full animate-spin shadow-sm"></div>
             </div>
         );
     }
 
     if (!profile) {
         return (
-            <Card>
-                <CardContent className="py-16 text-center text-slate-400">
-                    <p>Failed to load profile settings</p>
-                </CardContent>
-            </Card>
+            <div className="p-8">
+                <Card className="border-l-4 border-l-red-500 shadow-sm">
+                    <CardContent className="py-16 text-center">
+                        <p className="text-slate-500 font-medium">Failed to load admin profile settings</p>
+                    </CardContent>
+                </Card>
+            </div>
         );
     }
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-lg bg-brand-navy/10 flex items-center justify-center">
-                    <Settings className="w-6 h-6 text-brand-navy" />
-                </div>
-                <div>
-                    <h1 className="text-2xl font-bold text-brand-navy">Admin Settings</h1>
-                    <p className="text-slate-500 text-sm">Manage your profile and system preferences</p>
-                </div>
+        <div className="space-y-8 py-4">
+            {/* Breadcrumb Navigation */}
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+                <Link href="/admin" className="hover:text-brand-navy transition-colors">Admin Dashboard</Link>
+                <ChevronRight className="w-3 h-3" />
+                <span className="text-brand-navy font-semibold">Settings</span>
             </div>
 
-            {/* Profile Settings Component */}
-            <ProfileSettings user={profile} onUpdate={fetchProfile} />
+            {/* Centered Profile Header */}
+            <div className="text-center pb-8 border-b border-slate-100">
+                <h1 className="text-3xl font-black text-brand-navy tracking-tight uppercase sm:text-4xl">
+                    Admin Settings
+                </h1>
+                <p className="text-slate-500 text-sm mt-2 font-medium">Manage your administrative profile and system preferences</p>
+            </div>
 
-            {/* Admin Info Card */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg text-brand-navy flex items-center gap-2">
-                        <Shield className="w-5 h-5" />
-                        Admin Account
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <p className="text-slate-500 uppercase text-xs tracking-wide mb-1">Role</p>
-                            <p className="font-medium capitalize text-emerald-600">{profile.role || 'Admin'}</p>
-                        </div>
-                        <div>
-                            <p className="text-slate-500 uppercase text-xs tracking-wide mb-1">Account Created</p>
-                            <p className="font-medium">
-                                {profile.createdAt 
-                                    ? new Date(profile.createdAt).toLocaleDateString('en-US', { 
-                                        month: 'long', 
-                                        day: 'numeric',
-                                        year: 'numeric' 
-                                    })
-                                    : '-'
-                                }
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                {/* Main Content - Form */}
+                <div className="lg:col-span-2">
+                    <ProfileSettings user={profile} onUpdate={fetchProfile} />
+                </div>
+
+                {/* Sidebar - Admin Info */}
+                <div className="space-y-6">
+                    {/* Admin Account Card */}
+                    <Card className="border-l-4 border-l-emerald-500 shadow-sm">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-lg text-brand-navy flex items-center gap-2">
+                                <Shield className="w-5 h-5 text-emerald-500" />
+                                Admin Privileges
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div>
+                                <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Authority Level</p>
+                                <Badge className="bg-emerald-500 text-white hover:bg-emerald-600 border-none font-bold tracking-wider px-3 py-1">
+                                    SUPER ADMIN
+                                </Badge>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                <div>
+                                    <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">System Role</p>
+                                    <p className="font-bold text-brand-navy capitalize text-sm">{profile.role || 'Admin'}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Account Created</p>
+                                    <p className="font-bold text-brand-navy text-sm">
+                                        {profile.createdAt 
+                                            ? new Date(profile.createdAt).toLocaleDateString('en-US', { 
+                                                month: 'long', 
+                                                day: 'numeric',
+                                                year: 'numeric' 
+                                            })
+                                            : '-'
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div className="pt-4 border-t border-slate-100">
+                                <p className="text-xs text-slate-400 leading-relaxed font-medium italic">
+                                    As an administrator, you have full override capabilities throughout the ecosystem.
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* System Activity Hint */}
+                    <Card className="bg-brand-navy border-none text-white shadow-xl">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                                    <Activity className="w-5 h-5 text-emerald-400" />
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold">System Load</p>
+                                    <p className="text-lg font-black text-emerald-400">NOMINAL</p>
+                                </div>
+                            </div>
+                            <h3 className="font-bold text-white mb-2 uppercase tracking-tight flex items-center gap-2 text-sm">
+                                <Terminal className="w-4 h-4 text-brand-gold" />
+                                Admin Console
+                            </h3>
+                            <p className="text-white/70 text-xs leading-relaxed font-medium">
+                                Monitor system performance and user logs from your centralized dashboard.
                             </p>
-                        </div>
-                    </div>
-                    <div className="pt-2 border-t">
-                        <p className="text-xs text-slate-400">
-                            As an admin, you have full access to manage users, projects, and system settings.
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
         </div>
     );
 }
