@@ -1,19 +1,22 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { tickets, ticketAttachments, users, internalProjects } from '@/lib/db/schema';
-import { eq, desc, and, or } from 'drizzle-orm';
+import { tickets, ticketAttachments, ticketComments, cannedResponses, ticketActivity, users, internalProjects } from '@/lib/db/schema';
+import { eq, desc, and, or, isNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { createNotification } from './notifications';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 // Types
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+export type TicketStatus = 'open' | 'awaiting_reply' | 'in_progress' | 'on_hold' | 'resolved' | 'closed';
+export type TicketDepartment = 'general' | 'billing' | 'technical' | 'sales';
 
 export interface CreateTicketData {
   subject: string;
   description: string;
   priority?: TicketPriority;
+  department?: TicketDepartment;
   projectId?: string | null;
 }
 
@@ -34,17 +37,62 @@ export interface TicketWithDetails {
 }
 
 /**
- * Create a new ticket
+ * Create a new ticket with optional file attachment
  */
-export async function createTicket(clientId: string, data: CreateTicketData) {
+export async function createTicket(clientId: string, data: CreateTicketData, file?: File) {
   try {
     const [newTicket] = await db.insert(tickets).values({
       clientId,
       subject: data.subject,
       description: data.description,
       priority: data.priority || 'medium',
+      department: data.department || 'general',
       projectId: data.projectId || null,
     }).returning();
+
+    // Handle file upload if present
+    if (file && file.size > 0) {
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `ticket-${newTicket.id}-${Date.now()}.${fileExt}`;
+        const filePath = `tickets/${newTicket.id}/${fileName}`;
+
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        // Ensure bucket exists
+        const { data: buckets } = await supabaseAdmin.storage.listBuckets();
+        if (!buckets?.find(b => b.name === 'ticket-files')) {
+          await supabaseAdmin.storage.createBucket('ticket-files', { public: true });
+        }
+
+        const { error: uploadError } = await supabaseAdmin.storage
+          .from('ticket-files')
+          .upload(filePath, buffer, {
+            contentType: file.type,
+            upsert: true
+          });
+
+        if (!uploadError) {
+          const { data: { publicUrl } } = supabaseAdmin.storage
+            .from('ticket-files')
+            .getPublicUrl(filePath);
+
+          // Add attachment record
+          await db.insert(ticketAttachments).values({
+            ticketId: newTicket.id,
+            name: file.name,
+            url: publicUrl,
+            sizeBytes: file.size,
+            uploadedBy: clientId,
+          });
+        } else {
+          console.error('Ticket file upload error:', uploadError);
+        }
+      } catch (uploadErr) {
+        console.error('File processing error:', uploadErr);
+      }
+    }
 
     // Notify admins about new ticket
     const admins = await db.select({ id: users.id })
@@ -124,10 +172,15 @@ export async function getTicket(ticketId: string, userId: string, isAdmin = fals
     const [ticket] = await db
       .select({
         id: tickets.id,
+        ticketNumber: tickets.ticketNumber,
         subject: tickets.subject,
         description: tickets.description,
+        department: tickets.department,
         priority: tickets.priority,
         status: tickets.status,
+        rating: tickets.rating,
+        ratingComment: tickets.ratingComment,
+        firstResponseAt: tickets.firstResponseAt,
         projectId: tickets.projectId,
         projectTitle: internalProjects.title,
         assignedToId: tickets.assignedTo,
@@ -147,14 +200,14 @@ export async function getTicket(ticketId: string, userId: string, isAdmin = fals
     // Get assigned user details
     let assignedUser = null;
     if (ticket.assignedToId) {
-      const [user] = await db.select({ name: users.name, email: users.email })
+      const [user] = await db.select({ name: users.name, email: users.email, avatarUrl: users.avatarUrl })
         .from(users)
         .where(eq(users.id, ticket.assignedToId));
       assignedUser = user;
     }
 
     // Get client details
-    const [client] = await db.select({ name: users.name, email: users.email })
+    const [client] = await db.select({ name: users.name, email: users.email, avatarUrl: users.avatarUrl })
       .from(users)
       .where(eq(users.id, ticket.clientId));
 
@@ -163,7 +216,9 @@ export async function getTicket(ticketId: string, userId: string, isAdmin = fals
       data: { 
         ...ticket, 
         assignedToName: assignedUser?.name || assignedUser?.email,
+        assignedToAvatar: assignedUser?.avatarUrl,
         clientName: client?.name || client?.email,
+        clientAvatar: client?.avatarUrl,
       } 
     };
   } catch (error) {
@@ -381,5 +436,341 @@ export async function getStaffForAssignment() {
   } catch (error) {
     console.error('getStaffForAssignment error:', error);
     return { success: false, error: 'Failed to fetch staff' };
+  }
+}
+
+/**
+ * Get comments for a ticket
+ */
+export async function getTicketComments(ticketId: string, includeInternal = false) {
+  try {
+    const conditions = [eq(ticketComments.ticketId, ticketId)];
+    
+    // Filter out internal comments for clients
+    if (!includeInternal) {
+      conditions.push(eq(ticketComments.isInternal, false));
+    }
+
+    const comments = await db
+      .select({
+        id: ticketComments.id,
+        content: ticketComments.content,
+        isInternal: ticketComments.isInternal,
+        attachmentUrl: ticketComments.attachmentUrl,
+        createdAt: ticketComments.createdAt,
+        userId: ticketComments.userId,
+        userName: users.name,
+        userEmail: users.email,
+        userRole: users.role,
+        userAvatar: users.avatarUrl,
+      })
+      .from(ticketComments)
+      .leftJoin(users, eq(ticketComments.userId, users.id))
+      .where(and(...conditions))
+      .orderBy(ticketComments.createdAt);
+
+    return { success: true, data: comments };
+  } catch (error) {
+    console.error('getTicketComments error:', error);
+    return { success: false, error: 'Failed to fetch comments' };
+  }
+}
+
+/**
+ * Post a comment on a ticket
+ */
+export async function postTicketComment(
+  ticketId: string, 
+  userId: string, 
+  content: string, 
+  isInternal = false,
+  file?: File
+) {
+  try {
+    let attachmentUrl = null;
+
+    // Handle file upload if present
+    if (file && file.size > 0) {
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `comment-${Date.now()}.${fileExt}`;
+        const filePath = `tickets/${ticketId}/comments/${fileName}`;
+
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        // Ensure bucket exists
+        const { data: buckets } = await supabaseAdmin.storage.listBuckets();
+        if (!buckets?.find(b => b.name === 'ticket-files')) {
+          await supabaseAdmin.storage.createBucket('ticket-files', { public: true });
+        }
+
+        const { error: uploadError } = await supabaseAdmin.storage
+          .from('ticket-files')
+          .upload(filePath, buffer, {
+            contentType: file.type,
+            upsert: true
+          });
+
+        if (!uploadError) {
+          const { data: { publicUrl } } = supabaseAdmin.storage
+            .from('ticket-files')
+            .getPublicUrl(filePath);
+          attachmentUrl = publicUrl;
+          console.log('Attachment uploaded successfully:', attachmentUrl);
+        } else {
+          console.error('Attachment upload error:', uploadError);
+        }
+      } catch (uploadErr) {
+        console.error('Comment file upload error:', uploadErr);
+      }
+    }
+
+    await db.insert(ticketComments).values({
+      ticketId,
+      userId,
+      content,
+      isInternal,
+      attachmentUrl,
+    });
+
+    // Get ticket and user info for notification
+    const [ticket] = await db.select({ 
+      clientId: tickets.clientId, 
+      assignedTo: tickets.assignedTo,
+      subject: tickets.subject,
+      firstResponseAt: tickets.firstResponseAt
+    })
+      .from(tickets)
+      .where(eq(tickets.id, ticketId));
+
+    const [commenter] = await db.select({ role: users.role, name: users.name })
+      .from(users)
+      .where(eq(users.id, userId));
+
+    // Auto-update ticket status based on who commented
+    if (!isInternal && ticket) {
+      const isStaff = commenter?.role === 'admin' || commenter?.role === 'staff';
+      const newStatus = isStaff ? 'awaiting_reply' : 'open';
+      
+      // Update status and first response time if staff's first response
+      const updateData: any = { status: newStatus, updatedAt: new Date() };
+      
+      if (isStaff && !ticket.firstResponseAt) {
+        updateData.firstResponseAt = new Date();
+      }
+      
+      await db.update(tickets)
+        .set(updateData)
+        .where(eq(tickets.id, ticketId));
+
+      // Log activity
+      await logTicketActivity(ticketId, userId, 'commented', null, content.substring(0, 50));
+    }
+
+    // Notify relevant parties (skip internal notes for clients)
+    if (!isInternal && ticket) {
+      if (commenter?.role === 'client' || commenter?.role === 'user') {
+        // Client commented - notify assigned staff or all admins
+        if (ticket.assignedTo) {
+          await createNotification(
+            ticket.assignedTo,
+            'ticket_comment',
+            `New comment on ticket: ${ticket.subject}`,
+            content.substring(0, 100),
+            `/admin/tickets/${ticketId}`
+          );
+        } else {
+          const admins = await db.select({ id: users.id })
+            .from(users)
+            .where(eq(users.role, 'admin'));
+          for (const admin of admins) {
+            await createNotification(
+              admin.id,
+              'ticket_comment',
+              `New comment on ticket: ${ticket.subject}`,
+              content.substring(0, 100),
+              `/admin/tickets/${ticketId}`
+            );
+          }
+        }
+      } else {
+        // Staff/admin commented - notify client
+        await createNotification(
+          ticket.clientId,
+          'ticket_comment',
+          `New response on your ticket: ${ticket.subject}`,
+          content.substring(0, 100),
+          `/client/tickets/${ticketId}`
+        );
+      }
+    }
+
+    revalidatePath(`/client/tickets/${ticketId}`);
+    revalidatePath(`/admin/tickets/${ticketId}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error('postTicketComment error:', error);
+    return { success: false, error: 'Failed to post comment' };
+  }
+}
+
+// ===== Activity Log Functions =====
+
+/**
+ * Log ticket activity for audit trail
+ */
+export async function logTicketActivity(
+  ticketId: string,
+  userId: string | null,
+  action: string,
+  oldValue: string | null,
+  newValue: string | null
+) {
+  try {
+    await db.insert(ticketActivity).values({
+      ticketId,
+      userId,
+      action,
+      oldValue,
+      newValue,
+    });
+  } catch (error) {
+    console.error('logTicketActivity error:', error);
+  }
+}
+
+/**
+ * Get activity log for a ticket
+ */
+export async function getTicketActivity(ticketId: string) {
+  try {
+    const logs = await db
+      .select({
+        id: ticketActivity.id,
+        action: ticketActivity.action,
+        oldValue: ticketActivity.oldValue,
+        newValue: ticketActivity.newValue,
+        createdAt: ticketActivity.createdAt,
+        userName: users.name,
+      })
+      .from(ticketActivity)
+      .leftJoin(users, eq(ticketActivity.userId, users.id))
+      .where(eq(ticketActivity.ticketId, ticketId))
+      .orderBy(desc(ticketActivity.createdAt));
+
+    return { success: true, data: logs };
+  } catch (error) {
+    console.error('getTicketActivity error:', error);
+    return { success: false, error: 'Failed to fetch activity' };
+  }
+}
+
+// ===== Canned Responses Functions =====
+
+/**
+ * Get all canned responses, optionally filtered by department
+ */
+export async function getCannedResponses(department?: string) {
+  try {
+    let query = db.select().from(cannedResponses);
+    
+    if (department) {
+      query = query.where(
+        or(
+          eq(cannedResponses.department, department),
+          isNull(cannedResponses.department)
+        )
+      ) as any;
+    }
+    
+    const responses = await query.orderBy(cannedResponses.title);
+    return { success: true, data: responses };
+  } catch (error) {
+    console.error('getCannedResponses error:', error);
+    return { success: false, error: 'Failed to fetch canned responses' };
+  }
+}
+
+/**
+ * Create a new canned response
+ */
+export async function createCannedResponse(
+  title: string,
+  content: string,
+  createdBy: string,
+  department?: string
+) {
+  try {
+    await db.insert(cannedResponses).values({
+      title,
+      content,
+      department: department || null,
+      createdBy,
+    });
+    revalidatePath('/admin/tickets');
+    return { success: true };
+  } catch (error) {
+    console.error('createCannedResponse error:', error);
+    return { success: false, error: 'Failed to create canned response' };
+  }
+}
+
+/**
+ * Delete a canned response
+ */
+export async function deleteCannedResponse(id: string) {
+  try {
+    await db.delete(cannedResponses).where(eq(cannedResponses.id, id));
+    revalidatePath('/admin/tickets');
+    return { success: true };
+  } catch (error) {
+    console.error('deleteCannedResponse error:', error);
+    return { success: false, error: 'Failed to delete canned response' };
+  }
+}
+
+// ===== Customer Rating Functions =====
+
+/**
+ * Submit customer satisfaction rating for a resolved ticket
+ */
+export async function submitTicketRating(
+  ticketId: string,
+  clientId: string,
+  rating: number,
+  comment?: string
+) {
+  try {
+    // Verify the ticket belongs to this client
+    const [ticket] = await db.select({ clientId: tickets.clientId, status: tickets.status })
+      .from(tickets)
+      .where(eq(tickets.id, ticketId));
+
+    if (!ticket || ticket.clientId !== clientId) {
+      return { success: false, error: 'Ticket not found or access denied' };
+    }
+
+    if (ticket.status !== 'resolved' && ticket.status !== 'closed') {
+      return { success: false, error: 'Ticket must be resolved before rating' };
+    }
+
+    await db.update(tickets)
+      .set({ 
+        rating,
+        ratingComment: comment || null,
+        status: 'closed', // Close ticket after rating
+        updatedAt: new Date(),
+      })
+      .where(eq(tickets.id, ticketId));
+
+    await logTicketActivity(ticketId, clientId, 'rated', null, `${rating} stars`);
+
+    revalidatePath(`/client/tickets/${ticketId}`);
+    return { success: true };
+  } catch (error) {
+    console.error('submitTicketRating error:', error);
+    return { success: false, error: 'Failed to submit rating' };
   }
 }

@@ -74,6 +74,15 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
                         My Projects
                     </Link>
                     <Link
+                        href="/admin/tickets"
+                        className={`block px-4 py-3 rounded-md text-sm font-medium transition-all ${pathname?.startsWith('/admin/tickets')
+                            ? 'bg-[#D4AF37] text-[#0A1128] shadow-lg shadow-[#D4AF37]/20'
+                            : 'text-slate-400 hover:text-white hover:bg-white/5'
+                            }`}
+                    >
+                        Tickets
+                    </Link>
+                    <Link
                         href="/staff/inbox"
                         className={`block px-4 py-3 rounded-md text-sm font-medium transition-all ${pathname === '/staff/inbox'
                             ? 'bg-[#D4AF37] text-[#0A1128] shadow-lg shadow-[#D4AF37]/20'

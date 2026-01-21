@@ -23,12 +23,14 @@ export default function NewTicketPage() {
   const [projects, setProjects] = useState<ProjectOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
-  const [formData, setFormData] = useState<CreateTicketData>({
+  const [formData, setFormData] = useState({
     subject: '',
     description: '',
-    priority: 'medium',
-    projectId: searchParams.get('project') || null,
+    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
+    department: 'general' as 'general' | 'billing' | 'technical' | 'sales',
+    projectId: searchParams.get('project') || '',
   });
 
   useEffect(() => {
@@ -47,7 +49,15 @@ export default function NewTicketPage() {
     setError(null);
     setLoading(true);
 
-    const result = await createTicket(user.id, formData);
+    const ticketData: CreateTicketData = {
+      subject: formData.subject,
+      description: formData.description,
+      priority: formData.priority,
+      department: formData.department,
+      projectId: formData.projectId || null,
+    };
+
+    const result = await createTicket(user.id, ticketData, selectedFile || undefined);
 
     if (result.success) {
       router.push('/client/tickets');
@@ -61,8 +71,14 @@ export default function NewTicketPage() {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value === '' ? null : value,
+      [name]: value,
     }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
   };
 
   return (
@@ -99,6 +115,32 @@ export default function NewTicketPage() {
                 placeholder="Brief summary of your issue or question"
                 className="w-full p-3 border border-slate-200 rounded-lg text-sm focus:border-brand-navy focus:outline-none focus:ring-1 focus:ring-brand-navy"
               />
+            </div>
+
+            {/* Department Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">
+                Department
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {(['general', 'billing', 'technical', 'sales'] as const).map((dept) => (
+                  <button
+                    key={dept}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, department: dept }))}
+                    className={`p-3 rounded-lg border text-sm font-medium capitalize transition-all ${
+                      formData.department === dept
+                        ? 'bg-brand-navy text-white border-brand-navy'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                    }`}
+                  >
+                    {dept}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-slate-400">
+                Select the department that best matches your inquiry
+              </p>
             </div>
 
             {/* Project Selection */}
@@ -169,12 +211,36 @@ export default function NewTicketPage() {
               />
             </div>
 
-            {/* Attachments placeholder - can be enhanced later */}
-            <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center">
-              <Paperclip className="w-8 h-8 mx-auto text-slate-300 mb-2" />
-              <p className="text-sm text-slate-400">
-                File attachments can be added after creating the ticket
-              </p>
+            {/* Attachments */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">
+                Attachment
+              </label>
+              <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors">
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer"
+                />
+                {selectedFile && (
+                  <div className="mt-2 flex items-center gap-2 text-sm text-slate-600">
+                    <Paperclip className="w-4 h-4" />
+                    <span>{selectedFile.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedFile(null)}
+                      className="text-red-500 hover:text-red-700 text-xs"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+                {!selectedFile && (
+                  <p className="text-xs text-slate-400 mt-2">
+                    Optional: Attach a screenshot or document to help explain your issue
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Submit Button */}

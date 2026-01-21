@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
 import { getUserProfile } from '@/actions/users';
 import NotificationBell from '@/components/NotificationBell';
-import { LayoutDashboard, FolderKanban, MessageCircle, LogOut, Ticket } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, MessageCircle, LogOut, Ticket, Settings } from 'lucide-react';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -58,6 +58,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     { href: '/client/projects', label: 'My Projects', icon: FolderKanban },
     { href: '/client/tickets', label: 'Tickets', icon: Ticket },
     { href: '/client/messages', label: 'Messages', icon: MessageCircle },
+    { href: '/client/settings', label: 'Settings', icon: Settings },
   ];
 
   const isActive = (href: string, exactMatch?: boolean) => {

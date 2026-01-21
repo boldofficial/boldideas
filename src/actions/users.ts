@@ -83,3 +83,79 @@ export async function getUserProfile(userId: string) {
         return { success: false, error: 'Failed to fetch profile' };
     }
 }
+
+// Admin only: Get all users
+export async function getAllUsers() {
+    try {
+        const allUsers = await db.select({
+            id: users.id,
+            email: users.email,
+            name: users.name,
+            role: users.role,
+            isActive: users.isActive,
+            avatarUrl: users.avatarUrl,
+            createdAt: users.createdAt,
+        }).from(users).orderBy(users.createdAt);
+        return { success: true, data: allUsers };
+    } catch (error) {
+        return { success: false, error: 'Failed to fetch users' };
+    }
+}
+
+// Admin only: Delete a user account
+export async function deleteUser(userId: string, adminId: string) {
+    try {
+        // Verify admin is making the request
+        const [admin] = await db.select({ role: users.role })
+            .from(users)
+            .where(eq(users.id, adminId));
+        
+        if (!admin || admin.role !== 'admin') {
+            return { success: false, error: 'Unauthorized: Admin access required' };
+        }
+
+        // Don't allow deleting yourself
+        if (userId === adminId) {
+            return { success: false, error: 'Cannot delete your own account' };
+        }
+
+        // Delete from Supabase Auth
+        const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+        if (authError) {
+            console.error('Auth delete error:', authError);
+        }
+
+        // Delete from database
+        await db.delete(users).where(eq(users.id, userId));
+
+        revalidatePath('/admin/users');
+        return { success: true };
+    } catch (error) {
+        console.error('Delete user error:', error);
+        return { success: false, error: 'Failed to delete user' };
+    }
+}
+
+// Update user role (admin only)
+export async function updateUserRole(userId: string, newRole: string, adminId: string) {
+    try {
+        // Verify admin
+        const [admin] = await db.select({ role: users.role })
+            .from(users)
+            .where(eq(users.id, adminId));
+        
+        if (!admin || admin.role !== 'admin') {
+            return { success: false, error: 'Unauthorized' };
+        }
+
+        await db.update(users)
+            .set({ role: newRole })
+            .where(eq(users.id, userId));
+
+        revalidatePath('/admin/users');
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Failed to update role' };
+    }
+}
+

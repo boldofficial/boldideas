@@ -27,8 +27,8 @@ export async function updateProject(formData: FormData) {
     const budget = formData.get('budget') as string;
     const startDate = formData.get('startDate') as string;
     const dueDate = formData.get('dueDate') as string;
-
     const managerId = formData.get('managerId') as string;
+    const clientId = formData.get('clientId') as string;
 
     try {
         await db.update(internalProjects).set({
@@ -38,6 +38,7 @@ export async function updateProject(formData: FormData) {
             description,
             budget,
             managerId: managerId === 'unassigned' ? null : managerId,
+            clientId: (clientId && clientId !== 'none' && clientId !== 'unassigned') ? clientId : null,
             startDate: startDate ? new Date(startDate) : null,
             dueDate: dueDate ? new Date(dueDate) : null,
             updatedAt: new Date(),

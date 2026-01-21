@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq, desc, count } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -17,6 +18,17 @@ export async function getUsers(page: number = 1) {
         return { success: true, data };
     } catch (error) {
         return { success: false, error: 'Failed to fetch users' };
+    }
+}
+
+export async function getClientUsers() {
+    try {
+        const data = await db.select().from(users)
+            .where(eq(users.role, 'client'))
+            .orderBy(desc(users.createdAt));
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: 'Failed to fetch clients' };
     }
 }
 
@@ -97,12 +109,20 @@ export async function deleteUser(userId: string) {
 
 export async function hardDeleteUser(userId: string) {
     try {
+        // Delete from Supabase Auth
+        const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+        if (authError) {
+            console.error('Auth delete error:', authError);
+            // We continue even if auth delete fails, as they might not exist in Auth but exist in DB
+        }
+
         // Permanently delete user from database
         await db.delete(users).where(eq(users.id, userId));
         revalidatePath('/admin/team');
         return { success: true };
     } catch (error) {
         // May fail due to foreign key constraints
+        console.error('Hard delete error:', error);
         return { success: false, error: 'Failed to permanently delete user. They may have related records.' };
     }
 }

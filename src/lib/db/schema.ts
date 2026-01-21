@@ -372,13 +372,19 @@ export const projectFiles = pgTable('project_files', {
 
 export const tickets = pgTable('tickets', {
   id: uuid('id').defaultRandom().primaryKey(),
+  ticketNumber: text('ticket_number').unique(), // Auto-generated: TKT-YYYYMMDD-0001
   clientId: uuid('client_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
   projectId: uuid('project_id').references(() => internalProjects.id, { onDelete: 'set null' }),
   assignedTo: uuid('assigned_to').references(() => users.id, { onDelete: 'set null' }),
+  department: text('department').default('general'), // 'general' | 'billing' | 'technical' | 'sales'
   subject: text('subject').notNull(),
   description: text('description').notNull(),
   priority: text('priority').default('medium'), // 'low' | 'medium' | 'high' | 'urgent'
-  status: text('status').default('open'), // 'open' | 'in_progress' | 'resolved' | 'closed'
+  status: text('status').default('open'), // 'open' | 'awaiting_reply' | 'in_progress' | 'on_hold' | 'resolved' | 'closed'
+  rating: integer('rating'), // 1-5 customer satisfaction rating
+  ratingComment: text('rating_comment'),
+  firstResponseAt: timestamp('first_response_at'), // For SLA tracking
+  resolvedAt: timestamp('resolved_at'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
@@ -390,5 +396,34 @@ export const ticketAttachments = pgTable('ticket_attachments', {
   url: text('url').notNull(),
   sizeBytes: integer('size_bytes'),
   uploadedBy: uuid('uploaded_by').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const ticketComments = pgTable('ticket_comments', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  ticketId: uuid('ticket_id').references(() => tickets.id, { onDelete: 'cascade' }).notNull(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }).notNull(),
+  content: text('content').notNull(),
+  isInternal: boolean('is_internal').default(false), // Internal notes visible only to staff
+  attachmentUrl: text('attachment_url'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const cannedResponses = pgTable('canned_responses', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  title: text('title').notNull(),
+  content: text('content').notNull(),
+  department: text('department'), // Optional: filter by department
+  createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const ticketActivity = pgTable('ticket_activity', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  ticketId: uuid('ticket_id').references(() => tickets.id, { onDelete: 'cascade' }).notNull(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  action: text('action').notNull(), // 'created' | 'status_changed' | 'assigned' | 'priority_changed' | 'commented'
+  oldValue: text('old_value'),
+  newValue: text('new_value'),
   createdAt: timestamp('created_at').defaultNow(),
 });
