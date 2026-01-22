@@ -66,20 +66,14 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
                     {/* Header: Company Info vs Invoice Info */}
                     <div className="flex flex-col md:flex-row justify-between items-start gap-8">
                         <div className="space-y-4">
-                            <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 bg-white border border-slate-100 flex items-center justify-center rounded-xl shadow-sm overflow-hidden p-2">
-                                    <Image
-                                        src={settings?.logoUrl || "/logo.png"}
-                                        alt="Company Logo"
-                                        width={48}
-                                        height={48}
-                                        className="object-contain"
-                                    />
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-black text-brand-navy tracking-tight italic">{settings?.companyName || "Bold Ideas Innovations Ltd."}</h2>
-                                    <p className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">{settings?.companyAddress || "Digital Innovation Agency"}</p>
-                                </div>
+                            <div className="relative w-[236px] h-24">
+                            <Image
+                                src={settings?.logoUrl || "/logo.png"}
+                                alt="Company Logo"
+                                fill
+                                className="!w-full !h-full object-fill"
+                                style={{ objectFit: 'fill' }}
+                            />
                             </div>
                             <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest space-y-1">
                                 <div className="flex items-center gap-2"><Globe className="w-3 h-3 text-brand-gold" /> {settings?.companyWebsite || "boldideas.agency"}</div>
