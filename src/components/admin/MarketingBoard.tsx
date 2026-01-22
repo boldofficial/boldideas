@@ -5,7 +5,7 @@ import {
     Mail, Send, Layers, Zap, BarChart3, Plus, Trash2,
     Clock, ExternalLink, ChevronRight, MoreVertical, Users, Eye, MousePointer
 } from 'lucide-react';
-import { createCampaign, deleteCampaign, createSequence, createAutomation } from '@/actions/marketing';
+import { createCampaign, deleteCampaign, createSequence, createAutomation, sendCampaign } from '@/actions/marketing';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -206,14 +206,39 @@ export default function MarketingBoard({ campaigns, sequences, automations }: Pr
                                                     <Clock className="h-3 w-3" />
                                                     {camp.sentAt ? new Date(camp.sentAt).toLocaleString() : 'Pending'}
                                                 </span>
-                                                <Button
-                                                    variant="link"
-                                                    size="sm"
-                                                    className="text-brand-navy p-0"
-                                                    onClick={() => setPreviewContent(camp.content)}
-                                                >
-                                                    View Content <ExternalLink className="h-3 w-3 ml-1" />
-                                                </Button>
+                                                <div className="flex items-center gap-2">
+                                                    {camp.status !== 'sent' && (
+                                                        <Button
+                                                            variant="default"
+                                                            size="sm"
+                                                            className="bg-brand-gold text-brand-navy hover:bg-brand-gold/90"
+                                                            disabled={isPending}
+                                                            onClick={() => {
+                                                                if (confirm('Send this campaign now to all recipients?')) {
+                                                                    startTransition(async () => {
+                                                                        const result = await sendCampaign(camp.id);
+                                                                        if (result.success) {
+                                                                            alert(result.message);
+                                                                        } else {
+                                                                            alert('Error: ' + result.error);
+                                                                        }
+                                                                        router.refresh();
+                                                                    });
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Send className="h-3 w-3 mr-1" /> Send Now
+                                                        </Button>
+                                                    )}
+                                                    <Button
+                                                        variant="link"
+                                                        size="sm"
+                                                        className="text-brand-navy p-0"
+                                                        onClick={() => setPreviewContent(camp.content)}
+                                                    >
+                                                        View Content <ExternalLink className="h-3 w-3 ml-1" />
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </CardContent>
                                     </Card>
