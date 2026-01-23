@@ -125,7 +125,7 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
                     {/* Signature and Company Footer */}
                     <div className="pt-8 flex justify-between items-end border-t border-slate-100">
                         <div className="space-y-4">
-                            <div className="relative w-[180px] h-16">
+                            <div className="relative w-[236px] h-24">
                                 <Image
                                     src={settings?.logoUrl || "/logo.png"}
                                     alt="Logo"
