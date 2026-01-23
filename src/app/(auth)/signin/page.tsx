@@ -36,7 +36,7 @@ export default function SignInPage() {
                 </div>
 
                 <div className="mt-8 text-center text-xs text-slate-400">
-                    © 2024 Bold Ideas Innovation. All rights reserved.
+                    © 2025 Bold Ideas Innovation. All rights reserved.
                 </div>
             </div>
         </div>

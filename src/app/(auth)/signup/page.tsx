@@ -1,36 +1,43 @@
 import SignUpForm from '@/components/auth/SignUpForm';
 import Link from 'next/link';
-import Image from 'next/image';
+import { ArrowLeft } from 'lucide-react';
 
 export const metadata = {
-    title: 'Sign Up | Agency OS',
-    description: 'Create your identity.',
+    title: 'Sign Up | Bold Ideas Innovation',
+    description: 'Create your account.',
+    robots: "noindex, nofollow"
 };
 
 export default function SignUpPage() {
     return (
-        <div className="min-h-screen bg-[#FDFCF8] flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100 p-8">
-                <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-[#0A1128] rounded-xl mx-auto flex items-center justify-center mb-4 shadow-lg">
-                        <span className="text-2xl font-bold text-[#D4AF37]">A</span>
-                    </div>
-                    <h2 className="text-2xl font-bold text-[#0A1128]">Join the Agency</h2>
-                    <p className="text-slate-500 text-sm mt-2">Initialize your operative profile.</p>
-                </div>
+        <div className="min-h-screen bg-gradient-to-br from-brand-navy via-slate-900 to-brand-navy flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Decorative Background Elements */}
+            <div className="absolute inset-0 opacity-[0.03]"
+                style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
+            </div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-brand-gold/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-gold/5 rounded-full blur-3xl"></div>
 
+            {/* Back to Home Link */}
+            <Link href="/" className="absolute top-6 left-6 z-20 flex items-center gap-2 text-slate-300 hover:text-brand-gold transition-colors group">
+                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                <span className="font-medium">Back to Home</span>
+            </Link>
+
+            {/* Main Content - Centered Container */}
+            <div className="relative z-10 w-full max-w-md flex flex-col items-center">
                 <SignUpForm />
 
-                <div className="mt-6 text-center text-sm text-slate-400">
-                    Already have an identity?{' '}
-                    <Link href="/signin" className="text-[#D4AF37] hover:text-[#b0912d] font-bold">
-                        Access Terminal
+                <div className="mt-6 text-center text-sm text-slate-300">
+                    Already have an account?{' '}
+                    <Link href="/signin" className="text-brand-gold hover:text-white font-semibold transition-colors">
+                        Sign in
                     </Link>
                 </div>
-            </div>
 
-            <div className="mt-8 text-center">
-                <p className="text-xs text-slate-300 font-mono">SECURE UPLINK // ENCRYPTED</p>
+                <div className="mt-8 text-center text-xs text-slate-400">
+                    © 2025 Bold Ideas Innovation. All rights reserved.
+                </div>
             </div>
         </div>
     );
