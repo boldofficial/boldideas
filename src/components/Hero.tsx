@@ -35,7 +35,7 @@ const Hero: React.FC = () => {
 					<div className="flex flex-col sm:flex-row items-center justify-start gap-6">
 						<Link href="/contact" className="w-full sm:w-auto">
 							<button className="w-full px-10 py-5 bg-brand-navy text-white font-black rounded-2xl hover:bg-brand-gold hover:text-brand-navy hover:shadow-[0_20px_40px_rgba(255,184,28,0.2)] transition-all flex items-center justify-center group shadow-xl uppercase tracking-widest text-xs md:text-sm">
-								GET STARTEDOUCH
+								GET STARTED
 								<svg
 									className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1"
 									fill="none"
