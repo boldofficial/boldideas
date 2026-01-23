@@ -2,11 +2,12 @@
 
 import { db } from '@/lib/db';
 import { milestones, internalProjects, tasks, documents, comments, users, projectMembers } from '@/lib/db/schema';
-import { eq, desc, asc, and, sql } from 'drizzle-orm';
+import { eq, desc, asc, and, sql, or } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createNotification } from './notifications';
 import { recordActivity } from './activity';
+import { resend } from '@/lib/resend';
 
 export async function deleteProject(formData: FormData) {
     const projectId = formData.get('projectId') as string;
@@ -337,6 +338,40 @@ export async function createProjectTask(formData: FormData) {
                 `You've been assigned a new task on project "${project?.title || 'Unknown'}"`,
                 `/admin/projects/${projectId}`
             );
+
+            // Send email notification to assignee
+            const [assignee] = await db.select({ email: users.email, name: users.name })
+                .from(users)
+                .where(eq(users.id, assigneeId))
+                .limit(1);
+
+            if (assignee?.email) {
+                try {
+                    await resend.emails.send({
+                        from: process.env.FROM_EMAIL!,
+                        to: assignee.email,
+                        subject: `New Task Assigned: ${title}`,
+                        html: `
+                            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+                                <h1 style="color: #002D5B; margin-bottom: 20px;">Task Assignment</h1>
+                                <p>Hi ${assignee.name || 'Team Member'},</p>
+                                <p>You have been assigned a new task:</p>
+                                <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #D4AF37; margin: 20px 0;">
+                                    <h2 style="color: #002D5B; margin: 0 0 10px 0;">${title}</h2>
+                                    <p style="color: #64748b; margin: 0;">Project: ${project?.title || 'Standalone Task'}</p>
+                                </div>
+                                <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/projects/${projectId}" 
+                                   style="display: inline-block; background: #002D5B; color: #D4AF37; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 20px;">
+                                    View Task
+                                </a>
+                                <p style="color: #94a3b8; font-size: 12px; margin-top: 40px;">Bold Ideas | Task Management System</p>
+                            </div>
+                        `
+                    });
+                } catch (emailError) {
+                    console.error('Failed to send task assignment email:', emailError);
+                }
+            }
         }
 
         if (projectId && projectId !== 'null') revalidatePath(`/admin/projects/${projectId}`);
@@ -360,6 +395,12 @@ export async function createProjectTask(formData: FormData) {
 
 export async function updateTaskStatus(taskId: string, status: string, projectId: string) {
     try {
+        // Get task info before updating
+        const [taskInfo] = await db.select({ title: tasks.title, assigneeId: tasks.assigneeId })
+            .from(tasks)
+            .where(eq(tasks.id, taskId))
+            .limit(1);
+
         await db.update(tasks).set({ status }).where(eq(tasks.id, taskId));
         if (projectId && projectId !== 'null') revalidatePath(`/admin/projects/${projectId}`);
         revalidatePath('/admin/tasks');
@@ -373,6 +414,65 @@ export async function updateTaskStatus(taskId: string, status: string, projectId
             action: status === 'done' ? 'task_completed' : 'task_status_updated',
             details: { newStatus: status }
         });
+
+        // Send email to admins when task is completed
+        if (status === 'done' && taskInfo) {
+            // Get all admins
+            const admins = await db.select({ email: users.email, name: users.name })
+                .from(users)
+                .where(eq(users.role, 'admin'));
+
+            // Get project title
+            let projectTitle = 'Standalone Task';
+            if (projectId && projectId !== 'null') {
+                const [project] = await db.select({ title: internalProjects.title })
+                    .from(internalProjects)
+                    .where(eq(internalProjects.id, projectId))
+                    .limit(1);
+                projectTitle = project?.title || 'Unknown Project';
+            }
+
+            // Get assignee name
+            let assigneeName = 'Unknown';
+            if (taskInfo.assigneeId) {
+                const [assignee] = await db.select({ name: users.name })
+                    .from(users)
+                    .where(eq(users.id, taskInfo.assigneeId))
+                    .limit(1);
+                assigneeName = assignee?.name || 'Team Member';
+            }
+
+            for (const admin of admins) {
+                if (admin.email) {
+                    try {
+                        await resend.emails.send({
+                            from: process.env.FROM_EMAIL!,
+                            to: admin.email,
+                            subject: `Task Completed: ${taskInfo.title}`,
+                            html: `
+                                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+                                    <h1 style="color: #002D5B; margin-bottom: 20px;">✅ Task Completed</h1>
+                                    <p>Hi ${admin.name || 'Admin'},</p>
+                                    <p>A task has been marked as complete:</p>
+                                    <div style="background: #ecfdf5; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981; margin: 20px 0;">
+                                        <h2 style="color: #002D5B; margin: 0 0 10px 0;">${taskInfo.title}</h2>
+                                        <p style="color: #64748b; margin: 0;">Project: ${projectTitle}</p>
+                                        <p style="color: #64748b; margin: 5px 0 0 0;">Completed by: ${assigneeName}</p>
+                                    </div>
+                                    <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/projects/${projectId}" 
+                                       style="display: inline-block; background: #002D5B; color: #D4AF37; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 20px;">
+                                        View Project
+                                    </a>
+                                    <p style="color: #94a3b8; font-size: 12px; margin-top: 40px;">Bold Ideas | Task Management System</p>
+                                </div>
+                            `
+                        });
+                    } catch (emailError) {
+                        console.error('Failed to send task completion email:', emailError);
+                    }
+                }
+            }
+        }
 
         return { success: true };
     } catch (error) {

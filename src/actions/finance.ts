@@ -24,9 +24,13 @@ export async function getInvoices(clientId?: string) {
 
 export async function getClients() {
     try {
-        const data = await db.select().from(users).orderBy(desc(users.createdAt));
+        // Only fetch users with role 'user' (clients)
+        const data = await db.select().from(users)
+            .where(eq(users.role, 'user'))
+            .orderBy(desc(users.createdAt));
         return { success: true, data };
     } catch (error) {
+        console.error('[getClients] Error:', error);
         return { success: false, error: 'Failed to fetch clients' };
     }
 }
