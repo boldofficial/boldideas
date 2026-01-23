@@ -22,7 +22,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (!isLoading) {
       if (!user) {
-        router.push('/auth/signin');
+        router.push('/signin');
         return;
       }
 
@@ -114,7 +114,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             Bold <span className="text-brand-gold">Ideas</span>
           </Link>
           <button
-            onClick={() => signOut().then(() => router.push('/auth/signin'))}
+            onClick={() => signOut().then(() => router.push('/signin'))}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-md text-sm font-medium transition-all"
           >
             <LogOut className="w-4 h-4" />

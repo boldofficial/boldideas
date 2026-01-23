@@ -63,7 +63,7 @@ const AdminSetupForm: React.FC = () => {
             }
 
             // Success
-            router.push('/auth/signin?setup=success');
+            router.push('/signin?setup=success');
             
         } catch (err: any) {
             setError(err.message);

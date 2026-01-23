@@ -30,7 +30,7 @@ export default function AdminLayout({
   useEffect(() => {
     if (!isLoading) {
       if (!user) {
-        router.push('/auth/signin');
+        router.push('/signin');
         return;
       }
 
@@ -253,7 +253,7 @@ export default function AdminLayout({
             </div>
           </div>
           <button
-            onClick={() => signOut().then(() => router.push('/auth/signin'))}
+            onClick={() => signOut().then(() => router.push('/signin'))}
             className="w-full text-left px-4 py-2 text-slate-400 hover:text-red-400 text-sm transition-colors flex items-center space-x-2"
           >
             <span>Sign Out</span>

@@ -22,10 +22,16 @@ export default function ClientDashboard() {
       if (!user) return;
       setLoading(true);
 
+      console.log('🔍 DEBUG: Client User ID:', user.id);
+      console.log('🔍 DEBUG: Client Email:', user.email);
+
       const [projectsRes, invoicesRes] = await Promise.all([
         getClientProjects(user.id),
         getInvoices(user.id),
       ]);
+
+      console.log('🔍 DEBUG: Projects Response:', projectsRes);
+      console.log('🔍 DEBUG: Projects Data:', projectsRes.data);
 
       setProjects(projectsRes.data || []);
       setInvoices(invoicesRes.data || []);
