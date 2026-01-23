@@ -55,6 +55,17 @@ export async function updateProject(formData: FormData) {
             details: { title, status }
         });
 
+        // Notify manager of project update
+        if (managerIdVal) {
+            await createNotification(
+                managerIdVal,
+                'project_updated',
+                'Project Updated',
+                `Project "${title}" has been updated`,
+                `/admin/projects/${projectId}`
+            );
+        }
+
         return { success: true };
     } catch (error) {
         return { success: false, error: 'Failed to update project' };
@@ -144,6 +155,43 @@ export async function postProjectComment(formData: FormData) {
             details: { preview: content?.substring(0, 50) }
         });
 
+        // Notify relevant users of comment
+        if (projectId && projectId !== 'null') {
+            // Get project manager
+            const [project] = await db.select({ managerId: internalProjects.managerId })
+                .from(internalProjects)
+                .where(eq(internalProjects.id, projectId))
+                .limit(1);
+            
+            if (project?.managerId && project.managerId !== userId) {
+                await createNotification(
+                    project.managerId,
+                    'comment_posted',
+                    'New Comment on Project',
+                    content?.substring(0, 100) || 'New comment posted',
+                    `/admin/projects/${projectId}`
+                );
+            }
+        }
+
+        // If task comment, notify assignee
+        if (taskId && taskId !== 'null') {
+            const [task] = await db.select({ assigneeId: tasks.assigneeId })
+                .from(tasks)
+                .where(eq(tasks.id, taskId))
+                .limit(1);
+            
+            if (task?.assigneeId && task.assigneeId !== userId) {
+                await createNotification(
+                    task.assigneeId,
+                    'task_comment_posted',
+                    'New Comment on Your Task',
+                    content?.substring(0, 100) || 'New comment posted',
+                    `/admin/tasks`
+                );
+            }
+        }
+
         return { success: true };
     } catch (error) {
         return { success: false, error: 'Failed to post comment' };
@@ -224,6 +272,23 @@ export async function createMilestone(formData: FormData) {
         });
         revalidatePath(`/admin/projects/${projectId}`);
         revalidatePath('/client');
+
+        // Notify project manager
+        const [project] = await db.select({ managerId: internalProjects.managerId })
+            .from(internalProjects)
+            .where(eq(internalProjects.id, projectId))
+            .limit(1);
+        
+        if (project?.managerId) {
+            await createNotification(
+                project.managerId,
+                'milestone_created',
+                'New Milestone Created',
+                `Milestone "${title}" added to project`,
+                `/admin/projects/${projectId}`
+            );
+        }
+
         return { success: true };
     } catch (error) {
         return { success: false, error: 'Failed to create milestone' };
@@ -558,6 +623,21 @@ export async function addProjectMember(formData: FormData) {
 
         await db.insert(projectMembers).values({ projectId, userId, role });
         revalidatePath(`/admin/projects/${projectId}`);
+
+        // Notify new member
+        const [project] = await db.select({ title: internalProjects.title })
+            .from(internalProjects)
+            .where(eq(internalProjects.id, projectId))
+            .limit(1);
+        
+        await createNotification(
+            userId,
+            'added_to_project',
+            'Added to Project',
+            `You have been added to project "${project?.title || 'Unknown'}"`,
+            `/admin/projects/${projectId}`
+        );
+
         return { success: true };
     } catch (error) {
         return { success: false, error: 'Failed to add member' };
