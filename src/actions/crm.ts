@@ -1,9 +1,10 @@
 'use server'
 
 import { db } from '@/lib/db';
-import { leads, interactions } from '@/lib/db/schema';
+import { leads, interactions, users } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { createNotification } from './notifications';
 
 export async function getLeads() {
     try {
@@ -27,15 +28,28 @@ export async function createLead(formData: FormData) {
     if (!email) return { success: false, error: 'Email is required' };
 
     try {
-        await db.insert(leads).values({
+        const [newLead] = await db.insert(leads).values({
             firstName,
             lastName,
             email,
             company,
             status,
             value
-        });
+        }).returning({ id: leads.id, assignedTo: leads.assignedTo });
+        
         revalidatePath('/admin/crm');
+
+        // Notify assigned person if set
+        if (newLead.assignedTo) {
+            await createNotification(
+                newLead.assignedTo,
+                'lead_assigned',
+                'New Lead Assigned',
+                `${firstName} ${lastName} from ${company || 'Unknown Company'}`,
+                `/admin/crm/${newLead.id}`
+            );
+        }
+
         return { success: true };
     } catch (error) {
         console.error('Error creating lead:', error);
@@ -55,10 +69,28 @@ export async function getLead(id: string) {
 
 export async function updateLeadStatus(id: string, newStatus: string) {
     try {
+        // Get lead info before updating
+        const [lead] = await db.select()
+            .from(leads)
+            .where(eq(leads.id, id))
+            .limit(1);
+
         await db.update(leads)
             .set({ status: newStatus, updatedAt: new Date() })
             .where(eq(leads.id, id));
         revalidatePath('/admin/crm');
+
+        // Notify assigned person of status change
+        if (lead?.assignedTo) {
+            await createNotification(
+                lead.assignedTo,
+                'lead_status_changed',
+                'Lead Status Updated',
+                `${lead.firstName} ${lead.lastName} is now ${newStatus}`,
+                `/admin/crm/${id}`
+            );
+        }
+
         return { success: true };
     } catch (error) {
         return { success: false, error: 'Failed to update status' };
