@@ -100,7 +100,7 @@ const Header: React.FC = () => {
 						</button>
 					) : (
 						<Link
-							href="/auth/signin"
+							href="/signin"
 							className="text-[10px] font-black uppercase tracking-widest text-brand-navy/60 hover:text-brand-gold transition-colors mr-4">
 							Sign In
 						</Link>
@@ -191,7 +191,7 @@ const Header: React.FC = () => {
 								</>
 							) : (
 								<Link
-									href="/auth/signin"
+									href="/signin"
 									onClick={() => setMobileMenuOpen(false)}
 									className="text-sm font-bold uppercase tracking-widest text-brand-navy">
 									Sign In
