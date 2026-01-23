@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { internalProjects, tasks, campaigns, projectMembers } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { createNotification } from './notifications';
 
 // --- Projects ---
 export async function getInternalProjects(clientId?: string) {
@@ -73,7 +74,20 @@ export async function createInternalProject(formData: FormData) {
             }
         }
 
+        // Notify client if project is assigned to them
+        const finalClientId = (clientId && clientId !== 'none' && clientId !== 'unassigned') ? clientId : null;
+        if (finalClientId && project) {
+            await createNotification(
+                finalClientId,
+                'project_assigned',
+                'New Project Assigned',
+                `You have been assigned to project "${title}"`,
+                `/client/projects/${project.id}`
+            );
+        }
+
         revalidatePath('/admin/projects');
+        revalidatePath('/client');
         return { success: true };
     } catch (error) {
         console.error("Create Project Error:", error);
