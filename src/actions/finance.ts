@@ -5,6 +5,7 @@ import { invoices, invoiceItems, users } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { recordActivity } from './activity';
+import { createNotification } from './notifications';
 
 export async function getInvoices(clientId?: string) {
     try {
@@ -78,6 +79,17 @@ export async function createInvoice(formData: FormData) {
             details: { amount: totalAmount, id: result.id.slice(0, 8), invoiceNumber }
         });
 
+        // Notify client if assigned
+        if (clientId && clientId !== 'unassigned') {
+            await createNotification(
+                clientId,
+                'invoice_created',
+                'New Invoice Created',
+                `Invoice ${invoiceNumber} has been created for ${currency} ${parseFloat(totalAmount).toLocaleString()}`,
+                `/admin/finance/invoice/${result.id}`
+            );
+        }
+
         return { success: true, id: result.id };
     } catch (error) {
         console.error('createInvoice error:', error);
@@ -87,24 +99,50 @@ export async function createInvoice(formData: FormData) {
 
 export async function updateInvoiceStatus(invoiceId: string, status: string) {
     try {
+        // Get invoice details before updating
+        const [invoice] = await db.select()
+            .from(invoices)
+            .where(eq(invoices.id, invoiceId))
+            .limit(1);
+
         const updateData: any = { status, updatedAt: new Date() };
         if (status === 'paid') {
             updateData.paidAt = new Date();
         }
-
         await db.update(invoices).set(updateData).where(eq(invoices.id, invoiceId));
+        console.log(`[updateInvoiceStatus] Updated invoice ${invoiceId} to status: ${status}`);
         revalidatePath('/admin/finance');
 
         // Log Activity
         await recordActivity({
             userId: null,
             action: 'invoice_status_updated',
-            details: { id: invoiceId.slice(0, 8), status }
+            details: { invoiceId: invoiceId.slice(0, 8), newStatus: status }
         });
+
+        // Notify client of status change
+        if (invoice?.clientId) {
+            const statusMessages: Record<string, string> = {
+                'draft': 'Invoice is in draft',
+                'sent': 'Invoice has been sent to you',
+                'paid': 'Payment received - Thank you!',
+                'overdue': 'Invoice is now overdue',
+                'cancelled': 'Invoice has been cancelled'
+            };
+            
+            await createNotification(
+                invoice.clientId,
+                'invoice_status_updated',
+                `Invoice ${invoice.invoiceNumber} - ${status.toUpperCase()}`,
+                statusMessages[status] || `Invoice status updated to ${status}`,
+                `/admin/finance/invoice/${invoiceId}`
+            );
+        }
 
         return { success: true };
     } catch (error) {
-        return { success: false, error: 'Failed to update invoice' };
+        console.error('[updateInvoiceStatus] Error:', error);
+        return { success: false, error: 'Failed to update invoice status' };
     }
 }
 
