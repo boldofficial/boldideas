@@ -32,7 +32,7 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
     const currencySymbol = getCurrencySymbol(data.invoice?.currency);
 
     return (
-        <div className="max-w-2xl mx-auto space-y-8 animate-fade-in pb-20">
+        <div className="max-w-2xl mx-auto space-y-8 animate-fade-in pb-20 print:pb-0 print:space-y-0">
             {/* Navigation */}
             <div className="flex justify-between items-center no-print">
                 <Link
@@ -168,11 +168,14 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
                     }
                     
                     html, body {
-                        width: 210mm !important;
-                        height: 297mm !important;
+                        width: 100% !important;
+                        // height: auto !important;
                         margin: 0 !important;
                         padding: 0 !important;
-                        overflow: hidden !important;
+                        // overflow: hidden !important;
+                        display: flex !important;
+                        justify-content: center !important;
+                        align-items: flex-start !important;
                     }
 
                     body { 
@@ -188,15 +191,22 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
                         box-shadow: none !important; 
                         border: none !important; 
                         border-radius: 0 !important;
-                        width: 210mm !important;
-                        height: 297mm !important;
-                        max-height: 297mm !important;
-                        margin: 0 !important;
-                        padding: 15mm !important;
+                        width: 100% !important;
+                        max-width: 210mm !important;
+                        margin: 0 auto !important;
+                        padding: 0 !important; /* Managed by inner spacing */
                         box-sizing: border-box !important;
                         position: relative !important;
                         background: white !important;
                     }
+
+                    /* Aggressive spacing reduction for print */
+                    .p-8 { padding: 1.5rem !important; }
+                    .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem !important; }
+                    .mt-8 { margin-top: 1rem !important; }
+                    .pt-8 { padding-top: 1rem !important; }
+                    .gap-8 { gap: 1rem !important; }
+                    .mb-4 { margin-bottom: 0.5rem !important; }
                     
                     /* Ensure backgrounds and colors show in print */
                     .bg-emerald-600 { background-color: #059669 !important; }
