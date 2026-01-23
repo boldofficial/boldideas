@@ -25,7 +25,7 @@ export async function setupAdminAction(formData: FormData) {
         const adminCount = result[0]?.count || 0;
 
         if (adminCount > 0) {
-            return { error: "System initialized. Redirecting to login...", redirect: '/auth/signin' };
+            return { error: "System initialized. Redirecting to login...", redirect: '/signin' };
         }
 
         // 2. Create Auth User (Supabase Admin SDK)
@@ -39,7 +39,7 @@ export async function setupAdminAction(formData: FormData) {
         if (authError) {
             // Handle "User already exists" safely
             if (authError.message.includes("already registered") || authError.status === 400) {
-                return { error: "User exists. Redirecting to login...", redirect: '/auth/signin' };
+                return { error: "User exists. Redirecting to login...", redirect: '/signin' };
             }
             throw authError;
         }

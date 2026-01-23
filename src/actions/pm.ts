@@ -32,6 +32,12 @@ export async function updateProject(formData: FormData) {
     const clientId = formData.get('clientId') as string;
 
     try {
+        // Get old clientId before updating
+        const [oldProject] = await db.select({ clientId: internalProjects.clientId })
+            .from(internalProjects)
+            .where(eq(internalProjects.id, projectId))
+            .limit(1);
+
         await db.update(internalProjects).set({
             title,
             status,
@@ -45,6 +51,7 @@ export async function updateProject(formData: FormData) {
             updatedAt: new Date(),
         }).where(eq(internalProjects.id, projectId));
         revalidatePath(`/admin/projects/${projectId}`);
+        revalidatePath('/client');
 
         // Log Activity
         const managerIdVal = managerId === 'unassigned' ? null : managerId;
@@ -66,11 +73,38 @@ export async function updateProject(formData: FormData) {
             );
         }
 
+        // Notify client if project is assigned or reassigned
+        const newClientId = (clientId && clientId !== 'none' && clientId !== 'unassigned') ? clientId : null;
+        const oldClientId = oldProject?.clientId;
+
+        // If client changed from one to another or from null to a client
+        if (newClientId && newClientId !== oldClientId) {
+            await createNotification(
+                newClientId,
+                'project_assigned',
+                'Project Assigned to You',
+                `You have been assigned to project "${title}"`,
+                `/client/projects/${projectId}`
+            );
+        }
+
+        // If client was removed (old client exists but new is null)
+        if (oldClientId && !newClientId) {
+            await createNotification(
+                oldClientId,
+                'project_updated',
+                'Project Unassigned',
+                `You have been removed from project "${title}"`,
+                `/client`
+            );
+        }
+
         return { success: true };
     } catch (error) {
         return { success: false, error: 'Failed to update project' };
     }
 }
+
 
 export async function addProjectFile(formData: FormData) {
     const projectId = formData.get('projectId') as string;

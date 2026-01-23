@@ -34,6 +34,8 @@ export type ProjectFile = {
  */
 export async function getClientProjects(clientId: string) {
   try {
+    console.log('🔍 DEBUG getClientProjects: clientId =', clientId);
+    
     const projects = await db
       .select({
         id: internalProjects.id,
@@ -49,6 +51,9 @@ export async function getClientProjects(clientId: string) {
       .leftJoin(users, eq(internalProjects.managerId, users.id))
       .where(eq(internalProjects.clientId, clientId))
       .orderBy(desc(internalProjects.createdAt));
+
+    console.log('🔍 DEBUG getClientProjects: Found', projects.length, 'projects');
+    console.log('🔍 DEBUG getClientProjects: Projects =', projects);
 
     // Calculate progress for each project
     const projectsWithProgress = await Promise.all(
