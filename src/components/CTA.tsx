@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { BookingForm } from './BookingForm';
 
 const CTA: React.FC = () => {
     return (
@@ -35,42 +36,10 @@ const CTA: React.FC = () => {
                         </p>
                     </div>
 
-                    {/* Right: Triple Action Layout */}
-                    <div className="grid gap-4">
-                        {/* Primary: Book Consultation */}
-                        <Link href="/contact" className="group relative bg-brand-navy p-8 md:p-10 flex flex-col justify-between overflow-hidden transition-all duration-500 hover:-translate-y-1 shadow-2xl shadow-brand-navy/10">
-                            <div className="relative z-10">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2 block">01 // Primary Action</span>
-                                <h3 className="text-2xl font-black text-white uppercase tracking-tight">Book a Consultation</h3>
-                            </div>
-                            <div className="mt-8 flex items-center justify-between relative z-10">
-                                <span className="text-[11px] font-black uppercase tracking-widest text-brand-gold">Start Engineering →</span>
-                                <div className="w-12 h-12 rounded-sm border border-white/10 flex items-center justify-center">
-                                    <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-brand-gold" stroke="currentColor" strokeWidth="3">
-                                        <path d="M17 8l4 4m0 0l-4 4m4-4H3" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
-                                </div>
-                            </div>
-                            {/* Animated Background Text Decoration */}
-                            <div className="absolute -bottom-4 -right-8 text-8xl font-black text-white/[0.03] italic pointer-events-none select-none group-hover:scale-110 transition-transform duration-700">STRATEGY</div>
-                        </Link>
-
-                        <div className="grid md:grid-cols-2 gap-4">
-                            {/* Secondary: Join Training */}
-                            <Link href="/services#training" className="group bg-slate-50 border border-slate-100 p-8 transition-all duration-500 hover:border-brand-gold/30 hover:bg-white hover:shadow-xl hover:shadow-brand-gold/5">
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-4 block">Action 02</span>
-                                <h4 className="text-lg font-black text-brand-navy uppercase tracking-tight mb-2">Join AI Training</h4>
-                                <p className="text-slate-400 text-xs font-medium leading-relaxed mb-6">Hands-on implementation for teams.</p>
-                                <span className="text-[10px] font-black text-brand-gold uppercase tracking-widest group-hover:underline">Browse Programs →</span>
-                            </Link>
-
-                            {/* Tertiary: Build Smarter Systems */}
-                            <Link href="/services#systems" className="group bg-slate-50 border border-slate-100 p-8 transition-all duration-500 hover:border-brand-gold/30 hover:bg-white hover:shadow-xl hover:shadow-brand-gold/5">
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-4 block">Action 03</span>
-                                <h4 className="text-lg font-black text-brand-navy uppercase tracking-tight mb-2">Build Systems</h4>
-                                <p className="text-slate-400 text-xs font-medium leading-relaxed mb-6">Scalable automation & tools.</p>
-                                <span className="text-[10px] font-black text-brand-gold uppercase tracking-widest group-hover:underline">View Capabilities →</span>
-                            </Link>
+                    {/* Right: Booking Form */}
+                    <div className="w-full">
+                         <div className="relative z-10">
+                            <BookingForm />
                         </div>
                     </div>
                 </div>
