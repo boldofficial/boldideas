@@ -90,6 +90,11 @@ const Footer: React.FC = () => {
 									Privacy
 								</Link>
 							</li>
+							<li>
+								<Link href="/test-crm" className="hover:text-brand-gold transition-colors text-brand-gold/50">
+									[Dev: CRM Test]
+								</Link>
+							</li>
 						</ul>
 					</div>
 

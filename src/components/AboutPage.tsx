@@ -19,33 +19,77 @@ const AboutPage: React.FC = () => {
 				/>
 			</div>
 
-			{/* Hero: System Initialization */}
-			<section className="relative px-4 lg:px-24 pt-20 pb-32 overflow-hidden">
-				<div className="max-w-7xl mx-auto flex flex-col items-center text-center relative z-10">
-					<div className="flex items-center space-x-3 mb-12 animate-pulse">
-						<div className="w-2 h-2 rounded-full bg-brand-gold shadow-[0_0_8px_#FFB81C]"></div>
-						<span className="text-[10px] md:text-xs font-mono font-black text-brand-navy/40 uppercase tracking-[0.5em]">
-							System_Boot: About_Us
-						</span>
-					</div>
+			{/* Hero: Corporate Strategic Identity (Cinematic Dark Theme) */}
+			<section className="relative min-h-[90vh] flex items-center px-6 lg:px-24 py-32 overflow-hidden bg-brand-navy">
+				{/* Cinematic Background Image */}
+				<div className="absolute inset-0 z-0">
+					<img 
+						src="/about_hero_cinematic.png" 
+						alt="Strategic AI Blueprint" 
+						className="w-full h-full object-cover opacity-60 mix-blend-luminosity brightness-50"
+					/>
+					{/* Deep Blue Overlay Gradient */}
+					<div className="absolute inset-0 bg-gradient-to-b from-brand-navy/90 via-brand-navy/80 to-brand-navy"></div>
+				</div>
 
-					<h1 className="text-6xl md:text-9xl font-black text-brand-navy leading-none tracking-tighter mb-12">
-						Automate. <br />
-						<span className="text-brand-gold italic">Innovate.</span> <br />
-						Thrive.
-					</h1>
+				<div className="max-w-[1440px] mx-auto relative z-10 w-full">
+					<div className="max-w-5xl mx-auto text-center">
+						{/* Subtitle / Strategic Tag (Gold Accents) */}
+						<div className="flex items-center justify-center space-x-6 mb-12">
+							<div className="w-12 h-px bg-brand-gold/40"></div>
+							<span className="text-[10px] font-black uppercase tracking-[0.6em] text-brand-gold">
+								Strategic_Initiative // About Bold Ideas
+							</span>
+							<div className="w-12 h-px bg-brand-gold/40"></div>
+						</div>
+						
+						{/* Cinematic Flagship Heading */}
+						<div className="mb-10">
+							<h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white leading-tight tracking-[0.02em] uppercase mb-2">
+								Your AI Partner for <br className="hidden md:block" />
+								Smarter Work &
+							</h1>
+							<div className="text-4xl md:text-6xl lg:text-7xl font-black text-brand-gold italic uppercase tracking-wider leading-none">
+								Faster Growth.
+							</div>
+						</div>
 
-					<div className="max-w-2xl bg-white/40 backdrop-blur-md border border-brand-navy/5 p-8 rounded-3xl shadow-2xl relative group">
-						<div className="absolute -top-3 -left-3 w-6 h-6 border-t-2 border-l-2 border-brand-gold group-hover:scale-110 transition-transform"></div>
-						<div className="absolute -bottom-3 -right-3 w-6 h-6 border-b-2 border-r-2 border-brand-gold group-hover:scale-110 transition-transform"></div>
-						<p className="text-lg text-slate-600 font-light leading-relaxed">
-							Bold Ideas Innovation is an AI digital marketing & automation
-							agency that helps ambitious teams work smarter and grow faster. We
-							blend AI consulting, workflow automation, and AI-powered digital
-							marketing to turn big goals into measurable results.
-						</p>
+						{/* Narrative Block - High Contrast */}
+						<div className="relative max-w-2xl mx-auto mb-16">
+							<p className="text-lg md:text-xl text-white/90 font-bold leading-normal tracking-tight">
+								We help businesses, institutions, and organizations implement AI, <br className="hidden md:block" />
+								automation, and digital systems that actually work.
+							</p>
+						</div>
+
+						{/* Secondary Narrative & Metadata Strip */}
+						<div className="grid md:grid-cols-2 gap-12 items-end pt-16 border-t border-white/10">
+							<div className="text-center md:text-left">
+								<p className="text-brand-gold/60 text-[11px] font-black uppercase tracking-widest mb-4">
+									Deploying intelligence into real workflows.
+								</p>
+								<p className="text-white/30 text-xs leading-relaxed max-w-md mx-auto md:mx-0 font-medium">
+									We don’t just talk about AI—we train your teams to use it confidently <br className="hidden md:block" />
+									and unlock measurable productivity through data-driven engineering.
+								</p>
+							</div>
+							
+							<div className="flex flex-col items-center md:items-end gap-6">
+								<div className="inline-flex items-center px-6 py-3 bg-white/[0.03] border border-white/10 rounded-sm backdrop-blur-md">
+									<div className="w-2 h-2 rounded-full bg-brand-gold mr-4 animate-pulse shadow-[0_0_10px_#FFB81C]"></div>
+									<div className="flex flex-col items-start">
+										<span className="text-[9px] font-black text-white/40 uppercase tracking-[0.4em]">
+											Sys // Corp_Identity_v3.5
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
+
+				{/* Decorative Elements */}
+				<div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-brand-gold/20 to-transparent"></div>
 			</section>
 
 			{/* The Split-System Console: Logic vs Outcome with Macro Textures */}
