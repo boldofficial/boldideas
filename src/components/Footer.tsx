@@ -4,103 +4,98 @@ import React from 'react';
 
 const Footer: React.FC = () => {
 	return (
-		<footer className="py-20 px-4 lg:px-24 border-t bg-brand-navy border-white/5">
-			<div className="max-w-7xl mx-auto">
-				<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-12 mb-16">
+		<footer className="py-24 px-6 lg:px-24 bg-brand-navy border-t border-white/5 relative overflow-hidden">
+			{/* Subtle Grounding Glow */}
+			<div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-px bg-brand-gold/20 blur-md pointer-events-none"></div>
+			
+			<div className="max-w-[1440px] mx-auto relative z-10">
+				<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-16 mb-24">
 					<div className="col-span-2">
-						<div className="mb-6">
+						<div className="mb-8">
 							<Image
 								src="/logo.png"
 								alt="Bold Ideas Innovation"
-								width={150}
-								height={50}
-								className="h-12 w-auto brightness-0 invert"
+								width={140}
+								height={45}
+								className="h-10 w-auto brightness-0 invert opacity-90"
 							/>
 						</div>
-						<p className="text-slate-500 text-sm max-w-xs leading-relaxed">
-							Engineering the future of work through simple systems, clear
-							playbooks, and campaigns that compound.
+						<p className="text-white/40 text-sm max-w-xs leading-relaxed font-medium mb-10">
+							Practical AI for Small Businesses & Solopreneurs. We build the digital backbone that gives you back your time.
 						</p>
-						<div className="mt-8 space-y-3">
-							<div className="flex items-center space-x-3 text-slate-400 text-xs">
-								<span className="text-brand-gold">📍</span>
+						<div className="space-y-4">
+							<div className="flex items-center space-x-4 text-white/30 text-[10px] font-bold uppercase tracking-widest group">
+								<span className="text-brand-gold">HQ_UNIT</span>
+								<span className="w-4 h-px bg-white/10 group-hover:w-8 transition-all"></span>
 								<span>Lagos, Nigeria</span>
 							</div>
-							<div className="flex items-center space-x-3 text-slate-400 text-xs">
-								<span className="text-brand-gold">📞</span>
-								<span>+234 810 551 4520</span>
-							</div>
-							<div className="flex items-center space-x-3 text-slate-400 text-xs">
-								<span className="text-brand-gold">✉️</span>
+							<div className="flex items-center space-x-4 text-white/30 text-[10px] font-bold uppercase tracking-widest">
+								<span className="text-brand-gold">COMMS</span>
+								<span className="w-4 h-px bg-white/10"></span>
 								<span>info@getboldideas.com</span>
 							</div>
 						</div>
 					</div>
 
 					<div>
-						<h5 className="text-white text-xs font-black uppercase tracking-widest mb-6">
-							Services
+						<h5 className="text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">
+							Capabilities
 						</h5>
-						<ul className="space-y-4 text-xs text-slate-500">
+						<ul className="space-y-5 text-[11px] font-bold uppercase tracking-widest text-white/40">
 							<li>
-								<Link href="/services" className="hover:text-brand-gold">
-									AI Strategy
+								<Link href="/services#training" className="hover:text-brand-gold transition-colors">
+									AI Training
 								</Link>
 							</li>
 							<li>
-								<Link href="/services" className="hover:text-brand-gold">
+								<Link href="/services#coaching" className="hover:text-brand-gold transition-colors">
+									AI Coaching
+								</Link>
+							</li>
+							<li>
+								<Link href="/services#automation" className="hover:text-brand-gold transition-colors">
 									Automation
 								</Link>
 							</li>
 							<li>
-								<Link href="/services" className="hover:text-brand-gold">
-									Prog SEO
-								</Link>
-							</li>
-							<li>
-								<Link href="/services" className="hover:text-brand-gold">
-									Paid Media
+								<Link href="/services#systems" className="hover:text-brand-gold transition-colors">
+									Growth Systems
 								</Link>
 							</li>
 						</ul>
 					</div>
 
 					<div>
-						<h5 className="text-white text-xs font-black uppercase tracking-widest mb-6">
-							Company
+						<h5 className="text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">
+							Structure
 						</h5>
-						<ul className="space-y-4 text-xs text-slate-500">
+						<ul className="space-y-5 text-[11px] font-bold uppercase tracking-widest text-white/40">
 							<li>
-								<Link href="/about" className="hover:text-brand-gold">
+								<Link href="/about" className="hover:text-brand-gold transition-colors">
 									About Us
 								</Link>
 							</li>
 							<li>
-								<Link href="/contact" className="hover:text-brand-gold">
+								<Link href="/contact" className="hover:text-brand-gold transition-colors">
 									Contact
 								</Link>
 							</li>
 							<li>
-								<Link href="#" className="hover:text-brand-gold">
+								<Link href="#" className="hover:text-brand-gold transition-colors">
 									LinkedIn
 								</Link>
 							</li>
 							<li>
-								<Link href="#" className="hover:text-brand-gold">
-									Privacy Policy
-								</Link>
-							</li>
-							<li>
-								<Link href="#" className="hover:text-brand-gold">
-									Terms & Conditions
+								<Link href="#" className="hover:text-brand-gold transition-colors">
+									Privacy
 								</Link>
 							</li>
 						</ul>
 					</div>
 
 					<div className="col-span-2">
-						<h5 className="text-white text-xs font-black uppercase tracking-widest mb-6">
-							Tools We Master
+						<h5 className="text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">
+							Validated Stack
 						</h5>
 						<div className="flex flex-wrap gap-2">
 							{[
@@ -109,30 +104,38 @@ const Footer: React.FC = () => {
 								'Make',
 								'Airtable',
 								'HubSpot',
-								'Python',
+								'Assistant UI',
 							].map((tool) => (
 								<span
 									key={tool}
-									className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+									className="px-4 py-2 bg-white/[0.03] border border-white/5 rounded-sm text-[9px] font-black text-white/20 uppercase tracking-[0.2em] hover:border-brand-gold/30 hover:text-white/40 transition-all cursor-default">
 									{tool}
 								</span>
 							))}
 						</div>
 					</div>
 				</div>
-				<div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-					<p className="text-slate-600 text-[10px] font-bold uppercase tracking-widest">
-						© 2025 Bold Ideas Innovation. All rights reserved.
-					</p>
-					<div className="flex space-x-6">
-						<Link
-							href="#"
-							className="text-slate-600 hover:text-white transition-colors">
-							<svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-								<path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.238 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-							</svg>
-						</Link>
+
+				{/* Final Technical Footer Strip */}
+				<div className="pt-16 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-10">
+					<div className="flex flex-col md:flex-row items-center gap-10">
+						<div className="flex items-center space-x-6">
+							<div className="w-12 h-[1px] bg-brand-gold/30"></div>
+							<span className="text-[10px] font-black text-white/10 uppercase tracking-[0.8em]">
+								Bold Ideas Innovations Ltd // Strategic Unit B.1
+							</span>
+						</div>
+						<div className="flex items-center space-x-4">
+							<div className="w-2 h-2 rounded-full bg-brand-gold/40 animate-pulse"></div>
+							<span className="text-[10px] font-black text-white/20 uppercase tracking-widest">
+								System: Operational
+							</span>
+						</div>
 					</div>
+					
+					<p className="text-white/10 text-[9px] font-bold uppercase tracking-[0.4em]">
+						© 2025 Bold Ideas Innovation. Code is Law.
+					</p>
 				</div>
 			</div>
 		</footer>
