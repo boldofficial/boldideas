@@ -74,94 +74,94 @@ const AboutPage: React.FC = () => {
 				</div>
 			</section>
 
-			{/* The Split-System Console: Logic vs Outcome with Macro Textures */}
+			{/* The Split-System Console: Friction vs Solution */}
 			<section className="relative border-y border-brand-navy/5 overflow-hidden">
-				<div className="flex flex-col lg:flex-row min-h-[700px]">
-					{/* Left: The Logic (Terminal Style) */}
-					<div className="flex-1 bg-brand-navy p-12 lg:p-24 relative overflow-hidden group">
-						{/* Macro Texture: Dark Circuitry */}
-						<div className="absolute inset-0 opacity-10 pointer-events-none grayscale contrast-125 mix-blend-overlay">
-							<img
-								src="https://images.unsplash.com/photo-1555664424-778a1e5e1b48?auto=format&fit=crop&q=80&w=1200"
-								alt=""
-								className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[10s]"
-							/>
+				<div className="flex flex-col lg:flex-row min-h-[600px]">
+					{/* Left: The Friction (The Problem) - Redesigned as System Diagnostic (Slate/Silver Theme) */}
+					<div className="flex-1 bg-brand-navy p-10 lg:p-24 relative overflow-hidden group">
+						{/* Animated Grid Texture */}
+						<div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
+							 style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px)', backgroundSize: '30px 30px' }}>
 						</div>
-						<div className="absolute top-0 right-0 p-8 opacity-20 font-mono text-[100px] text-white/10 font-black pointer-events-none select-none">
-							0101
-						</div>
+						
+						{/* Scanning Bar Animation */}
+						<div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-transparent h-40 w-full animate-[scan_6s_linear_infinite] pointer-events-none"></div>
+
 						<div className="relative z-10">
-							<span className="inline-block px-3 py-1 rounded bg-white/10 text-brand-gold font-mono text-[10px] md:text-sm mb-8 tracking-widest uppercase">
-								INPUT: THE_FRICTION
-							</span>
-							<h2 className="text-4xl font-black text-white mb-12 tracking-tight">
-								Why We <br />
-								<span className="text-white/30 italic underline decoration-brand-gold/30">
-									Exist
-								</span>
+
+							<h2 className="text-4xl md:text-5xl font-black text-white mb-16 tracking-tighter leading-none">
+								Modern Organizations <br />
+								Do Not Fail Because <br />
+								<span className="text-white/20 italic underline decoration-white/10">Of Ideas.</span>
 							</h2>
 
-							<div className="space-y-12">
+							<div className="grid gap-6">
 								{[
-									{cmd: 'ERR_01', msg: 'Too many repetitive tasks.'},
-									{cmd: 'ERR_02', msg: "Content that's hard to scale."},
-									{cmd: 'ERR_03', msg: 'Ad spend difficult to control.'},
+									{code: 'SYS_01', title: 'DISCONNECTED SILOS', desc: 'Communication flows break between teams and tools.', badge: 'border border-white/20 text-white/60'},
+									{code: 'MEM_X1', title: 'MANUAL DEBT', desc: 'Teams spend 60% of their time on repetitive tasks.', badge: 'bg-white/10 text-white font-black'},
+									{code: 'SYS_03', title: 'LATENCY LOG', desc: 'Slow decision-making due to fragmented data.', badge: 'border border-white/20 text-white/60'},
 								].map((item, i) => (
-									<div
-										key={i}
-										className="flex items-start space-x-6 group/item">
-										<span className="font-mono text-brand-gold text-xs md:text-sm mt-1.5">
-											{item.cmd}
-										</span>
-										<p className="text-white/60 text-lg font-medium group-hover/item:text-white transition-colors">
-											-- {item.msg}
-										</p>
+									<div key={i} className="group/card relative">
+										<div className="absolute -inset-2 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity rounded-sm"></div>
+										<div className="relative flex items-center space-x-6">
+											<div className="flex flex-col items-center">
+												<div className="w-1.5 h-1.5 rounded-full bg-white/40 mb-2"></div>
+												<div className="w-px h-12 bg-white/10"></div>
+											</div>
+											<div>
+												<div className="flex items-center space-x-3 mb-1">
+													{/* <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded-sm tracking-tighter ${item.badge}`}>
+														{item.code}
+													</span> */}
+													<h4 className="font-black text-white text-sm tracking-widest uppercase">
+														{item.title}
+													</h4>
+												</div>
+												<p className="text-white/30 text-sm md:text-base font-medium leading-relaxed max-w-sm">
+													{item.desc}
+												</p>
+											</div>
+										</div>
 									</div>
 								))}
 							</div>
 						</div>
 					</div>
 
-					{/* Right: The Outcome (The Result) */}
-					<div className="flex-1 bg-white p-12 lg:p-24 relative overflow-hidden group">
-						{/* Macro Texture: Fiber Optic Light */}
-						<div className="absolute inset-0 opacity-[0.05] pointer-events-none grayscale contrast-150 mix-blend-multiply">
-							<img
-								src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1200"
-								alt=""
-								className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[10s]"
-							/>
-						</div>
+					{/* Right: The Solution (Bold Ideas) */}
+					<div className="flex-1 bg-white p-10 lg:p-20 relative overflow-hidden group">
 						<div
-							className="absolute inset-0 opacity-[0.02]"
+							className="absolute inset-0 opacity-[0.03]"
 							style={{
-								backgroundImage:
-									'radial-gradient(circle, #002D5B 1px, transparent 1px)',
-								backgroundSize: '24px 24px',
+								backgroundImage: 'radial-gradient(circle, #002D5B 1px, transparent 1px)',
+								backgroundSize: '32px 32px',
 							}}></div>
+						
 						<div className="relative z-10">
-							<span className="inline-block px-3 py-1 rounded bg-brand-navy text-brand-gold font-mono text-[10px] md:text-sm mb-8 tracking-widest uppercase">
-								OUTPUT: BOLD_IDEAS
-							</span>
-							<h2 className="text-4xl font-black text-brand-navy mb-12 tracking-tight">
-								Making AI <br />
-								<span className="text-brand-gold italic">Practical.</span>
+							<div className="flex items-center space-x-3 mb-8">
+								<div className="w-8 h-px bg-brand-gold"></div>
+								<span className="text-[10px] sm:text-xs font-mono text-brand-navy/40 tracking-[0.3em] uppercase">
+									Output // Bold_Ideas
+								</span>
+							</div>
+
+							<h2 className="text-3xl md:text-4xl font-black text-brand-navy mb-10 tracking-tight leading-tight">
+								We Exist to <br />
+								<span className="text-brand-gold italic decoration-brand-gold/30">Connect & Automate.</span>
 							</h2>
 
-							<div className="space-y-12">
+							<div className="space-y-8 max-w-lg">
 								{[
-									{tag: 'SYSTEMS', msg: 'Simple systems.'},
-									{tag: 'PLAYBOOKS', msg: 'Clear playbooks.'},
-									{tag: 'COMPOUND', msg: 'Campaigns that compound.'},
+									{tag: 'AUTOMATION', msg: 'Reduce manual work with AI.'},
+									{tag: 'INFRASTRUCTURE', msg: 'Build practical growth systems.'},
+									{tag: 'CAPACITY', msg: 'Train teams for AI adoption.'},
 								].map((item, i) => (
-									<div
-										key={i}
-										className="flex items-start space-x-6 group/item">
-										<span className="bg-brand-navy/5 text-brand-navy font-black text-[9px] md:text-xs px-2 py-0.5 rounded tracking-widest mt-1.5">
+									<div key={i} className="flex items-start space-x-5 group/item border-l border-brand-navy/10 pl-6 py-2">
+										<span className="bg-brand-navy/5 text-brand-navy font-black text-[8px] md:text-[9px] px-2 py-0.5 rounded tracking-widest mt-1">
 											{item.tag}
 										</span>
-										<p className="text-slate-500 text-lg font-medium group-hover/item:text-brand-navy transition-colors">
-											&gt;&gt; {item.msg}
+										<p className="text-slate-500 text-base md:text-lg font-medium group-hover/item:text-brand-navy transition-colors leading-snug">
+											{item.msg}
 										</p>
 									</div>
 								))}
@@ -448,6 +448,10 @@ const AboutPage: React.FC = () => {
         @keyframes flow {
           0% { stroke-dashoffset: 100; }
           100% { stroke-dashoffset: 0; }
+        }
+        @keyframes scan {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(600px); }
         }
       `}</style>
 		</div>
