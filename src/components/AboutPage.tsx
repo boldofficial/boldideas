@@ -19,77 +19,59 @@ const AboutPage: React.FC = () => {
 				/>
 			</div>
 
-			{/* Hero: Corporate Strategic Identity (Cinematic Dark Theme) */}
-			<section className="relative min-h-[90vh] flex items-center px-6 lg:px-24 py-32 overflow-hidden bg-brand-navy">
-				{/* Cinematic Background Image */}
+			{/* Hero: Corporate Strategic Identity */}
+			<section className="relative min-h-[75vh] flex items-center px-6 lg:px-24 py-24 overflow-hidden bg-brand-navy">
+				{/* Background Image: Strategic AI Masterclass */}
 				<div className="absolute inset-0 z-0">
 					<img 
-						src="/about_hero_cinematic.png" 
-						alt="Strategic AI Blueprint" 
-						className="w-full h-full object-cover opacity-60 mix-blend-luminosity brightness-50"
+						src="/images/corporate_hero.png" 
+						alt="Strategic AI Masterclass" 
+						className="w-full h-full object-cover opacity-50 contrast-125 transition-transform duration-[15s] hover:scale-105"
 					/>
-					{/* Deep Blue Overlay Gradient */}
-					<div className="absolute inset-0 bg-gradient-to-b from-brand-navy/90 via-brand-navy/80 to-brand-navy"></div>
+					<div className="absolute inset-0 bg-gradient-to-r from-brand-navy via-brand-navy/70 to-brand-navy/30"></div>
 				</div>
 
 				<div className="max-w-[1440px] mx-auto relative z-10 w-full">
-					<div className="max-w-5xl mx-auto text-center">
-						{/* Subtitle / Strategic Tag (Gold Accents) */}
-						<div className="flex items-center justify-center space-x-6 mb-12">
-							<div className="w-12 h-px bg-brand-gold/40"></div>
-							<span className="text-[10px] font-black uppercase tracking-[0.6em] text-brand-gold">
-								Strategic_Initiative // About Bold Ideas
+					<div className="max-w-3xl">
+						{/* Subtitle / Strategic Tag */}
+						<div className="flex items-center space-x-3 mb-8">
+							<div className="w-6 h-[2px] bg-brand-gold"></div>
+							<span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/40">
+								About Bold Ideas
 							</span>
-							<div className="w-12 h-px bg-brand-gold/40"></div>
 						</div>
 						
-						{/* Cinematic Flagship Heading */}
-						<div className="mb-10">
-							<h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white leading-tight tracking-[0.02em] uppercase mb-2">
-								Your AI Partner for <br className="hidden md:block" />
-								Smarter Work &
-							</h1>
-							<div className="text-4xl md:text-6xl lg:text-7xl font-black text-brand-gold italic uppercase tracking-wider leading-none">
-								Faster Growth.
-							</div>
-						</div>
+						{/* Corporate Flagship Heading */}
+						<h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-white leading-[1.2] tracking-tight uppercase mb-10">
+							<span className="tracking-[0.3em]">Your AI Partner</span> <br />
+							<span className="tracking-[0.3em]">For Smarter Work,</span> <br />
+							<span className="text-brand-gold italic tracking-[0.3em]">Faster Growth.</span>
+						</h1>
 
-						{/* Narrative Block - High Contrast */}
-						<div className="relative max-w-2xl mx-auto mb-16">
-							<p className="text-lg md:text-xl text-white/90 font-bold leading-normal tracking-tight">
-								We help businesses, institutions, and organizations implement AI, <br className="hidden md:block" />
-								automation, and digital systems that actually work.
+						{/* Unified Narrative Block */}
+						<div className="relative pl-6 md:pl-10 border-l border-brand-gold/20">
+							<p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/80 font-medium leading-relaxed mb-8 max-w-xl text-justify">
+								We help businesses, institutions, and organizations implement AI, automation, and digital systems that actually work.
 							</p>
-						</div>
 
-						{/* Secondary Narrative & Metadata Strip */}
-						<div className="grid md:grid-cols-2 gap-12 items-end pt-16 border-t border-white/10">
-							<div className="text-center md:text-left">
-								<p className="text-brand-gold/60 text-[11px] font-black uppercase tracking-widest mb-4">
-									Deploying intelligence into real workflows.
-								</p>
-								<p className="text-white/30 text-xs leading-relaxed max-w-md mx-auto md:mx-0 font-medium">
-									We don’t just talk about AI—we train your teams to use it confidently <br className="hidden md:block" />
-									and unlock measurable productivity through data-driven engineering.
-								</p>
-							</div>
-							
-							<div className="flex flex-col items-center md:items-end gap-6">
-								<div className="inline-flex items-center px-6 py-3 bg-white/[0.03] border border-white/10 rounded-sm backdrop-blur-md">
-									<div className="w-2 h-2 rounded-full bg-brand-gold mr-4 animate-pulse shadow-[0_0_10px_#FFB81C]"></div>
-									<div className="flex flex-col items-start">
-										<span className="text-[9px] font-black text-white/40 uppercase tracking-[0.4em]">
-											Sys // Corp_Identity_v3.5
-										</span>
-									</div>
+							<div className="flex flex-col md:flex-row md:items-start gap-6 md:gap-12 pt-8 border-t border-white/5">
+								<div className="max-w-sm">
+									<p className="text-white/40 text-[11px] md:text-xs font-medium leading-relaxed italic mb-3">
+										Deploying intelligence into real workflows.
+									</p>
+									<p className="text-white/20 text-[9px] md:text-[10px] leading-relaxed">
+										We don’t just talk about AI—we train your teams to use it confidently and unlock measurable productivity.
+									</p>
+								</div>
+								
+								{/* Metadata Tag (Condensed) */}
+								<div className="pt-2">
+									
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-
-				{/* Decorative Elements */}
-				<div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-brand-gold/20 to-transparent"></div>
 			</section>
 
 			{/* The Split-System Console: Logic vs Outcome with Macro Textures */}
