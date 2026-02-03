@@ -46,8 +46,10 @@ const Header: React.FC = () => {
 	return (
 		<header className="fixed top-0 left-0 z-50 w-full transition-all duration-300">
 			<nav
-				className={`px-4 md:px-8 py-4 flex items-center justify-between bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm transition-all duration-300 ${
-					scrolled ? 'py-3' : 'py-4'
+				className={`px-4 md:px-8 flex items-center justify-between transition-all duration-500 fixed w-full top-0 left-0 z-50 ${
+					scrolled 
+						? 'py-3 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm' 
+						: 'py-6 bg-transparent border-transparent shadow-none'
 				}`}>
 				<Link
 					href="/"
