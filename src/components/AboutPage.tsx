@@ -31,17 +31,6 @@ const AboutPage: React.FC = () => {
 			<AboutTargetAudience />
 			<AboutApproach />
 			<AboutWhyBold />
-
-			<style>{`
-        @keyframes flow {
-          0% { stroke-dashoffset: 100; }
-          100% { stroke-dashoffset: 0; }
-        }
-        @keyframes scan {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(600px); }
-        }
-      `}</style>
 		</div>
 	);
 };

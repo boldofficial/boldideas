@@ -26,14 +26,33 @@ const CTA: React.FC = () => {
                             <div className="w-12 h-[1px] bg-brand-gold/30"></div>
                         </div>
 
-                        <h2 className="text-5xl md:text-7xl font-black text-brand-navy uppercase tracking-tighter leading-none mb-10">
-                            Build Your <br />
-                            <span className="text-brand-gold italic">Digital Edge.</span>
+                        <h2 className="text-4xl md:text-6xl font-black text-brand-navy uppercase tracking-tighter leading-none mb-10">
+                            Ready to Make <br />
+                            AI Work For Your <br />
+                            <span className="text-brand-gold italic">Organization?</span>
                         </h2>
 
-                        <p className="text-slate-500 text-lg md:text-xl font-medium leading-relaxed max-w-xl">
-                            Whether you're a solopreneur trying to do more with less, or a growing team ready to upskill with AI— <span className="text-brand-navy italic">Bold Ideas is your AI partner.</span>
-                        </p>
+                        <div className="space-y-6">
+                            <p className="text-slate-500 text-lg font-bold leading-relaxed max-w-xl">
+                                Whether you want to:
+                            </p>
+                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {[
+                                    'Train your team on AI productivity',
+                                    'Automate internal processes',
+                                    'Improve digital marketing performance',
+                                    'Build custom AI-powered tools'
+                                ].map((item, i) => (
+                                    <li key={i} className="flex items-center space-x-3 text-slate-500 text-sm font-medium">
+                                        <span className="text-brand-gold">👉</span>
+                                        <span>{item}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                            <p className="text-brand-navy text-lg font-black italic border-t border-brand-navy/5 pt-6">
+                                Bold Ideas is ready to partner with you.
+                            </p>
+                        </div>
                     </div>
 
                     {/* Right: Booking Form */}

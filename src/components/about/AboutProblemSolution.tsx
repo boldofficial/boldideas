@@ -12,7 +12,7 @@ const AboutProblemSolution: React.FC = () => {
                     </div>
                     
                     {/* Scanning Bar Animation */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-transparent h-40 w-full animate-[scan_6s_linear_infinite] pointer-events-none"></div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-transparent h-40 w-full animate-scan pointer-events-none"></div>
 
                     <div className="relative z-10">
                         <h2 className="text-4xl md:text-5xl font-black text-white mb-16 tracking-tighter leading-none">
