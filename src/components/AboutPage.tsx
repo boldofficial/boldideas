@@ -171,106 +171,159 @@ const AboutPage: React.FC = () => {
 				</div>
 			</section>
 
-			{/* Engineering Schematic: Core Logic Modules with Texture Popups */}
-			<section className="py-40 px-4 lg:px-24 relative overflow-hidden bg-white">
-				<div className="max-w-7xl mx-auto relative">
-					<div className="mb-24 flex flex-col md:flex-row md:items-end justify-between gap-8">
-						<div className="max-w-xl">
-							<div className="inline-block border border-brand-navy/10 px-3 py-1 mb-4">
-								<p className="text-[10px] font-mono text-brand-gold uppercase tracking-[0.4em]">
-									Core Principles
-								</p>
-							</div>
-							<h2 className="text-5xl font-black text-brand-navy tracking-tighter leading-none">
-								Operating <br />
-								Principles.
+			{/* Engineering Schematic: What We Do - Refined Services Console */}
+			<section className="py-24 px-6 lg:px-24 relative overflow-hidden bg-white">
+				<div className="max-w-5xl mx-auto relative z-10">
+					<div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-12">
+						<div className="max-w-xl mx-auto">
+							<h2 className="text-5xl lg:text-6xl font-black text-brand-navy tracking-tighter leading-none mb-6">
+								<span className="text-brand-navy tracking-[0.3em]">What We</span> { ' '}
+								<span className="text-brand-gold italic">Do.</span>
 							</h2>
-						</div>
-						<div className="hidden md:block w-1/2 h-px bg-brand-navy/20 relative">
-							<div className="absolute right-0 -top-1 w-2 h-2 bg-brand-gold shadow-[0_0_8px_#FFB81C]"></div>
 						</div>
 					</div>
 
-					<div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+					<div className="space-y-6">
+						{/* Flagship Module (Full Width) */}
 						{[
 							{
 								id: '01',
-								title: 'Human Centric',
-								desc: 'Technology serves people, not the other way around.',
-								img: 'https://images.unsplash.com/photo-1551434678-e076c223a692',
-							},
-							{
-								id: '02',
-								title: 'Simplicity',
-								desc: 'Simplicity scales, complexity breaks.',
-								img: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab',
-							},
-							{
-								id: '03',
-								title: 'Objectivity',
-								desc: 'Data beats opinion everytime.',
-								img: 'https://images.unsplash.com/photo-1518770660439-4636190af475',
-							},
-							{
-								id: '04',
-								title: 'Speed',
-								desc: 'Speed of implementation is a competitive advantage.',
-								img: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa',
-							},
-							{
-								id: '05',
-								title: 'Growth',
-								desc: 'Continuous iteration leads to exponential growth.',
-								img: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b',
-							},
-							{
-								id: '06',
-								title: 'ROI',
-								desc: 'A focus on ROI and measurable outcomes.',
-								img: 'https://images.unsplash.com/photo-1523961131990-5ea7c61b2107',
-							},
-							{
-								id: '07',
-								title: 'Clarity',
-								desc: 'No jargon—just plain English and results.',
-								img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f',
-							},
-							{
-								id: '08',
-								title: 'Partnership',
-								desc: 'A true partnership mindset, not just a vendor.',
-								img: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3',
-							},
+								title: 'AI Training',
+								desc: 'Hands-on training designed specifically for corporate teams, government agencies, and NGOs. We turn AI-confused staff into AI-confident experts through specialized workflows.',
+								highlights: ['On-site Workshops', 'Virtual Live Sessions', 'Executive Briefings'],
+								theme: 'navy'
+							}
 						].map((mod, i) => (
 							<div
 								key={i}
-								className="bg-white border border-brand-navy/10 p-8 group hover:border-brand-gold transition-colors duration-300 relative overflow-hidden rounded-sm">
-								<div className="absolute inset-0 opacity-0 group-hover:opacity-5 pointer-events-none transition-opacity duration-500 grayscale">
-									<img
-										src={`${mod.img}?auto=format&fit=crop&q=40&w=400`}
-										alt=""
-										className="w-full h-full object-cover"
-									/>
+								className="group relative border border-brand-navy bg-brand-navy text-white transition-all duration-500 overflow-hidden p-8 lg:p-10 shadow-xl rounded-sm">
+								
+								{/* Technical Decor */}
+								<div className="absolute top-0 right-0 p-3 font-mono text-[9px] opacity-20 text-white">
+									SYS_MOD_{mod.id} // ACTIVE
 								</div>
-
-								{/* Corner Accents */}
-								<div className="absolute top-0 right-0 p-2 font-mono text-[9px] md:text-xs text-brand-navy/20 group-hover:text-brand-gold">
-									M_{mod.id}
-								</div>
+								
+								{/* Corner Marks */}
+								<div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-brand-gold/40 transition-all"></div>
+								<div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-brand-gold/40 transition-all"></div>
 
 								<div className="relative z-10">
-									<div className="w-8 h-8 flex items-center justify-center text-brand-navy font-black text-xs md:text-sm mb-8 bg-brand-light border border-brand-navy/5 group-hover:bg-brand-navy group-hover:text-brand-gold transition-colors">
-										{mod.id}
+									<div className="flex items-center justify-between gap-6 mb-8">
+										<div className="flex items-center space-x-4">
+											<div className="w-10 h-10 flex items-center justify-center font-black text-xs border bg-brand-gold text-brand-navy border-brand-gold">
+												{mod.id}
+											</div>
+											<h3 className="text-2xl lg:text-3xl font-black uppercase tracking-tight leading-none text-white">
+												{mod.title}
+											</h3>
+										</div>
+										<div className="hidden lg:block h-px flex-1 mx-8 bg-white/10"></div>
 									</div>
-									<h3 className="text-xl font-black text-brand-navy mb-4 transition-colors uppercase tracking-tight">
-										{mod.title}
-									</h3>
-									<p className="text-sm text-slate-500 font-mono leading-relaxed transition-colors">
-										{mod.desc}
-									</p>
+
+									<div className="grid lg:grid-cols-2 gap-8">
+										<div className="space-y-4">
+											<p className="text-base font-medium leading-relaxed text-white/70">
+												{mod.desc}
+											</p>
+											<div className="flex flex-wrap gap-2">
+												{mod.highlights.map((h, idx) => (
+													<span key={idx} className="px-2 py-0.5 text-[8px] font-black tracking-widest uppercase border bg-white/5 border-white/10 text-white/40 group-hover:border-brand-gold transition-colors">
+														{h}
+													</span>
+												))}
+											</div>
+										</div>
+
+										<div className="flex items-end lg:justify-end">
+											<button className="inline-flex items-center space-x-4 py-3 px-6 border bg-brand-gold text-brand-navy border-brand-gold hover:bg-white hover:border-white transition-all">
+												<span className="text-[10px] font-black uppercase tracking-[0.3em]">
+													Request_Module
+												</span>
+												<svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+												</svg>
+											</button>
+										</div>
+									</div>
 								</div>
 							</div>
 						))}
+
+						{/* Secondary Modules (3-Column Grid) */}
+						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+							{[
+								{
+									id: '02',
+									title: 'Consulting',
+									desc: 'Custom workflows designed for your organization. We build AI agents and automated reporting.',
+									highlights: ['AI Agents', 'Doc Gen', 'Automation'],
+									theme: 'light'
+								},
+								{
+									id: '03',
+									title: 'Growth Systems',
+									desc: 'Combining AI with marketing strategy to build growth infrastructure that scales sustainably.',
+									highlights: ['AI SEO', 'Lead Funnels', 'CRM'],
+									theme: 'light'
+								},
+								{
+									id: '04',
+									title: 'Internal Tools',
+									desc: 'Conversion-focused business websites and custom admin dashboards built for real usage.',
+									highlights: ['Architecture', 'Dashboards', 'Portals'],
+									theme: 'light'
+								}
+							].map((mod, i) => (
+								<div
+									key={i}
+									className="group relative border bg-white border-slate-100 hover:border-brand-gold/30 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 overflow-hidden p-6 lg:p-8 flex flex-col justify-between">
+									
+									{/* Technical Decor */}
+									<div className="absolute top-0 right-0 p-3 font-mono text-[9px] opacity-20 text-brand-navy">
+										SYS_MOD_{mod.id} // ACTIVE
+									</div>
+									
+									{/* Corner Marks */}
+									<div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-brand-gold/40 transition-all"></div>
+									<div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-brand-gold/40 transition-all"></div>
+
+									<div className="relative z-10">
+										<div className="flex items-center space-x-4 mb-6">
+											<div className="w-8 h-8 flex items-center justify-center font-black text-[10px] border bg-brand-light text-brand-navy border-slate-100 group-hover:bg-brand-navy group-hover:text-brand-gold transition-colors">
+												{mod.id}
+											</div>
+											<h4 className="text-lg lg:text-xl font-black uppercase tracking-tight leading-none text-brand-navy">
+												{mod.title}
+											</h4>
+										</div>
+
+										<div className="space-y-4">
+											<p className="text-sm font-medium leading-relaxed text-slate-500">
+												{mod.desc}
+											</p>
+											<div className="flex flex-wrap gap-1.5">
+												{mod.highlights.map((h, idx) => (
+													<span key={idx} className="px-1.5 py-0.5 text-[7px] font-black tracking-widest uppercase border bg-slate-50 border-slate-100 text-slate-400 group-hover:bg-brand-navy group-hover:text-brand-gold transition-colors">
+														{h}
+													</span>
+												))}
+											</div>
+										</div>
+
+										<div className="pt-6 flex justify-start">
+											<button className="inline-flex items-center space-x-3 py-2 px-4 border bg-brand-navy text-brand-gold border-brand-navy hover:bg-transparent hover:text-brand-navy transition-all">
+												<span className="text-[9px] font-black uppercase tracking-[0.2em]">
+													Inquire
+												</span>
+												<svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+												</svg>
+											</button>
+										</div>
+									</div>
+								</div>
+							))}
+						</div>
 					</div>
 				</div>
 			</section>
