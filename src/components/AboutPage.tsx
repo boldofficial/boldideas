@@ -318,64 +318,51 @@ const AboutPage: React.FC = () => {
 				</div>
 			</section>
 
-			{/* Target Ecosystems: The diagnostic look with subtle textures */}
-			<section className="py-32 px-k4   bg-brand-light border-t border-brand-navy/5">
-				<div className="max-w-7xl mx-auto">
-					<div className="bg-white rounded-sm p-12 lg:p-20 shadow-xl border border-brand-navy/5 relative overflow-hidden group">
-						<div className="absolute top-0 right-0 w-96 h-96 bg-brand-gold/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-[5s]"></div>
+			{/* Who We Serve: The Partner Ecosystem Diagnostic */}
+			<section className="py-32 px-6 lg:px-24 bg-brand-light border-y border-brand-navy/5">
+				<div className="max-w-5xl mx-auto">
+					<div className="bg-white rounded-sm p-10 lg:p-16 shadow-xl border border-brand-navy/5 relative overflow-hidden group">
+						<div className="absolute top-0 right-0 w-96 h-96 bg-brand-gold/[0.03] rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-[5s]"></div>
 
-						<div className="grid lg:grid-cols-3 gap-16 relative z-10">
-							<div className="lg:col-span-1">
-								<div className="inline-block border border-brand-navy/10 px-3 py-1 mb-4">
-									<p className="text-[10px] md:text-xs font-mono text-brand-gold uppercase tracking-[0.4em]">
-										Target_Audience
+						<div className="grid lg:grid-cols-5 gap-12 relative z-10">
+							<div className="lg:col-span-2">
+								<div className="inline-flex items-center space-x-2 bg-brand-navy/5 px-2 py-1 mb-6 border-l-2 border-brand-gold">
+									<p className="text-[10px] font-mono text-brand-navy/40 uppercase tracking-[0.3em]">
+										Partner_Ecosystem_v2
 									</p>
 								</div>
-								<h2 className="text-4xl font-black text-brand-navy tracking-tight mb-8 leading-none">
+								<h2 className="text-4xl lg:text-5xl font-black text-brand-navy tracking-tight mb-8 leading-[1.1]">
 									Who We <br />
-									Help.
+									<span className="text-brand-gold italic">Serve</span>
 								</h2>
-								<p className="text-slate-500 font-light leading-relaxed">
-									We partner with forward-thinking SMEs, ambitious
-									entrepreneurs, and scaling startups.
+								<p className="text-slate-500 font-medium leading-relaxed max-w-xs">
+									We provide capacity building and AI infrastructure for high-impact organizations.
 								</p>
 							</div>
-							<div className="lg:col-span-2 space-y-4">
+
+							<div className="lg:col-span-3 space-y-3">
 								{[
-									{
-										name: 'SMEs',
-										focus: 'EFFICIENCY',
-										desc: 'Teams tired of the manual grind and ready for self-sustaining growth systems.',
-									},
-									{
-										name: 'Entrepreneurs',
-										focus: 'VISION',
-										desc: 'Ambitious leaders ready to embrace the future of work.',
-									},
-									{
-										name: 'Startups',
-										focus: 'SCALE',
-										desc: 'Scaling companies wanting to build a self-sustaining growth machine.',
-									},
+									{ name: 'Small and medium-sized businesses', id: '01', focus: 'EFFICIENCY' },
+									{ name: 'Corporate organizations & enterprises', id: '02', focus: 'SCALABILITY' },
+									{ name: 'Schools, universities & training institutions', id: '03', focus: 'CAPACITY' },
+									{ name: 'NGOs, churches & community organizations', id: '04', focus: 'MISSION' },
+									{ name: 'Local commerce ecosystems', id: '05', focus: 'INFRASTRUCTURE' },
 								].map((item, i) => (
 									<div
 										key={i}
-										className="flex flex-col md:flex-row md:items-center justify-between p-8 rounded-sm bg-brand-light/50 border border-brand-navy/5 group/item hover:border-brand-navy hover:bg-white transition-all duration-300">
-										<div className="mb-4 md:mb-0">
-											<span className="font-mono text-[9px] md:text-xs text-brand-gold mb-2 block tracking-widest uppercase">
-												NODE_0{i + 1}: CONNECTED
+										className="flex flex-col md:flex-row md:items-center justify-between p-5 rounded-sm bg-brand-light/40 border border-brand-navy/[0.03] hover:border-brand-gold/20 hover:bg-white transition-all duration-300">
+										<div className="flex items-center space-x-4 mb-3 md:mb-0">
+											<span className="font-mono text-[9px] text-brand-gold tracking-widest uppercase">
+												NODE_{item.id} // ACTIVE
 											</span>
-											<h4 className="text-2xl font-black text-brand-navy">
+											<h4 className="text-lg lg:text-xl font-bold text-brand-navy">
 												{item.name}
 											</h4>
 										</div>
-										<div className="text-right flex flex-col items-end">
-											<span className="px-2 py-0.5 rounded-sm bg-brand-navy text-brand-gold text-[8px] md:text-[10px] font-mono font-bold tracking-widest mb-2">
+										<div className="flex items-center">
+											<span className="px-2 py-1 bg-brand-navy/5 text-brand-navy text-[8px] font-black tracking-widest uppercase border border-brand-navy/5">
 												{item.focus}
 											</span>
-											<p className="text-xs md:text-sm text-slate-500 font-mono max-w-xs">
-												{item.desc}
-											</p>
 										</div>
 									</div>
 								))}
@@ -385,103 +372,105 @@ const AboutPage: React.FC = () => {
 				</div>
 			</section>
 
-			{/* Tech Stack Schematic: The Final Block with Deep Texture Background */}
-			<section className="py-40 px-4 lg:px-24 relative overflow-hidden">
-				{/* Background Texture for the whole section */}
-				<div className="absolute inset-0 opacity-[0.02] pointer-events-none grayscale contrast-125">
-					<img
-						src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=2000"
-						alt=""
-						className="w-full h-full object-cover"
-					/>
-				</div>
-
-				<div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center relative z-10">
-					<div>
-						<div className="inline-flex items-center space-x-2 bg-brand-gold/10 border border-brand-gold/20 px-4 py-1.5 rounded-full mb-8">
-							<span className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-pulse"></span>
-							<span className="text-[10px] md:text-xs font-mono font-black uppercase tracking-widest text-brand-navy">
-								Sys_Stack: Active
-							</span>
+			{/* Our Approach: The Workflow Pipeline */}
+			<section className="py-32 px-6 lg:px-24 bg-white relative overflow-hidden">
+				<div className="max-w-5xl mx-auto relative z-10">
+					<div className="mb-20 text-center">
+						<div className="inline-flex items-center space-x-2 bg-brand-navy/5 px-2 py-1 mb-4 border-l-2 border-brand-gold">
+							<p className="text-[10px] font-mono text-brand-navy/40 uppercase tracking-[0.3em]">
+								System_Deployment_Cycle
+							</p>
 						</div>
-						<h2 className="text-5xl lg:text-7xl font-black text-brand-navy mb-12 tracking-tighter leading-none">
-							Tools We <br />
-							<span className="text-brand-gold italic">Work With.</span>
+						<h2 className="text-4xl lg:text-5xl font-black text-brand-navy tracking-tight leading-none">
+							Our <br />
+							<span className="text-brand-gold italic">Approach.</span>
 						</h2>
-						<div className="space-y-6">
+					</div>
+
+					<div className="relative">
+						{/* Connecting Line */}
+						<div className="hidden lg:block absolute left-0 top-[40px] w-full h-[1px] bg-slate-100 z-0"></div>
+
+						<div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 lg:gap-4">
 							{[
-								{label: 'TRANSPARENCY', val: 'Transparent communication.'},
-								{label: 'ROADMAPS', val: 'Clear roadmaps.'},
-								{label: 'OUTCOMES', val: 'Focus on ROI & measurable results.'},
-							].map((spec, i) => (
-								<div
-									key={i}
-									className="flex items-center space-x-6 p-6 rounded-sm border border-brand-navy/5 bg-white shadow-sm hover:border-brand-gold transition-colors group">
-									<div className="w-12 h-12 rounded-sm bg-brand-navy flex items-center justify-center text-brand-gold font-bold group-hover:scale-105 transition-transform font-mono">
-										0{i + 1}
+								{ step: '01', title: 'Discover', desc: 'We understand your goals, workflows, and pain points.' },
+								{ step: '02', title: 'Design', desc: 'We map AI, automation, and digital systems tailored to your needs.' },
+								{ step: '03', title: 'Deploy', desc: 'We build, integrate, and test the solutions.' },
+								{ step: '04', title: 'Train', desc: 'We train your team—especially through AI productivity training—to ensure adoption.' },
+								{ step: '05', title: 'Support & Scale', desc: 'We refine, optimize, and scale as your organization grows.' },
+							].map((item, i) => (
+								<div key={i} className="relative z-10 group">
+									<div className="mb-6 lg:mb-10 flex justify-center">
+										<div className="w-20 h-20 bg-white border border-slate-100 flex items-center justify-center font-black text-brand-navy group-hover:bg-brand-navy group-hover:text-brand-gold group-hover:border-brand-navy transition-all duration-500 shadow-sm relative">
+											<span className="absolute -top-2 -left-2 text-[8px] font-mono text-brand-gold bg-white px-1 border border-slate-100 uppercase">
+												Stage_{item.step}
+											</span>
+											{item.step}
+										</div>
 									</div>
-									<div>
-										<p className="text-[9px] md:text-xs font-black text-slate-400 uppercase tracking-widest font-mono">
-											{spec.label}
+									<div className="text-center px-2">
+										<h4 className="text-lg font-black uppercase tracking-tight text-brand-navy mb-3">
+											{item.title}
+										</h4>
+										<p className="text-sm text-slate-500 font-medium leading-relaxed">
+											{item.desc}
 										</p>
-										<p className="text-brand-navy font-bold">{spec.val}</p>
 									</div>
 								</div>
 							))}
 						</div>
 					</div>
+				</div>
+			</section>
 
-					<div className="relative">
-						<div className="absolute inset-0 bg-brand-gold/20 blur-[120px] rounded-full"></div>
-						<div className="relative bg-brand-navy rounded-sm p-12 lg:p-16 border-4 border-white shadow-2xl overflow-hidden group/box">
-							{/* Internal Texture: Silicon Chip Detail */}
-							<div className="absolute inset-0 opacity-[0.08] pointer-events-none grayscale brightness-50 contrast-150 mix-blend-screen">
-								<img
-									src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&q=80&w=800"
-									alt=""
-									className="w-full h-full object-cover group-hover/box:scale-110 transition-transform duration-[10s]"
-								/>
+			{/* Why Bold Ideas: System Validation Matrix */}
+			<section className="py-32 px-6 lg:px-24 bg-brand-navy relative overflow-hidden">
+				{/* Background Tech Decal */}
+				<div className="absolute top-0 right-0 p-20 opacity-[0.03] pointer-events-none">
+					<div className="text-[200px] font-black leading-none text-white select-none">
+						BOLD
+					</div>
+				</div>
+
+				<div className="max-w-5xl mx-auto relative z-10">
+					<div className="grid lg:grid-cols-2 gap-20 items-center">
+						<div>
+							<div className="inline-flex items-center space-x-2 bg-white/5 px-2 py-1 mb-6 border-l-2 border-brand-gold">
+								<p className="text-[10px] font-mono text-white/40 uppercase tracking-[0.3em]">
+									Unique_Value_Proposition
+								</p>
 							</div>
+							<h2 className="text-5xl lg:text-7xl font-black text-white mb-8 tracking-tighter leading-none">
+								Why <br />
+								<span className="text-brand-gold italic text-4xl lg:text-6xl">Bold Ideas?</span>
+							</h2>
+							<p className="text-white/60 text-lg font-medium leading-relaxed max-w-md italic mb-12">
+								"We don’t just deliver tools. We build capacity, systems, and results."
+							</p>
+						</div>
 
-							<div className="flex justify-between items-center mb-16 relative z-10">
-								<div className="flex space-x-2">
-									<div className="w-3 h-3 rounded-full bg-white/10"></div>
-									<div className="w-3 h-3 rounded-full bg-white/10"></div>
-									<div className="w-3 h-3 rounded-full bg-white/10"></div>
-								</div>
-								<span className="font-mono text-[9px] md:text-xs text-brand-gold tracking-widest">
-									ECOSYSTEM_V2
-								</span>
-							</div>
-
-							<div className="space-y-16 relative z-10">
-								<div className="absolute left-[39px] top-8 bottom-8 w-[2px] bg-white/10"></div>
-								{[
-									{l: 'INPUT', t: 'OpenAI / Gemini / Notion', i: '🧠'},
-									{l: 'LOGIC', t: 'Make.com / Python / Scripts', i: '⚡'},
-									{
-										l: 'OUTPUT',
-										t: 'HubSpot / Airtable / Google Sheets',
-										i: '🚀',
-									},
-								].map((node, i) => (
-									<div
-										key={i}
-										className="flex items-center space-x-8 relative z-10 group">
-										<div className="w-20 h-20 rounded-sm bg-white/5 border border-white/10 flex items-center justify-center text-3xl shadow-xl group-hover:bg-brand-gold group-hover:scale-105 transition-all text-white group-hover:text-brand-navy">
-											{node.i}
-										</div>
-										<div>
-											<span className="text-[9px] md:text-xs font-black text-brand-gold tracking-[0.3em] uppercase block mb-1 font-mono">
-												{node.l}
-											</span>
-											<span className="text-xl font-bold text-white">
-												{node.t}
-											</span>
-										</div>
+						<div className="space-y-4">
+							{[
+								{ label: 'Practical AI', val: 'Implementation-focused solutions that deliver real results.' },
+								{ label: 'Local Context', val: 'Global standards adapted for local organizational needs.' },
+								{ label: 'Custom Build', val: 'No generic SaaS. Everything is tailored to your workflow.' },
+								{ label: 'High Adoption', val: 'Deep focus on training to ensure your staff actually uses the tools.' },
+								{ label: 'Long-term Optik', val: 'We act as your growth partner, not just a vendor.' }
+							].map((spec, i) => (
+								<div
+									key={i}
+									className="flex items-center space-x-6 p-5 border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-brand-gold/30 transition-all group">
+									<div className="w-10 h-10 flex items-center justify-center border border-brand-gold text-brand-gold font-mono text-xs">
+										✔
 									</div>
-								))}
-							</div>
+									<div>
+										<p className="text-[9px] font-black text-brand-gold uppercase tracking-widest font-mono mb-1">
+											V_PROP_{i + 1} // {spec.label}
+										</p>
+										<p className="text-white font-medium text-sm leading-snug">{spec.val}</p>
+									</div>
+								</div>
+							))}
 						</div>
 					</div>
 				</div>
