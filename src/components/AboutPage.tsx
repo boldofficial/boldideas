@@ -198,11 +198,6 @@ const AboutPage: React.FC = () => {
 								key={i}
 								className="group relative border border-brand-navy bg-brand-navy text-white transition-all duration-500 overflow-hidden p-8 lg:p-10 shadow-xl rounded-sm">
 								
-								{/* Technical Decor */}
-								<div className="absolute top-0 right-0 p-3 font-mono text-[9px] opacity-20 text-white">
-									SYS_MOD_{mod.id} // ACTIVE
-								</div>
-								
 								{/* Corner Marks */}
 								<div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-brand-gold/40 transition-all"></div>
 								<div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-brand-gold/40 transition-all"></div>
@@ -277,11 +272,6 @@ const AboutPage: React.FC = () => {
 								<div
 									key={i}
 									className="group relative border bg-white border-slate-100 hover:border-brand-gold/30 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 overflow-hidden p-6 lg:p-8 flex flex-col justify-between">
-									
-									{/* Technical Decor */}
-									<div className="absolute top-0 right-0 p-3 font-mono text-[9px] opacity-20 text-brand-navy">
-										SYS_MOD_{mod.id} // ACTIVE
-									</div>
 									
 									{/* Corner Marks */}
 									<div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-brand-gold/40 transition-all"></div>
