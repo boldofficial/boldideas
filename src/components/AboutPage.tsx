@@ -54,20 +54,10 @@ const AboutPage: React.FC = () => {
 								We help businesses, institutions, and organizations implement AI, automation, and digital systems that actually work.
 							</p>
 
-							<div className="flex flex-col md:flex-row md:items-start gap-6 md:gap-12 pt-8 border-t border-white/5">
-								<div className="max-w-sm">
-									<p className="text-white/40 text-[11px] md:text-xs font-medium leading-relaxed italic mb-3">
-										Deploying intelligence into real workflows.
-									</p>
-									<p className="text-white/20 text-[9px] md:text-[10px] leading-relaxed">
-										We don’t just talk about AI—we train your teams to use it confidently and unlock measurable productivity.
-									</p>
-								</div>
-								
-								{/* Metadata Tag (Condensed) */}
-								<div className="pt-2">
-									
-								</div>
+							<div className="pt-8 border-t border-white/5">
+								<p className="text-white/60 text-sm md:text-base leading-relaxed max-w-2xl">
+									At Bold Ideas, we don’t just talk about artificial intelligence—we <span className="text-brand-gold font-bold">deploy it into real workflows</span>, train your teams to use it confidently, and help you unlock measurable productivity, efficiency, and growth.
+								</p>
 							</div>
 						</div>
 					</div>
@@ -91,39 +81,23 @@ const AboutPage: React.FC = () => {
 
 							<h2 className="text-4xl md:text-5xl font-black text-white mb-16 tracking-tighter leading-none">
 								Modern Organizations <br />
-								Do Not Fail Because <br />
-								<span className="text-white/20 italic underline decoration-white/10">Of Ideas.</span>
+								don't fail because they <br />
+								<span className="text-white/20 italic underline decoration-white/10">lack ideas.</span>
 							</h2>
 
-							<div className="grid gap-6">
-								{[
-									{code: 'SYS_01', title: 'DISCONNECTED SILOS', desc: 'Communication flows break between teams and tools.', badge: 'border border-white/20 text-white/60'},
-									{code: 'MEM_X1', title: 'MANUAL DEBT', desc: 'Teams spend 60% of their time on repetitive tasks.', badge: 'bg-white/10 text-white font-black'},
-									{code: 'SYS_03', title: 'LATENCY LOG', desc: 'Slow decision-making due to fragmented data.', badge: 'border border-white/20 text-white/60'},
-								].map((item, i) => (
-									<div key={i} className="group/card relative">
-										<div className="absolute -inset-2 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity rounded-sm"></div>
-										<div className="relative flex items-center space-x-6">
-											<div className="flex flex-col items-center">
-												<div className="w-1.5 h-1.5 rounded-full bg-white/40 mb-2"></div>
-												<div className="w-px h-12 bg-white/10"></div>
-											</div>
-											<div>
-												<div className="flex items-center space-x-3 mb-1">
-													{/* <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded-sm tracking-tighter ${item.badge}`}>
-														{item.code}
-													</span> */}
-													<h4 className="font-black text-white text-sm tracking-widest uppercase">
-														{item.title}
-													</h4>
-												</div>
-												<p className="text-white/30 text-sm md:text-base font-medium leading-relaxed max-w-sm">
-													{item.desc}
-												</p>
-											</div>
-										</div>
-									</div>
-								))}
+							<div className="grid gap-8">
+								<div className="relative flex items-start space-x-6">
+									<div className="w-1.5 h-1.5 rounded-full bg-brand-gold mt-2"></div>
+									<p className="text-white/80 text-lg font-medium leading-relaxed">
+										They struggle because systems are slow, teams are overwhelmed, and tools don’t talk to each other.
+									</p>
+								</div>
+								<div className="relative flex items-start space-x-6">
+									<div className="w-1.5 h-1.5 rounded-full bg-brand-gold mt-2"></div>
+									<p className="text-white font-black text-xl tracking-tight">
+										Bold Ideas exists to fix that.
+									</p>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -146,22 +120,25 @@ const AboutPage: React.FC = () => {
 							</div>
 
 							<h2 className="text-3xl md:text-4xl font-black text-brand-navy mb-10 tracking-tight leading-tight">
-								We Exist to <br />
-								<span className="text-brand-gold italic decoration-brand-gold/30">Connect & Automate.</span>
+								Trusted AI & Digital <br />
+								<span className="text-brand-gold italic decoration-brand-gold/30">Transformation Partner.</span>
 							</h2>
 
-							<div className="space-y-8 max-w-lg">
+							<p className="text-slate-500 font-bold mb-8">We work as your AI implementation and digital growth partner, helping you:</p>
+
+							<div className="space-y-6 max-w-lg">
 								{[
-									{tag: 'AUTOMATION', msg: 'Reduce manual work with AI.'},
-									{tag: 'INFRASTRUCTURE', msg: 'Build practical growth systems.'},
-									{tag: 'CAPACITY', msg: 'Train teams for AI adoption.'},
-								].map((item, i) => (
-									<div key={i} className="flex items-start space-x-5 group/item border-l border-brand-navy/10 pl-6 py-2">
-										<span className="bg-brand-navy/5 text-brand-navy font-black text-[8px] md:text-[9px] px-2 py-0.5 rounded tracking-widest mt-1">
-											{item.tag}
+									'Reduce manual work with AI automation',
+									'Improve team productivity using practical AI tools',
+									'Build custom internal systems tailored to your operations',
+									'Strengthen marketing, operations, and decision-making with data-driven AI',
+								].map((msg, i) => (
+									<div key={i} className="flex items-start space-x-5 group/item border-l-2 border-brand-navy/10 pl-6 py-1">
+										<span className="text-brand-gold font-black mt-1">
+											✔
 										</span>
-										<p className="text-slate-500 text-base md:text-lg font-medium group-hover/item:text-brand-navy transition-colors leading-snug">
-											{item.msg}
+										<p className="text-slate-500 text-sm md:text-base font-medium group-hover/item:text-brand-navy transition-colors leading-snug">
+											{msg}
 										</p>
 									</div>
 								))}
@@ -178,7 +155,7 @@ const AboutPage: React.FC = () => {
 						<div className="max-w-xl mx-auto">
 							<h2 className="text-5xl lg:text-6xl font-black text-brand-navy tracking-tighter leading-none mb-6">
 								<span className="text-brand-navy tracking-[0.3em]">What We</span> { ' '}
-								<span className="text-brand-gold italic">Do.</span>
+								<span className="text-brand-gold italic">Do</span>
 							</h2>
 						</div>
 					</div>
@@ -188,9 +165,22 @@ const AboutPage: React.FC = () => {
 						{[
 							{
 								id: '01',
-								title: 'AI Training',
-								desc: 'Hands-on training designed specifically for corporate teams, government agencies, and NGOs. We turn AI-confused staff into AI-confident experts through specialized workflows.',
-								highlights: ['On-site Workshops', 'Virtual Live Sessions', 'Executive Briefings'],
+								title: 'AI Productivity Training for Corporate Organizations',
+								desc: 'Our flagship service: We deliver hands-on AI productivity training designed specifically for corporate teams, government agencies, educational institutions, and NGOs.',
+								context: 'This is not theory or hype.',
+								points: [
+									'Use AI tools to work faster and smarter',
+									'Automate repetitive tasks (emails, reports, documentation)',
+									'Improve collaboration and decision-making',
+									'Apply AI safely, ethically, and efficiently in daily work'
+								],
+								formats: [
+									'On-site workshops',
+									'Virtual live sessions',
+									'Executive AI briefings',
+									'Department-specific AI workflows'
+								],
+								outcome: 'Outcome: Teams save time, reduce errors, and become AI-confident—not AI-confused.',
 								theme: 'navy'
 							}
 						].map((mod, i) => (
@@ -198,7 +188,6 @@ const AboutPage: React.FC = () => {
 								key={i}
 								className="group relative border border-brand-navy bg-brand-navy text-white transition-all duration-500 overflow-hidden p-8 lg:p-10 shadow-xl rounded-sm">
 								
-								{/* Corner Marks */}
 								<div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-brand-gold/40 transition-all"></div>
 								<div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-brand-gold/40 transition-all"></div>
 
@@ -208,36 +197,60 @@ const AboutPage: React.FC = () => {
 											<div className="w-10 h-10 flex items-center justify-center font-black text-xs border bg-brand-gold text-brand-navy border-brand-gold">
 												{mod.id}
 											</div>
-											<h3 className="text-2xl lg:text-3xl font-black uppercase tracking-tight leading-none text-white">
+											<h3 className="text-xl lg:text-3xl font-black uppercase tracking-tight leading-none text-white whitespace-pre-wrap max-w-lg">
 												{mod.title}
 											</h3>
 										</div>
 										<div className="hidden lg:block h-px flex-1 mx-8 bg-white/10"></div>
 									</div>
 
-									<div className="grid lg:grid-cols-2 gap-8">
-										<div className="space-y-4">
-											<p className="text-base font-medium leading-relaxed text-white/70">
+									<div className="grid lg:grid-cols-2 gap-12">
+										<div className="space-y-6">
+											<p className="text-base font-bold text-brand-gold">
 												{mod.desc}
 											</p>
-											<div className="flex flex-wrap gap-2">
-												{mod.highlights.map((h, idx) => (
-													<span key={idx} className="px-2 py-0.5 text-[8px] font-black tracking-widest uppercase border bg-white/5 border-white/10 text-white/40 group-hover:border-brand-gold transition-colors">
-														{h}
-													</span>
-												))}
+											
+											<p className="text-sm font-medium text-white/50 italic">{mod.context}</p>
+
+											<div className="space-y-3">
+												<p className="text-[10px] font-black tracking-widest text-white/40 uppercase">We train your staff to:</p>
+												<ul className="space-y-2">
+													{mod.points.map((p, idx) => (
+														<li key={idx} className="flex items-start space-x-3 text-sm text-white/70">
+															<span className="text-brand-gold">🔹</span>
+															<span>{p}</span>
+														</li>
+													))}
+												</ul>
 											</div>
 										</div>
 
-										<div className="flex items-end lg:justify-end">
-											<button className="inline-flex items-center space-x-4 py-3 px-6 border bg-brand-gold text-brand-navy border-brand-gold hover:bg-white hover:border-white transition-all">
-												<span className="text-[10px] font-black uppercase tracking-[0.3em]">
-													Request_Module
-												</span>
-												<svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-												</svg>
-											</button>
+										<div className="space-y-6 flex flex-col justify-between">
+											<div className="space-y-4">
+												<p className="text-[10px] font-black tracking-widest text-brand-gold uppercase">Training formats include:</p>
+												<div className="flex flex-wrap gap-2">
+													{mod.formats.map((f, idx) => (
+														<span key={idx} className="px-3 py-1 bg-white/5 border border-white/10 text-[10px] font-mono text-white/60">
+															{f}
+														</span>
+													))}
+												</div>
+											</div>
+
+											<div className="pt-6 border-t border-white/5">
+												<p className="text-sm font-black italic text-brand-gold mb-8">
+													{mod.outcome}
+												</p>
+												
+												<button className="inline-flex items-center space-x-4 py-3 px-6 border bg-brand-gold text-brand-navy border-brand-gold hover:bg-white hover:border-white transition-all w-full lg:w-auto justify-center">
+													<span className="text-[10px] font-black uppercase tracking-[0.3em]">
+														Request_Training
+													</span>
+													<svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+													</svg>
+												</button>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -249,31 +262,27 @@ const AboutPage: React.FC = () => {
 							{[
 								{
 									id: '02',
-									title: 'Consulting',
-									desc: 'Custom workflows designed for your organization. We build AI agents and automated reporting.',
-									highlights: ['AI Agents', 'Doc Gen', 'Automation'],
-									theme: 'light'
+									title: 'AI Consulting & Workflow Automation',
+									desc: 'We analyze your current operations and design custom AI-powered workflows that fit your organization—not generic SaaS tools.',
+									highlights: ['AI Agents', 'Automation', 'Custom Scripts'],
 								},
 								{
 									id: '03',
-									title: 'Growth Systems',
-									desc: 'Combining AI with marketing strategy to build growth infrastructure that scales sustainably.',
-									highlights: ['AI SEO', 'Lead Funnels', 'CRM'],
-									theme: 'light'
+									title: 'Digital Marketing & Growth Systems',
+									desc: 'We combine AI + digital marketing strategy to help businesses grow sustainably. This isn’t just marketing—it’s growth infrastructure.',
+									highlights: ['AI SEO', 'Funnels', 'CRM'],
 								},
 								{
 									id: '04',
-									title: 'Internal Tools',
-									desc: 'Conversion-focused business websites and custom admin dashboards built for real usage.',
-									highlights: ['Architecture', 'Dashboards', 'Portals'],
-									theme: 'light'
+									title: 'Custom Websites & Internal Tools',
+									desc: 'We design and build conversion-focused business websites, admin dashboards, and internal tools tailored to your workflow.',
+									highlights: ['Portals', 'Dashboards', 'Secure'],
 								}
 							].map((mod, i) => (
 								<div
 									key={i}
 									className="group relative border bg-white border-slate-100 hover:border-brand-gold/30 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 overflow-hidden p-6 lg:p-8 flex flex-col justify-between">
 									
-									{/* Corner Marks */}
 									<div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-brand-gold/40 transition-all"></div>
 									<div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-brand-gold/40 transition-all"></div>
 
@@ -282,7 +291,7 @@ const AboutPage: React.FC = () => {
 											<div className="w-8 h-8 flex items-center justify-center font-black text-[10px] border bg-brand-light text-brand-navy border-slate-100 group-hover:bg-brand-navy group-hover:text-brand-gold transition-colors">
 												{mod.id}
 											</div>
-											<h4 className="text-lg lg:text-xl font-black uppercase tracking-tight leading-none text-brand-navy">
+											<h4 className="text-sm font-black uppercase tracking-[0.1em] leading-tight text-brand-navy">
 												{mod.title}
 											</h4>
 										</div>
@@ -315,58 +324,71 @@ const AboutPage: React.FC = () => {
 							))}
 						</div>
 					</div>
-				</div>
+
+					</div>
+
 			</section>
 
 			{/* Who We Serve: The Partner Ecosystem Diagnostic */}
-			<section className="py-32 px-6 lg:px-24 bg-brand-light border-y border-brand-navy/5">
-				<div className="max-w-5xl mx-auto">
-					<div className="bg-white rounded-sm p-10 lg:p-16 shadow-xl border border-brand-navy/5 relative overflow-hidden group">
-						<div className="absolute top-0 right-0 w-96 h-96 bg-brand-gold/[0.03] rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-[5s]"></div>
+			<section className="py-13 px-6 lg:px-24 bg-white relative overflow-hidden">
+				{/* Background Grid - Very Subtle */}
+				<div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+					style={{ backgroundImage: 'linear-gradient(#002D5B 1px, transparent 1px), linear-gradient(90deg, #002D5B 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
+				</div>
 
-						<div className="grid lg:grid-cols-5 gap-12 relative z-10">
-							<div className="lg:col-span-2">
-								<div className="inline-flex items-center space-x-2 bg-brand-navy/5 px-2 py-1 mb-6 border-l-2 border-brand-gold">
-									<p className="text-[10px] font-mono text-brand-navy/40 uppercase tracking-[0.3em]">
-										Partner_Ecosystem_v2
-									</p>
-								</div>
-								<h2 className="text-4xl lg:text-5xl font-black text-brand-navy tracking-tight mb-8 leading-[1.1]">
-									Who We <br />
-									<span className="text-brand-gold italic">Serve</span>
-								</h2>
-								<p className="text-slate-500 font-medium leading-relaxed max-w-xs">
-									We provide capacity building and AI infrastructure for high-impact organizations.
+				<div className="max-w-5xl mx-auto relative z-10">
+					<div className="bg-white rounded-xl p-10 lg:p-16 shadow-[0_32px_64px_-16px_rgba(0,45,91,0.1)] border border-slate-100 flex flex-col lg:flex-row gap-16 lg:items-start">
+
+						{/* Left: Branding & Intent */}
+						<div className="lg:w-[35%] w-full">
+							
+							<h2 className="text-5xl font-black text-brand-navy tracking-tighter leading-[0.9] mb-10">
+								Who We <br />
+								<span className="text-brand-gold italic">Serve</span>
+							</h2>
+							<div className="space-y-6">
+								<p className="text-slate-500 text-lg font-bold leading-tight">
+									We work with:
+								</p>
+								<p className="text-slate-400 text-sm font-medium leading-relaxed max-w-[280px] italic">
+									If your organization wants to <span className="text-brand-navy font-bold">use AI productively</span>—not experiment endlessly—Bold Ideas is for you.
 								</p>
 							</div>
+						</div>
 
-							<div className="lg:col-span-3 space-y-3">
-								{[
-									{ name: 'Small and medium-sized businesses', id: '01', focus: 'EFFICIENCY' },
-									{ name: 'Corporate organizations & enterprises', id: '02', focus: 'SCALABILITY' },
-									{ name: 'Schools, universities & training institutions', id: '03', focus: 'CAPACITY' },
-									{ name: 'NGOs, churches & community organizations', id: '04', focus: 'MISSION' },
-									{ name: 'Local commerce ecosystems', id: '05', focus: 'INFRASTRUCTURE' },
-								].map((item, i) => (
-									<div
-										key={i}
-										className="flex flex-col md:flex-row md:items-center justify-between p-5 rounded-sm bg-brand-light/40 border border-brand-navy/[0.03] hover:border-brand-gold/20 hover:bg-white transition-all duration-300">
-										<div className="flex items-center space-x-4 mb-3 md:mb-0">
-											<span className="font-mono text-[9px] text-brand-gold tracking-widest uppercase">
-												NODE_{item.id} // ACTIVE
-											</span>
-											<h4 className="text-lg lg:text-xl font-bold text-brand-navy">
-												{item.name}
-											</h4>
+						{/* Right: The Service Grid / Matrix */}
+						<div className="lg:w-[65%] w-full space-y-4">
+							{[
+								{ name: 'Small and medium-sized businesses', id: '01', focus: 'EFFICIENCY' },
+								{ name: 'Corporate organizations & enterprises', id: '02', focus: 'SCALABILITY' },
+								{ name: 'Schools, universities & training institutions', id: '03', focus: 'CAPACITY' },
+								{ name: 'NGOs, community organizations', id: '04', focus: 'MISSION' },
+								{ name: 'Local commerce ecosystems', id: '05', focus: 'INFRASTRUCTURE' },
+							].map((item, i) => (
+								<div
+									key={i}
+									className="group flex md:flex-row flex-col md:items-center justify-between p-6 bg-slate-50/50 border border-slate-100/50 rounded-lg hover:bg-white hover:border-brand-gold/20 hover:shadow-xl hover:shadow-brand-navy/5 transition-all duration-500">
+									
+									<div className="flex items-center space-x-6">
+										{/* Diagnostic Disc */}
+										<div className="relative flex items-center justify-center">
+											<div className="w-1.5 h-1.5 rounded-full bg-brand-gold"></div>
+											<div className="absolute w-3 h-3 rounded-full border border-brand-gold/30 animate-ping"></div>
 										</div>
-										<div className="flex items-center">
-											<span className="px-2 py-1 bg-brand-navy/5 text-brand-navy text-[8px] font-black tracking-widest uppercase border border-brand-navy/5">
-												{item.focus}
-											</span>
-										</div>
+										
+										<h4 className="text-lg font-extrabold text-brand-navy/90 group-hover:text-brand-navy transition-colors">
+											{item.name}
+										</h4>
 									</div>
-								))}
-							</div>
+
+									{/* Status Badge */}
+									<div className="flex items-center mt-4 md:mt-0">
+										<span className="px-3 py-1 bg-white border border-slate-200 text-[8px] font-black tracking-widest text-slate-400 group-hover:text-brand-navy group-hover:border-brand-navy transition-all uppercase">
+											{item.focus}
+										</span>
+									</div>
+								</div>
+							))}
 						</div>
 					</div>
 				</div>
@@ -376,14 +398,9 @@ const AboutPage: React.FC = () => {
 			<section className="py-32 px-6 lg:px-24 bg-white relative overflow-hidden">
 				<div className="max-w-5xl mx-auto relative z-10">
 					<div className="mb-20 text-center">
-						<div className="inline-flex items-center space-x-2 bg-brand-navy/5 px-2 py-1 mb-4 border-l-2 border-brand-gold">
-							<p className="text-[10px] font-mono text-brand-navy/40 uppercase tracking-[0.3em]">
-								System_Deployment_Cycle
-							</p>
-						</div>
-						<h2 className="text-4xl lg:text-5xl font-black text-brand-navy tracking-tight leading-none">
-							Our <br />
-							<span className="text-brand-gold italic">Approach.</span>
+						<h2 className="text-4xl lg:text-5xl font-black text-brand-navy tracking-[0.3em] leading-none">
+							<span className="text-brand-navy">Our </span>
+							<span className="text-brand-gold italic">Approach</span>
 						</h2>
 					</div>
 
@@ -445,17 +462,18 @@ const AboutPage: React.FC = () => {
 								<span className="text-brand-gold italic text-4xl lg:text-6xl">Bold Ideas?</span>
 							</h2>
 							<p className="text-white/60 text-lg font-medium leading-relaxed max-w-md italic mb-12">
-								"We don’t just deliver tools. We build capacity, systems, and results."
+								We don’t just deliver tools. <br />
+								<span className="text-white font-black not-italic border-t border-white/10 pt-4 mt-4 block">We build capacity, systems, and results.</span>
 							</p>
 						</div>
 
 						<div className="space-y-4">
 							{[
-								{ label: 'Practical AI', val: 'Implementation-focused solutions that deliver real results.' },
-								{ label: 'Local Context', val: 'Global standards adapted for local organizational needs.' },
-								{ label: 'Custom Build', val: 'No generic SaaS. Everything is tailored to your workflow.' },
-								{ label: 'High Adoption', val: 'Deep focus on training to ensure your staff actually uses the tools.' },
-								{ label: 'Long-term Optik', val: 'We act as your growth partner, not just a vendor.' }
+								'Practical, implementation-focused AI',
+								'Local understanding with global standards',
+								'Custom solutions—not one-size-fits-all',
+								'Strong focus on training and adoption',
+								'Long-term partnership mindset'
 							].map((spec, i) => (
 								<div
 									key={i}
@@ -464,10 +482,7 @@ const AboutPage: React.FC = () => {
 										✔
 									</div>
 									<div>
-										<p className="text-[9px] font-black text-brand-gold uppercase tracking-widest font-mono mb-1">
-											V_PROP_{i + 1} // {spec.label}
-										</p>
-										<p className="text-white font-medium text-sm leading-snug">{spec.val}</p>
+										<p className="text-white font-medium text-sm leading-snug">{spec}</p>
 									</div>
 								</div>
 							))}
