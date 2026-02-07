@@ -48,18 +48,18 @@ const Footer: React.FC = () => {
 								</Link>
 							</li>
 							<li>
-								<Link href="/services#coaching" className="hover:text-brand-gold transition-colors">
-									AI Coaching
-								</Link>
-							</li>
-							<li>
 								<Link href="/services#automation" className="hover:text-brand-gold transition-colors">
-									Automation
+									AI Automation
 								</Link>
 							</li>
 							<li>
-								<Link href="/services#systems" className="hover:text-brand-gold transition-colors">
+								<Link href="/services#growth" className="hover:text-brand-gold transition-colors">
 									Growth Systems
+								</Link>
+							</li>
+							<li>
+								<Link href="/services#development" className="hover:text-brand-gold transition-colors">
+									Custom Development
 								</Link>
 							</li>
 						</ul>
@@ -71,6 +71,11 @@ const Footer: React.FC = () => {
 						</h5>
 						<ul className="space-y-5 text-[11px] font-bold uppercase tracking-widest text-white/40">
 							<li>
+								<Link href="/services" className="hover:text-brand-gold transition-colors border-b border-brand-gold/20 pb-1">
+									Services
+								</Link>
+							</li>
+							<li>
 								<Link href="/about" className="hover:text-brand-gold transition-colors">
 									About Us
 								</Link>
@@ -81,18 +86,13 @@ const Footer: React.FC = () => {
 								</Link>
 							</li>
 							<li>
-								<Link href="#" className="hover:text-brand-gold transition-colors">
-									LinkedIn
-								</Link>
-							</li>
-							<li>
-								<Link href="#" className="hover:text-brand-gold transition-colors">
+								<Link href="/privacy" className="hover:text-brand-gold transition-colors">
 									Privacy
 								</Link>
 							</li>
 							<li>
-								<Link href="/test-crm" className="hover:text-brand-gold transition-colors text-brand-gold/50">
-									[Dev: CRM Test]
+								<Link href="/terms" className="hover:text-brand-gold transition-colors">
+									Terms of Service
 								</Link>
 							</li>
 						</ul>
