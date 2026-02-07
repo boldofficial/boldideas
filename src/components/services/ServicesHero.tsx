@@ -1,4 +1,4 @@
-import React from 'react';
+import Link from 'next/link';
 
 const ServicesHero: React.FC = () => {
   return (
@@ -30,11 +30,26 @@ const ServicesHero: React.FC = () => {
           </h1>
 
           {/* Simplified Narrative Block */}
-          <div className="relative border-t border-white/5 pt-6 md:pt-8 max-w-xl mx-auto">
+          <div className="relative border-t border-white/5 pt-6 md:pt-8 max-w-xl mx-auto mb-10 md:mb-12">
             <p className="text-[10px] sm:text-xs md:text-base text-white/50 font-medium leading-relaxed">
               We deploy custom AI systems designed to <span className="text-brand-gold font-bold">automate, scale, and optimize</span> your organization's entire digital infrastructure.
             </p>
           </div>
+
+          {/* Booking CTA Button */}
+          <Link 
+            href="https://crm.getboldideas.com/book"
+            target="_blank"
+            className="group relative inline-flex items-center justify-center bg-brand-gold text-brand-navy font-black text-[10px] md:text-xs uppercase tracking-[0.4em] px-8 md:px-12 py-4 md:py-6 overflow-hidden transition-all hover:pr-14"
+          >
+            <span className="relative z-10">BOOK A STRATEGY SESSION</span>
+            <div className="absolute inset-0 bg-white translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500"></div>
+            <span className="absolute right-6 opacity-0 group-hover:opacity-100 group-hover:right-8 transition-all duration-500 z-10 text-brand-navy">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </span>
+          </Link>
         </div>
       </div>
     </section>
