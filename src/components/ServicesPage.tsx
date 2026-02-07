@@ -1,4 +1,5 @@
 import React from 'react';
+import ServicesHero from './services/ServicesHero';
 
 const ServicesPage: React.FC = () => {
   const services = [
@@ -102,23 +103,7 @@ const ServicesPage: React.FC = () => {
            style={{ backgroundImage: 'linear-gradient(#002D5B 1px, transparent 1px), linear-gradient(90deg, #002D5B 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
       </div>
 
-      <section className="relative px-4 pt-20 pb-32">
-        <div className="max-w-7xl mx-auto flex flex-col items-center text-center relative z-10">
-          <div className="inline-flex items-center space-x-3 mb-12 border border-brand-navy/10 bg-white/50 px-4 py-2 rounded-sm backdrop-blur-sm">
-            <div className="w-1.5 h-1.5 bg-brand-gold animate-pulse"></div>
-            <span className="text-[10px] md:text-xs font-mono font-black text-brand-navy uppercase tracking-[0.3em]">System_Modules: Active</span>
-          </div>
-          
-          <h1 className="text-6xl md:text-8xl font-black text-brand-navy leading-none tracking-tighter mb-12">
-            Intelligent <br />
-            <span className="text-brand-gold italic">Protocols.</span>
-          </h1>
-          
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
-            We don't just sell services; we deploy growth protocols. Inspect our core modules designed to automate, scale, and optimize your business operations.
-          </p>
-        </div>
-      </section>
+      <ServicesHero />
 
       <section className="px-4 pb-32">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-8">
