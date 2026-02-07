@@ -126,7 +126,7 @@ const BentoGrid: React.FC = () => {
                         <h3 className="text-xl font-black text-slate-400 uppercase tracking-tight text-center mb-8">
                             Custom AI Solutions <br /> for Your Business
                         </h3>
-                        <Link href="/contact">
+                        <Link href="https://crm.getboldideas.com/book" target="_blank">
                             <button className="px-6 py-3 border border-brand-navy text-brand-navy text-[10px] font-black uppercase tracking-widest hover:bg-brand-navy hover:text-white transition-all">
                                 Get Started
                             </button>
