@@ -43,14 +43,42 @@ const Header: React.FC = () => {
 		{href: '/contact', label: 'Contact'},
 	];
 
+	// Determine if the current page has a dark background by default
+	const isDarkPage = ['/', '/services', '/contact'].includes(pathname);
+
+	// Computation of dynamic theme-based classes
+	const getHeaderBgClass = () => {
+		if (scrolled) return 'py-3 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm';
+		return 'py-6 bg-transparent border-transparent shadow-none';
+	};
+
+	const getNavLinkClass = (linkHref: string) => {
+		const isActive = pathname === linkHref || (linkHref !== '/' && pathname.startsWith(linkHref));
+		if (isActive) return 'text-brand-gold';
+		
+		if (scrolled) return 'text-brand-navy/60 hover:text-brand-gold';
+		return isDarkPage ? 'text-white/60 hover:text-brand-gold' : 'text-brand-navy/60 hover:text-brand-gold';
+	};
+
+	const getAuthBtnClass = () => {
+		if (scrolled) return 'text-brand-navy/60 hover:text-brand-gold';
+		return isDarkPage ? 'text-white/60 hover:text-brand-gold' : 'text-brand-navy/60 hover:text-brand-gold';
+	};
+
+	const getMobileMenuToggleClass = () => {
+		if (scrolled) return 'text-brand-navy';
+		return isDarkPage ? 'text-white' : 'text-brand-navy';
+	};
+
+	const getLogoFilter = () => {
+		if (scrolled) return '';
+		return isDarkPage ? 'brightness-200 contrast-100' : '';
+	};
+
 	return (
 		<header className="fixed top-0 left-0 z-50 w-full transition-all duration-300">
 			<nav
-				className={`px-4 md:px-8 flex items-center justify-between transition-all duration-500 fixed w-full top-0 left-0 z-50 ${
-					scrolled 
-						? 'py-3 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm' 
-						: 'py-6 bg-transparent border-transparent shadow-none'
-				}`}>
+				className={`px-4 md:px-8 flex items-center justify-between transition-all duration-500 fixed w-full top-0 left-0 z-50 ${getHeaderBgClass()}`}>
 				<Link
 					href="/"
 					className="flex items-center space-x-3 group relative z-50">
@@ -59,7 +87,7 @@ const Header: React.FC = () => {
 						alt="Bold Ideas Innovation"
 						width={120}
 						height={40}
-						className="h-8 md:h-10 w-auto"
+						className={`h-8 md:h-10 w-auto transition-all duration-500 ${getLogoFilter()}`}
 						priority
 					/>
 				</Link>
@@ -70,12 +98,7 @@ const Header: React.FC = () => {
 						<Link
 							key={link.href}
 							href={link.href}
-							className={`text-[10px] font-black uppercase tracking-widest transition-colors ${
-								pathname === link.href ||
-								(link.href !== '/' && pathname.startsWith(link.href))
-									? 'text-brand-gold'
-									: 'text-brand-navy/60 hover:text-brand-gold'
-							}`}>
+							className={`text-[10px] font-black uppercase tracking-widest transition-colors ${getNavLinkClass(link.href)}`}>
 							{link.label}
 						</Link>
 					))}
@@ -89,7 +112,7 @@ const Header: React.FC = () => {
 							className={`text-[10px] font-black uppercase tracking-widest transition-colors mr-4 ${
 								pathname.startsWith('/admin')
 									? 'text-brand-gold'
-									: 'text-brand-navy/60 hover:text-brand-gold'
+									: getAuthBtnClass()
 							}`}>
 							Admin
 						</Link>
@@ -97,13 +120,15 @@ const Header: React.FC = () => {
 					{user ? (
 						<button
 							onClick={handleSignOut}
-							className="text-[10px] font-black uppercase tracking-widest text-brand-navy/60 hover:text-red-500 transition-colors mr-4">
+							className={`text-[10px] font-black uppercase tracking-widest transition-colors mr-4 ${
+								scrolled ? 'text-brand-navy/60 hover:text-red-500' : (isDarkPage ? 'text-white/60 hover:text-red-400' : 'text-brand-navy/60 hover:text-red-500')
+							}`}>
 							Sign Out
 						</button>
 					) : (
 						<Link
 							href="/signin"
-							className="text-[10px] font-black uppercase tracking-widest text-brand-navy/60 hover:text-brand-gold transition-colors mr-4">
+							className={`text-[10px] font-black uppercase tracking-widest transition-colors mr-4 ${getAuthBtnClass()}`}>
 							Sign In
 						</Link>
 					)}
@@ -111,7 +136,11 @@ const Header: React.FC = () => {
 					<Link
 						href="https://crm.getboldideas.com/book"
 						target="_blank"
-						className="bg-brand-navy text-white px-6 py-2.5 rounded-full text-xs font-black hover:bg-brand-gold hover:text-brand-navy transition-all hover:scale-105 active:scale-95 shadow-md">
+						className={`px-6 py-2.5 rounded-full text-xs font-black transition-all hover:scale-105 active:scale-95 shadow-md ${
+							scrolled || !isDarkPage
+								? 'bg-brand-navy text-white hover:bg-brand-gold hover:text-brand-navy'
+								: 'bg-brand-gold text-brand-navy hover:bg-white'
+						}`}>
 						GET STARTED
 					</Link>
 				</div>
@@ -119,7 +148,7 @@ const Header: React.FC = () => {
 				{/* Mobile Menu Toggle */}
 				<button
 					type="button"
-					className="md:hidden relative z-50 w-10 h-10 flex items-center justify-center text-brand-navy"
+					className={`md:hidden relative z-50 w-10 h-10 flex items-center justify-center transition-colors ${getMobileMenuToggleClass()}`}
 					onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
 					<div
 						className={`w-6 flex flex-col items-end gap-1.5 transition-all duration-300 ${
