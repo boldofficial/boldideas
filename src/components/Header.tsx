@@ -109,7 +109,8 @@ const Header: React.FC = () => {
 					)}
 
 					<Link
-						href="/contact"
+						href="https://crm.getboldideas.com/book"
+						target="_blank"
 						className="bg-brand-navy text-white px-6 py-2.5 rounded-full text-xs font-black hover:bg-brand-gold hover:text-brand-navy transition-all hover:scale-105 active:scale-95 shadow-md">
 						GET STARTED
 					</Link>
@@ -201,7 +202,8 @@ const Header: React.FC = () => {
 							)}
 
 							<Link
-								href="/contact"
+								href="https://crm.getboldideas.com/book"
+								target="_blank"
 								onClick={() => setMobileMenuOpen(false)}
 								className="bg-brand-navy text-white px-8 py-4 rounded-full text-sm font-black uppercase tracking-widest hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl mt-4">
 								Get Started
