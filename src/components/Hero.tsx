@@ -50,7 +50,11 @@ const Hero: React.FC = () => {
                         {/* <p className="text-brand-navy font-bold text-xl mb-12 italic leading-snug">
                             Helping non-technical founders adopt AI that delivers real results.
                         </p> */}
-                        <Link href="/contact" className="inline-flex items-center text-[11px] font-black uppercase tracking-[0.2em] text-brand-gold transition-all group-hover:translate-x-2">
+                        <Link 
+                            href="https://crm.getboldideas.com/book" 
+                            target="_blank"
+                            className="inline-flex items-center text-[11px] font-black uppercase tracking-[0.2em] text-brand-gold transition-all group-hover:translate-x-2"
+                        >
                             BOOK A CONSULTATION
                             <svg className="ml-4 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
