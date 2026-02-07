@@ -111,7 +111,7 @@ export default function AdminLayout({
           >
             Messages
           </Link>
-          <Link 
+          {/* <Link 
             href="/admin/inbox" 
             className={`block px-4 py-3 rounded text-sm transition-all ${
               pathname === '/admin/inbox' 
@@ -120,7 +120,7 @@ export default function AdminLayout({
             }`}
           >
             Contact Inbox
-          </Link>
+          </Link> */}
           <Link 
             href="/admin/blog" 
             className={`block px-4 py-3 rounded text-sm transition-all ${
