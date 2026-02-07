@@ -1,6 +1,4 @@
-import React from 'react';
 import Link from 'next/link';
-import { BookingForm } from './BookingForm';
 
 const CTA: React.FC = () => {
     return (
@@ -55,10 +53,42 @@ const CTA: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Right: Booking Form */}
+                    {/* Right: Booking Link Panel */}
                     <div className="w-full">
-                         <div className="relative z-10">
-                            <BookingForm />
+                         <div className="relative group">
+                            <div className="absolute inset-0 bg-brand-gold blur-2xl opacity-10 group-hover:opacity-20 transition-opacity rounded-3xl"></div>
+                            <div className="relative bg-brand-navy p-12 lg:p-16 border border-white/10 shadow-2xl overflow-hidden">
+                                {/* Decorative elements */}
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rotate-45 translate-x-16 -translate-y-16"></div>
+                                <div className="absolute bottom-0 left-0 w-24 h-24 border-l border-b border-white/10 -translate-x-4 translate-y-4"></div>
+
+                                <div className="relative z-10 text-center">
+                                    <div className="w-20 h-20 bg-white/5 flex items-center justify-center mx-auto mb-10 border border-white/10 rounded-full">
+                                        <span className="text-4xl text-brand-gold">📅</span>
+                                    </div>
+                                    <h3 className="text-2xl font-black text-white uppercase tracking-wider mb-6">
+                                        Secure Your <br />
+                                        <span className="text-brand-gold">Strategy Protocol</span>
+                                    </h3>
+                                    <p className="text-slate-400 text-sm font-medium mb-10 max-w-xs mx-auto">
+                                        Schedule a direct session with our implementation architects to audit your digital infrastructure.
+                                    </p>
+                                    
+                                    <a 
+                                        href="https://crm.getboldideas.com/book"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center justify-center bg-brand-gold text-brand-navy font-black text-[10px] uppercase tracking-[0.4em] px-10 py-5 hover:bg-white transition-colors w-full"
+                                    >
+                                        BOOK NOW
+                                    </a>
+                                    
+                                    <div className="mt-8 flex items-center justify-center space-x-2 text-[10px] font-mono text-white/30 tracking-widest uppercase">
+                                        <div className="w-2 h-2 rounded-full bg-green-500/40 animate-pulse"></div>
+                                        <span>System Ready: Immediate Deployment</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
