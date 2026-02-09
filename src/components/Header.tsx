@@ -43,8 +43,8 @@ const Header: React.FC = () => {
 		{href: '/contact', label: 'Contact'},
 	];
 
-	// Determine if the current page has a dark background by default
-	const isDarkPage = ['/', '/services', '/contact'].includes(pathname);
+	// Determine if the current page has a dark background by default for unscrolled state
+	const isDarkPage = ['/', '/contact'].includes(pathname);
 
 	// Computation of dynamic theme-based classes
 	const getHeaderBgClass = () => {
