@@ -42,7 +42,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({ posts }) => {
                             <span className="text-[10px] font-black uppercase tracking-[0.5em] text-brand-gold mb-6 block">
                                 Archives // Transmission_Log
                             </span>
-                            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-brand-navy leading-[0.9] tracking-tighter uppercase relative z-10">
+                            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-brand-navy leading-[0.9] tracking-tighter uppercase relative z-10">
                                 Collective <br />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-brand-navy italic">Intel.</span>
                             </h1>
@@ -86,7 +86,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({ posts }) => {
                                         </span>
                                     </div>
 
-                                    <h2 className="text-4xl md:text-6xl font-black text-brand-navy mb-16 leading-[1.1] tracking-tighter uppercase transition-all duration-700 group-hover:tracking-tight">
+                                    <h2 className="text-3xl md:text-5xl font-black text-brand-navy mb-12 leading-[1.1] tracking-tighter uppercase transition-all duration-700 group-hover:tracking-tight">
                                         {featuredPost.title}
                                     </h2>
 

@@ -64,7 +64,7 @@ const BlogPostPage: React.FC<BlogPostPageProps> = ({ post, nextPost }) => {
                         <div className="inline-block bg-brand-navy text-white text-[9px] font-mono px-3 py-1 uppercase tracking-[0.5em] mb-8">
                             ENTRY_SIGNAL // {post.id.slice(0, 12)}
                         </div>
-                        <h1 className="text-5xl md:text-7xl font-black text-brand-navy leading-[0.95] tracking-tighter uppercase mb-6">
+                        <h1 className="text-4xl md:text-6xl font-black text-brand-navy leading-[0.95] tracking-tighter uppercase mb-6">
                             {post.title}
                         </h1>
                     </div>
@@ -78,7 +78,7 @@ const BlogPostPage: React.FC<BlogPostPageProps> = ({ post, nextPost }) => {
                     {/* Footer Signature & Next Signal */}
                     <div className="mt-32">
                         <div className="pt-10 border-t-2 border-brand-navy flex flex-col md:flex-row justify-between items-center gap-10">
-                             <div className="text-4xl md:text-5xl font-black text-brand-navy/10 uppercase tracking-tighter select-none">
+                             <div className="text-3xl md:text-4xl font-black text-brand-navy/10 uppercase tracking-tighter select-none">
                                 END_OF_TRANS
                              </div>
                              
