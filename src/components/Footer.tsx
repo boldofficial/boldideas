@@ -9,9 +9,9 @@ const Footer: React.FC = () => {
 			<div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-px bg-brand-gold/20 blur-md pointer-events-none"></div>
 			
 			<div className="max-w-[1440px] mx-auto relative z-10">
-				<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-16 mb-24">
+				<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-16 mb-12">
 					<div className="col-span-2">
-						<div className="mb-8">
+						<div className="mb-0">
 							<Image
 								src="/logo.png"
 								alt="Bold Ideas Innovation"
