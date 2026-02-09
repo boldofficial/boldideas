@@ -41,7 +41,7 @@ const AudienceStrategy: React.FC = () => {
 	return (
 		<>
 			{/* MURAL 02: WHO WE SERVE (Strategic Deep Grid Elevation) */}
-			<div className="py-24 md:py-32 px-6 lg:px-24 bg-slate-50 relative overflow-hidden">
+			<div className="py-12 bg-slate-50 relative overflow-hidden">
 				{/* Technical Backdrop */}
 				<div className="absolute inset-0 pointer-events-none">
 					<div className="absolute inset-0 opacity-[0.05]"
@@ -55,14 +55,14 @@ const AudienceStrategy: React.FC = () => {
 				<div className="max-w-[1440px] mx-auto relative z-10">
 					
 					{/* Section Header */}
-					<div className="mb-24">
-						<div className="flex items-center space-x-4 mb-8">
+					<div className="mb-8">
+						<div className="flex items-center space-x-4 mb-4">
 							<span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-gold">
 								Built for Founders & Growing Businesses
 							</span>
 							<div className="w-12 h-[1px] bg-brand-gold/30"></div>
 						</div>
-						<h2 className="text-5xl md:text-7xl font-black text-brand-navy uppercase tracking-tighter leading-none mb-10">
+						<h2 className="text-5xl md:text-7xl font-black text-brand-navy uppercase tracking-tighter leading-none mb-4">
 							Who We <br />
 							<span className="text-brand-gold italic">Serve.</span>
 						</h2>
@@ -100,7 +100,7 @@ const AudienceStrategy: React.FC = () => {
 			</div>
 
 			{/* MURAL 03: WHY BOLD IDEAS (The Strategic Advantage) */}
-			<div className="bg-brand-navy py-28 px-6 lg:px-24 relative overflow-hidden">
+			<div className="bg-brand-navy py-16 px-6  relative overflow-hidden">
 				{/* Luminous Glow Orbs */}
 				<div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-gold/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
 				
