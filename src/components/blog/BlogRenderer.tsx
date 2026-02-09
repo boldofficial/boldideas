@@ -12,7 +12,7 @@ export const RenderNode = ({ node }: { node: any }) => {
         
         case 'paragraph':
             return (
-                <p className="text-slate-600 leading-9 text-lg font-light mb-8">
+                <p className="text-slate-600 leading-loose text-base font-light mb-8">
                     {node.content?.map((child: any, i: number) => <RenderNode key={i} node={child} />)}
                 </p>
             );
@@ -32,10 +32,10 @@ export const RenderNode = ({ node }: { node: any }) => {
         case 'heading':
             const Level = node.attrs.level as 1 | 2 | 3;
             const Tag = `h${Level}` as React.ElementType;
-            const sizes: Record<number, string> = {
-                1: "text-4xl md:text-5xl font-black text-brand-navy mt-16 mb-8 uppercase tracking-tight",
-                2: "text-2xl md:text-3xl font-bold text-brand-navy mt-12 mb-6 relative pl-6 border-l-4 border-brand-gold",
-                3: "text-xl font-bold text-brand-navy mt-10 mb-5",
+             const sizes: Record<number, string> = {
+                1: "text-3xl md:text-4xl font-black text-brand-navy mt-14 mb-6 uppercase tracking-tight",
+                2: "text-xl md:text-2xl font-bold text-brand-navy mt-10 mb-5 relative pl-5 border-l-4 border-brand-gold",
+                3: "text-lg font-bold text-brand-navy mt-8 mb-4",
             };
             
             return (
@@ -53,7 +53,7 @@ export const RenderNode = ({ node }: { node: any }) => {
                      <div className="absolute -bottom-4 -right-4 text-6xl text-brand-navy/5 font-black uppercase pointer-events-none select-none">
                          Quote
                      </div>
-                     <blockquote className="relative z-10 italic text-slate-700 text-xl leading-relaxed font-light">
+                     <blockquote className="relative z-10 italic text-slate-700 text-lg leading-relaxed font-light">
                         {node.content?.map((child: any, i: number) => <RenderNode key={i} node={child} />)}
                      </blockquote>
                 </div>
