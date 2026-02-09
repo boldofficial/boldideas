@@ -41,7 +41,7 @@ const CommunityBlueprint: React.FC = () => {
 		<section id="process" className="relative bg-white overflow-hidden">
 			
 			{/* MURAL 01: THE PHILOSOPHY (Dark Backdrop) */}
-			<div className="bg-brand-navy py-32 md:py-48 px-6 lg:px-24 relative overflow-hidden">
+			<div className="bg-brand-navy py-16 px-6 lg:px-24 relative overflow-hidden">
 				{/* Massive Background Text Decoration */}
 				<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[20vw] font-black text-white/[0.02] whitespace-nowrap pointer-events-none select-none uppercase tracking-tighter">
 					Philosophy
