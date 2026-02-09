@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 const CTA: React.FC = () => {
     return (
-        <section id="consultation" className="relative py-32 px-6 lg:px-24 bg-white overflow-hidden">
+        <section id="consultation" className="relative py-12 px-6 bg-white overflow-hidden">
             {/* Architectural Grid Backdrop - Darker for White BG */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute inset-0 opacity-[0.05]" 
