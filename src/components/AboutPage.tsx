@@ -8,7 +8,7 @@ import AboutWhyBold from './about/AboutWhyBold';
 
 const AboutPage: React.FC = () => {
 	return (
-		<div className="pt-24 pb-20 overflow-hidden bg-brand-light relative">
+		<div className="pt-12 overflow-hidden bg-brand-light relative">
 			{/* Background Schematic Grid & Ghost Imagery */}
 			<div
 				className="absolute inset-0 opacity-[0.03] pointer-events-none"
