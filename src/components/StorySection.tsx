@@ -30,11 +30,11 @@ const StorySection: React.FC = () => {
     return (
         <section
             id="aboutus"
-            className="relative py-24 md:py-32 px-6 md:px-24 bg-white overflow-hidden"
+            className="relative py-16 px-6 md:px-24 bg-white overflow-hidden"
         >
             <div className="max-w-[1440px] mx-auto relative z-10">
                 {/* Section Header - Architectural Style */}
-                <div className="flex flex-col mb-20 md:mb-28">
+                <div className="flex flex-col mb-8">
                     <div className="flex items-center space-x-4 mb-6">
                         <div className="w-12 h-[2px] bg-brand-gold"></div>
                         <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-brand-navy/60">
@@ -51,7 +51,7 @@ const StorySection: React.FC = () => {
                 <div className="grid lg:grid-cols-2 gap-16 lg:gap-32 items-start">
                     {/* Left Column: Focal Statement Carousel */}
                     <div className="relative">
-                        <p className="text-xl md:text-2xl text-slate-800 font-bold leading-relaxed mb-12">
+                        <p className="text-xl md:text-2xl text-slate-800 font-bold leading-relaxed mb-8">
                             Small businesses don't need more apps. They need <span className="text-brand-navy italic">systems that save time</span>, reduce stress, and increase revenue.
                         </p>
                         
