@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 const CTA: React.FC = () => {
     return (
-        <section id="consultation" className="relative py-12 px-6 bg-white overflow-hidden">
+        <section id="consultation" className="relative py-24 bg-white overflow-hidden">
             {/* Architectural Grid Backdrop - Darker for White BG */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute inset-0 opacity-[0.05]" 
@@ -12,8 +12,8 @@ const CTA: React.FC = () => {
                     }}></div>
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-gold/10 blur-[150px] rounded-full translate-x-1/2 -translate-y-1/2"></div>
             </div>
-
-            <div className="max-w-[1440px] mx-auto relative z-10">
+            
+            <div className="max-w-[1440px] mx-auto w-full relative z-10 px-6 md:px-16 lg:px-24">
                 <div className="grid lg:grid-cols-2 gap-20 items-center">
                     {/* Left: Content Block */}
                     <div className="max-w-2xl">
