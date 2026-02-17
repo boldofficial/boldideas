@@ -106,27 +106,30 @@ const Header: React.FC = () => {
 				</div>
 
 				<div className="hidden md:flex items-center space-x-4">
-					{/* Dynamic Auth Button */}
+					{/* Admin-only Auth Actions */}
 					{isAdmin && (
-						<Link
-							href="/admin"
-							className={`text-sm font-black uppercase tracking-widest transition-colors mr-4 ${
-								pathname.startsWith('/admin')
-									? 'text-brand-gold'
-									: getAuthBtnClass()
-							}`}>
-							Admin
-						</Link>
+						<>
+							<Link
+								href="/admin"
+								className={`text-sm font-black uppercase tracking-widest transition-colors mr-4 ${
+									pathname.startsWith('/admin')
+										? 'text-brand-gold'
+										: getAuthBtnClass()
+								}`}>
+								Admin
+							</Link>
+							<button
+								onClick={handleSignOut}
+								className={`text-sm font-black uppercase tracking-widest transition-colors mr-4 ${
+									scrolled ? 'text-brand-navy/60 hover:text-red-500' : (isDarkPage ? 'text-white/60 hover:text-red-400' : 'text-brand-navy/60 hover:text-red-500')
+								}`}>
+								Sign Out
+							</button>
+						</>
 					)}
-					{user ? (
-						<button
-							onClick={handleSignOut}
-							className={`text-sm font-black uppercase tracking-widest transition-colors mr-4 ${
-								scrolled ? 'text-brand-navy/60 hover:text-red-500' : (isDarkPage ? 'text-white/60 hover:text-red-400' : 'text-brand-navy/60 hover:text-red-500')
-							}`}>
-							Sign Out
-						</button>
-					) : (
+					
+					{/* Guest-only Sign In */}
+					{!user && (
 						<Link
 							href="/signin"
 							className={`text-sm font-black uppercase tracking-widest transition-colors mr-4 ${getAuthBtnClass()}`}>
@@ -206,23 +209,23 @@ const Header: React.FC = () => {
 						<div className="w-12 h-0.5 bg-gray-100 my-8"></div>
 
 						<div className="flex flex-col items-center space-y-6">
-							{user ? (
+							{isAdmin && (
 								<>
-									{isAdmin && (
-										<Link
-											href="/admin"
-											onClick={() => setMobileMenuOpen(false)}
-											className="text-sm font-bold uppercase tracking-widest text-brand-navy hover:text-brand-gold">
-											Admin Dashboard
-										</Link>
-									)}
+									<Link
+										href="/admin"
+										onClick={() => setMobileMenuOpen(false)}
+										className="text-sm font-bold uppercase tracking-widest text-brand-navy hover:text-brand-gold">
+										Admin Dashboard
+									</Link>
 									<button
 										onClick={handleSignOut}
 										className="text-sm font-bold uppercase tracking-widest text-red-500">
 										Sign Out
 									</button>
 								</>
-							) : (
+							)}
+							
+							{!user && (
 								<Link
 									href="/signin"
 									onClick={() => setMobileMenuOpen(false)}
