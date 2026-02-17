@@ -16,7 +16,7 @@ import {
 const ServicesPreview: React.FC = () => {
     const [emblaRef, emblaApi] = useEmblaCarousel({ 
         align: 'start',
-        loop: true,
+        loop: false,
         slidesToScroll: 1,
         breakpoints: {
             '(min-width: 768px)': { slidesToScroll: 1 },
@@ -115,14 +115,14 @@ const ServicesPreview: React.FC = () => {
 
                     {/* Navigation Buttons */}
                     <button
-                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 lg:-translate-x-12 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-brand-navy hover:bg-brand-gold hover:text-white transition-all z-20"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 lg:-translate-x-12 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-brand-navy hover:bg-brand-gold hover:text-white transition-all z-20 disabled:opacity-30 disabled:cursor-not-allowed"
                         onClick={scrollPrev}
                         disabled={prevBtnDisabled}
                     >
                         <ChevronLeft className="w-6 h-6" />
                     </button>
                     <button
-                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 lg:translate-x-12 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-brand-navy hover:bg-brand-gold hover:text-white transition-all z-20"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 lg:translate-x-12 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-brand-navy hover:bg-brand-gold hover:text-white transition-all z-20 disabled:opacity-30 disabled:cursor-not-allowed"
                         onClick={scrollNext}
                         disabled={nextBtnDisabled}
                     >
