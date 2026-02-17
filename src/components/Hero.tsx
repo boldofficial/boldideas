@@ -27,12 +27,7 @@ const Hero: React.FC = () => {
                     {/* Left Column: Content */}
                     <div className="flex flex-col animate-fade-in relative max-w-2xl order-2 lg:order-1">
                          {/* Subtitle */}
-                        <div className="flex flex-col mb-6">
-                             <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.45em] text-brand-navy mb-4">
-                                AI & AUTOMATION FOR AMBITIOUS BUSINESSES
-                             </span>
-                             <div className="w-16 h-[3px] bg-brand-gold"></div>
-                        </div>
+                        
 
                          {/* Headline */}
                         <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-brand-navy leading-[1.1] tracking-wide mb-6 uppercase">
