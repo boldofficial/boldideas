@@ -1,7 +1,8 @@
 "use client"
 
 import React from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
+import { CheckCircle2, ArrowRight } from 'lucide-react';
 
 const AboutUsSection: React.FC = () => {
     const points = [
@@ -58,6 +59,16 @@ const AboutUsSection: React.FC = () => {
                         <p className="text-base text-white/70 leading-relaxed pt-4 border-t border-white/10">
                             Our approach is practical, hands-on, and tailored to your business — not generic templates or complicated tech setups.
                         </p>
+
+                        <div className="pt-2">
+                            <Link 
+                                href="/about" 
+                                className="inline-flex items-center space-x-2 text-brand-gold font-bold text-sm uppercase tracking-widest hover:text-white transition-colors group/link"
+                            >
+                                <span>Read More about Our Story</span>
+                                <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
