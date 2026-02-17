@@ -3,7 +3,7 @@
 import React, {useState, useEffect} from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import {usePathname, useRouter} from 'next/navigation';
+import {usePathname, useRouter, useSearchParams} from 'next/navigation';
 import {useAuthStore} from '@/store/authStore';
 
 const Header: React.FC = () => {
@@ -13,12 +13,67 @@ const Header: React.FC = () => {
 	const {user, isAdmin, checkAuth, signOut} = useAuthStore();
 	const router = useRouter();
 
+	const searchParams = useSearchParams();
+	const [staffMode, setStaffMode] = useState(false);
+	const logoClickTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+	const logoClicksRef = React.useRef(0);
+
 	useEffect(() => {
 		checkAuth();
 		const handleScroll = () => setScrolled(window.scrollY > 20);
 		window.addEventListener('scroll', handleScroll);
+		
+		// Check for staff mode activation
+		const isStaffHidden = localStorage.getItem('bold_staff_hidden') === 'true';
+		const isStaffForced = localStorage.getItem('bold_staff_mode') === 'true';
+		const activateViaQuery = searchParams.get('staff') === 'true';
+		
+		// Priority 1: URL Query (Explicit activation)
+		if (activateViaQuery) {
+			localStorage.setItem('bold_staff_mode', 'true');
+			localStorage.removeItem('bold_staff_hidden');
+			setStaffMode(true);
+		} 
+		// Priority 2: Admin Auto-Reveal (If not explicitly hidden)
+		else if (isAdmin && !isStaffHidden) {
+			setStaffMode(true);
+		}
+		// Priority 3: Manual persistence from previous session
+		else if (isStaffForced && !isStaffHidden) {
+			setStaffMode(true);
+		}
+
 		return () => window.removeEventListener('scroll', handleScroll);
-	}, []); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [searchParams, isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
+
+	const handleLogoClick = (e: React.MouseEvent) => {
+		// If it's the home page and we are NOT logged in, let the link work normally
+		// But if we are logged in, we use the triple click to toggle
+		logoClicksRef.current += 1;
+
+		if (logoClickTimeoutRef.current) clearTimeout(logoClickTimeoutRef.current);
+
+		if (logoClicksRef.current === 3) {
+			const newMode = !staffMode;
+			setStaffMode(newMode);
+			
+			if (newMode) {
+				localStorage.setItem('bold_staff_mode', 'true');
+				localStorage.removeItem('bold_staff_hidden');
+			} else {
+				localStorage.setItem('bold_staff_hidden', 'true');
+				localStorage.removeItem('bold_staff_mode');
+			}
+			
+			logoClicksRef.current = 0;
+			// Prevent the link from triggering on the 3rd click if we're toggling
+			e.preventDefault();
+		} else {
+			logoClickTimeoutRef.current = setTimeout(() => {
+				logoClicksRef.current = 0;
+			}, 500);
+		}
+	};
 
 	// Lock body scroll when mobile menu is open
 	useEffect(() => {
@@ -82,6 +137,7 @@ const Header: React.FC = () => {
 				className={`px-4 md:px-8 flex items-center justify-between transition-all duration-500 fixed w-full top-0 left-0 z-50 ${getHeaderBgClass()}`}>
 				<Link
 					href="/"
+					onClick={handleLogoClick}
 					className="flex items-center space-x-3 group relative z-50">
 					<Image
 						src="/logo.png"
@@ -106,8 +162,8 @@ const Header: React.FC = () => {
 				</div>
 
 				<div className="hidden md:flex items-center space-x-4">
-					{/* Admin-only Auth Actions */}
-					{isAdmin && (
+					{/* Admin-only Auth Actions - Only visible in Staff Mode */}
+					{staffMode && isAdmin && (
 						<>
 							<Link
 								href="/admin"
@@ -128,8 +184,8 @@ const Header: React.FC = () => {
 						</>
 					)}
 					
-					{/* Guest-only Sign In */}
-					{!user && (
+					{/* Guest-only Sign In - Only visible in Staff Mode */}
+					{staffMode && !user && (
 						<Link
 							href="/signin"
 							className={`text-sm font-black uppercase tracking-widest transition-colors mr-4 ${getAuthBtnClass()}`}>
@@ -209,7 +265,7 @@ const Header: React.FC = () => {
 						<div className="w-12 h-0.5 bg-gray-100 my-8"></div>
 
 						<div className="flex flex-col items-center space-y-6">
-							{isAdmin && (
+							{staffMode && isAdmin && (
 								<>
 									<Link
 										href="/admin"
@@ -225,7 +281,7 @@ const Header: React.FC = () => {
 								</>
 							)}
 							
-							{!user && (
+							{staffMode && !user && (
 								<Link
 									href="/signin"
 									onClick={() => setMobileMenuOpen(false)}
