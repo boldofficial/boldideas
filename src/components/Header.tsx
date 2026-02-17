@@ -49,6 +49,7 @@ const Header: React.FC = () => {
 	// Computation of dynamic theme-based classes
 	const getHeaderBgClass = () => {
 		if (scrolled) return 'py-3 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm';
+		if (pathname === '/') return 'py-6 bg-brand-navy border-transparent shadow-none';
 		return 'py-6 bg-transparent border-transparent shadow-none';
 	};
 
