@@ -99,7 +99,7 @@ const Header: React.FC = () => {
 						<Link
 							key={link.href}
 							href={link.href}
-							className={`text-[10px] font-black uppercase tracking-widest transition-colors ${getNavLinkClass(link.href)}`}>
+							className={`text-sm font-black uppercase tracking-widest transition-colors ${getNavLinkClass(link.href)}`}>
 							{link.label}
 						</Link>
 					))}
@@ -110,7 +110,7 @@ const Header: React.FC = () => {
 					{isAdmin && (
 						<Link
 							href="/admin"
-							className={`text-[10px] font-black uppercase tracking-widest transition-colors mr-4 ${
+							className={`text-sm font-black uppercase tracking-widest transition-colors mr-4 ${
 								pathname.startsWith('/admin')
 									? 'text-brand-gold'
 									: getAuthBtnClass()
@@ -121,7 +121,7 @@ const Header: React.FC = () => {
 					{user ? (
 						<button
 							onClick={handleSignOut}
-							className={`text-[10px] font-black uppercase tracking-widest transition-colors mr-4 ${
+							className={`text-sm font-black uppercase tracking-widest transition-colors mr-4 ${
 								scrolled ? 'text-brand-navy/60 hover:text-red-500' : (isDarkPage ? 'text-white/60 hover:text-red-400' : 'text-brand-navy/60 hover:text-red-500')
 							}`}>
 							Sign Out
@@ -129,7 +129,7 @@ const Header: React.FC = () => {
 					) : (
 						<Link
 							href="/signin"
-							className={`text-[10px] font-black uppercase tracking-widest transition-colors mr-4 ${getAuthBtnClass()}`}>
+							className={`text-sm font-black uppercase tracking-widest transition-colors mr-4 ${getAuthBtnClass()}`}>
 							Sign In
 						</Link>
 					)}
@@ -137,7 +137,7 @@ const Header: React.FC = () => {
 					<Link
 						href="https://crm.getboldideas.com/book"
 						target="_blank"
-						className={`px-6 py-2.5 rounded-full text-xs font-black transition-all hover:scale-105 active:scale-95 shadow-md ${
+						className={`px-6 py-2.5 rounded-full text-sm font-black transition-all hover:scale-105 active:scale-95 shadow-md ${
 							scrolled || !isDarkPage
 								? 'bg-brand-navy text-white hover:bg-brand-gold hover:text-brand-navy'
 								: 'bg-brand-gold text-brand-navy hover:bg-white'
