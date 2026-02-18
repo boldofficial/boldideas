@@ -162,41 +162,17 @@ const Header: React.FC = () => {
 								</Link>
 
 								{/* Mega Menu Dropdown */}
-								<div className="absolute top-full left-1/2 -translate-x-1/2 mt-0 w-[800px] bg-white shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-gray-100 py-8 px-6">
-									<div className="grid grid-cols-3 gap-x-8">
-										{/* Column 1: AI Solutions */}
-										{/* <div className="flex flex-col">
-											<span className="px-4 mb-2 text-[10px] font-black text-brand-gold uppercase tracking-widest">AI Solutions</span>
-											<Link href="/product/ai-productivity-training" className="px-4 py-3 text-sm font-bold text-brand-navy hover:text-brand-gold border-b border-gray-50 transition-colors uppercase tracking-tight">
-												AI Productivity Training
-											</Link>
-											<Link href="/product/ai-workflow-automation" className="px-4 py-3 text-sm font-bold text-brand-navy hover:text-brand-gold border-b border-gray-50 transition-colors uppercase tracking-tight">
-												AI Workflow Automation
-											</Link>
-											<Link href="/product/ai-powered-marketing-systems" className="px-4 py-3 text-sm font-bold text-brand-navy hover:text-brand-gold border-b border-gray-50 transition-colors uppercase tracking-tight">
-												AI-Powered Marketing
-											</Link>
-										</div> */}
-										{/* Column 2: Digital Tools */}
-										<div className="flex flex-col">
-											<span className="px-4 mb-2 text-[10px] font-black text-brand-gold uppercase tracking-widest">Products & Tools</span>
-											{/* <Link href="/product/websites-and-custom-tools" className="px-4 py-3 text-sm font-bold text-brand-navy hover:text-brand-gold border-b border-gray-50 transition-colors uppercase tracking-tight">
-												Websites & Custom Tools
-											</Link> */}
-											<Link href="/product/school-management-system" className="px-4 py-3 text-sm font-bold text-brand-navy hover:text-brand-gold border-b border-gray-50 transition-colors uppercase tracking-tight">
-												School Management System
-											</Link>
-										</div>
-										{/* Column 3: Specialized Systems */}
-										<div className="flex flex-col">
-											<span className="px-4 mb-2 text-[10px] font-black text-brand-gold uppercase tracking-widest">Specialized Systems</span>
-											<Link href="/product/ezer-home-care-management" className="px-4 py-3 text-sm font-bold text-brand-navy hover:text-brand-gold border-b border-gray-50 transition-colors uppercase tracking-tight">
-												Ezer Care Management
-											</Link>
-											<Link href="/product/classified-ads-directory-platform" className="px-4 py-3 text-sm font-bold text-brand-navy hover:text-brand-gold border-b border-gray-50 transition-colors uppercase tracking-tight">
-												Ads & Directory Platform
-											</Link>
-										</div>
+								<div className="absolute top-full left-1/2 -translate-x-1/2 mt-0 w-auto min-w-max bg-white shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-gray-100 py-4 px-2">
+									<div className="flex flex-col items-start gap-y-2">
+										<Link href="/product/ezer-home-care-management" className="px-6 py-4 text-sm font-bold text-brand-navy hover:text-brand-gold transition-colors uppercase tracking-tight whitespace-nowrap border-r border-gray-50 last:border-r-0">
+											Ezer Care Management
+										</Link>
+										<Link href="/product/school-management-system" className="px-6 py-4 text-sm font-bold text-brand-navy hover:text-brand-gold transition-colors uppercase tracking-tight whitespace-nowrap border-r border-gray-50 last:border-r-0">
+											School Management System
+										</Link>
+										<Link href="/product/classified-ads-directory-platform" className="px-6 py-4 text-sm font-bold text-brand-navy hover:text-brand-gold transition-colors uppercase tracking-tight whitespace-nowrap">
+											Classified Ads Directory Platform
+										</Link>
 									</div>
 								</div>
 							</div>
