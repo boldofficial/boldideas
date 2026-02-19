@@ -2,7 +2,7 @@ import React from 'react';
 
 const AboutWhyBold: React.FC = () => {
     return (
-        <section className="py-12 px-6 bg-brand-navy relative overflow-hidden">
+        <section className="py-24 px-6 bg-brand-navy relative overflow-hidden">
             {/* Background Tech Decal */}
             <div className="absolute top-0 right-0 p-20 opacity-[0.03] pointer-events-none">
                 <div className="text-[200px] font-black leading-none text-white select-none">
