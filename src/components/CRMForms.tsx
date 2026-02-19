@@ -61,7 +61,7 @@ export const ContactForm: React.FC<FormProps> = ({ className = '', theme = 'ligh
   const isDark = theme === 'dark';
 
   return (
-    <div className={`${isDark ? 'bg-transparent' : 'bg-white p-8 rounded-xl shadow-lg border border-slate-100'} w-full ${className}`}>
+    <div className={`${isDark ? 'bg-transparent' : 'bg-white p-6 md:p-8 rounded-xl shadow-lg border border-slate-100'} w-full ${className}`}>
       {!isDark && <h3 className="text-2xl font-black text-brand-navy mb-6 text-center">Contact Us</h3>}
       
       {status === 'success' && (
@@ -76,8 +76,8 @@ export const ContactForm: React.FC<FormProps> = ({ className = '', theme = 'ligh
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-1.5">
             <label className={`block text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-brand-navy'}`}>Full Name *</label>
             <input
@@ -105,7 +105,7 @@ export const ContactForm: React.FC<FormProps> = ({ className = '', theme = 'ligh
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-1.5">
             <label className={`block text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-brand-navy'}`}>Phone</label>
             <input

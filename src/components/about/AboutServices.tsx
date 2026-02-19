@@ -39,7 +39,7 @@ const AboutServices: React.FC = () => {
                     ].map((mod, i) => (
                         <div
                             key={i}
-                            className="group relative border border-brand-navy bg-brand-navy text-white transition-all duration-500 overflow-hidden p-8 lg:p-10 shadow-xl rounded-sm">
+                            className="group relative border border-brand-navy bg-brand-navy text-white transition-all duration-500 overflow-hidden p-8 shadow-xl rounded-sm">
                             
                             <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-brand-gold/40 transition-all"></div>
                             <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-brand-gold/40 transition-all"></div>
