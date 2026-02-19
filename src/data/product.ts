@@ -26,52 +26,46 @@ export const products: Product[] = [
     slug: 'ezer-home-care-management',
     title: 'Ezer',
     subtitle: 'Home Care Management System',
-    intro: 'Ezer is a complete internal management platform designed for care homes, assisted living facilities, and home-care agencies. It simplifies operations, improves staff coordination, and enhances client management — all from one centralized system.',
+    intro: 'The administrative backbone for top-tier care agencies. Ezer eliminates paperwork and automates staff coordination to maximize your operational profitability.',
     heroImage: '/services_hero_strategic_v3.png',
-    mainImage: '/services_hero_strategic_v3.png', // Placeholder, using hero image for now
+    mainImage: '/services_hero_strategic_v3.png',
     whoItIsFor: [
       'Home-care agencies',
       'Assisted living facilities',
       'Private care providers',
-      'Community-based care organizations'
+      'Healthcare groups'
     ],
     coreFeatures: [
       {
-        title: 'Staff & Caregiver Management',
-        description: 'Manage caregivers, assign roles, track schedules, and monitor performance in one secure dashboard.'
+        title: 'Automated Caregiver Scheduling',
+        description: 'Real-time synchronization that eliminates conflicts and tracks field performance instantly.'
       },
       {
-        title: 'Client & Patient Tracking',
-        description: 'Maintain detailed care records, notes, progress updates, and service logs with structured reporting.'
+        title: 'Unified Care Intelligence',
+        description: 'Structured digital logs ensuring 100% regulatory compliance and zero record-keeping overhead.'
       },
       {
-        title: 'Operational Dashboards',
-        description: 'Get real-time visibility into daily operations, staffing levels, and performance metrics.'
+        title: 'Operational ROI Hub',
+        description: 'Centralized dashboards that turn operational data into clear, actionable cost-saving insights.'
       },
       {
-        title: 'Internal Communication Tools',
-        description: 'Enable structured communication between supervisors, caregivers, and administrators.'
-      },
-      {
-        title: 'Secure Data Management',
-        description: 'Built with privacy and data protection in mind.'
+        title: 'High-Precision Comms',
+        description: 'Integrated internal messaging that keeps supervisors and field staff perfectly aligned 24/7.'
       }
     ],
     customizationOptions: [
-      'Your care model',
-      'Your regulatory requirements',
-      'Your reporting structure',
-      'Your branding and workflows'
+      'Regional compliance protocols',
+      'Custom therapeutic models',
+      'Bespoke reporting structures'
     ],
     deploymentOptions: [
-      'Hosted SaaS model',
-      'Dedicated deployment for your organization',
-      'Full white-label customization'
+      'Private Enterprise Cloud',
+      'White-Label Instance'
     ],
-    ctaText: 'Book A Free Consultation For Your Firm',
+    ctaText: 'Claim Your Free Capacity Audit',
     ctaLink: '/contact',
     articleLink: {
-      title: 'Read our article on 5 ways to promote professional services firms in Nigeria',
+      title: 'How Elite Care Agencies Scale Beyond Manual Tracking',
       href: '/blog/promote-professional-services'
     }
   },
@@ -79,166 +73,86 @@ export const products: Product[] = [
     id: 'school-management',
     slug: 'school-management-system',
     title: 'School Management System',
-    subtitle: 'Smart Administration for Modern Schools',
-    intro: 'Our School Management System is a comprehensive digital platform built to streamline academic, administrative, and financial operations for schools. It replaces manual processes with efficient, structured digital workflows.',
+    subtitle: 'Elite Administration for Competitive Schools',
+    intro: 'Stop wasting 30% of your staff hours on manual tracking. Our system automates the complexities of modern school management, from enrollment to graduation.',
     heroImage: '/services_hero_strategic_v3.png',
     mainImage: '/services_hero_strategic_v3.png',
     whoItIsFor: [
-      'Private primary & secondary schools',
-      'Faith-based institutions',
-      'Growing education centers',
-      'Multi-campus institutions'
+      'Private K-12 Academies',
+      'International Schools',
+      'Multi-Campus Education Groups'
     ],
     coreFeatures: [
       {
-        title: 'Student Information Management',
-        description: 'Centralized student records, enrollment tracking, academic history, and profile management.'
+        title: 'Instant Result Processing',
+        description: 'Automated grading and report generation that removes manual friction and delivers results term-on-term.'
       },
       {
-        title: 'Academic & Result Management',
-        description: 'Digital report cards, grading systems, subject tracking, and term performance analytics.'
+        title: 'Revenue Guard Finance',
+        description: 'Simplified fee collection with automated reminders and transparent financial reporting for parents.'
       },
       {
-        title: 'Staff & Faculty Management',
-        description: 'Role-based access, teacher records, class assignments, and internal coordination tools.'
+        title: 'Campus Flow Manager',
+        description: 'End-to-end enrollment and faculty management that keeps your institution running like clockwork.'
       },
       {
-        title: 'Finance & Fee Tracking',
-        description: 'Invoice generation, payment records, outstanding balances, and financial reporting.'
-      },
-      {
-        title: 'Parent & Communication Portal',
-        description: 'Secure access for parents to monitor student progress and receive school updates.'
+        title: 'Parent Assurance Portal',
+        description: 'A dedicated hub for parents to monitor student progress, grades, and school updates securely.'
       }
     ],
     customizationOptions: [
-      'Multi-tenancy (manage multiple schools under one system)',
-      'Custom grading systems',
-      'AI-ready integration for future upgrades',
-      'Custom branding & domain setup'
+      'Multi-campus infrastructure',
+      'Custom grading algorithms',
+      'School-specific branding'
     ],
     deploymentOptions: [
-      'SaaS subscription model',
-      'One-time licensed deployment',
-      'Fully customized school-specific installation'
+      'Licensed Offline Deployment',
+      'Managed SaaS Cloud'
     ],
-    ctaText: 'Request a Demo for Your School',
+    ctaText: 'Modernize Your School Workflow',
     ctaLink: '/contact'
   },
   {
     id: 'classifieds',
     slug: 'classified-ads-directory-platform',
     title: 'Classified Ads & Directory',
-    subtitle: 'Launch Your Own Digital Marketplace',
-    intro: 'This solution is a scalable classifieds and business listing platform designed for communities, regions, associations, or niche industries. It allows you to build and monetize your own marketplace ecosystem.',
+    subtitle: 'Monetize Your Community Ecosystem',
+    intro: 'A scalable, premium directory engine designed for regional leaders and industry pioneers. Launch your own marketplace and own the commerce in your niche.',
     heroImage: '/services_hero_strategic_v3.png',
     mainImage: '/services_hero_strategic_v3.png',
     whoItIsFor: [
-      'Community leaders',
-      'Regional entrepreneurs',
-      'Business associations',
-      'Industry-specific marketplaces',
-      'Event organizers'
+      'Regional Entrepreneurs',
+      'Business Associations',
+      'Industrial Niche Market Leaders'
     ],
     coreFeatures: [
       {
-        title: 'Classified Listings',
-        description: 'Buy & sell products and services within a structured, searchable system.'
+        title: 'High-Conversion Ad Engine',
+        description: 'Optimized classifieds designed to convert casual traffic into active marketplace participants.'
       },
       {
-        title: 'Business Directory',
-        description: 'Allow verified businesses to create professional listing profiles.'
+        title: 'Premium Verified Directory',
+        description: 'Build a directory of trusted professionals that serves as a consistent recurring revenue stream.'
       },
       {
-        title: 'Event Management',
-        description: 'Promote community events with structured event pages and visibility tools.'
+        title: 'Multi-Layer Monetization',
+        description: 'Ready-to-use revenue tools including featured listings, banner slots, and subscription tiers.'
       },
       {
-        title: 'Monetization Tools',
-        description: 'Paid listings, featured promotions, banner placements, and subscription tiers.'
-      },
-      {
-        title: 'Admin Dashboard',
-        description: 'Full control over listings, approvals, categories, and content moderation.'
+        title: 'Admin Command Center',
+        description: 'Intelligent listing moderation and user-growth analytics to keep your marketplace safe and growing.'
       }
     ],
     customizationOptions: [
-      'Localized branding',
-      'Custom categories & industries',
-      'Payment gateway integration',
-      'Custom domain & hosting',
-      'Feature expansion (membership tiers, ads, analytics)'
+      'Niche-specific categories',
+      'Custom Payment Gateways',
+      'Dynamic membership models'
     ],
     deploymentOptions: [
-      'Fully customized deployment',
-      'SaaS model available',
-      'White-label options'
+      'Enterprise Source License',
+      'Managed Marketplace Hosting'
     ],
-    ctaText: 'Start Your Marketplace Today',
+    ctaText: 'Launch Your Regional Marketplace',
     ctaLink: '/contact'
-  },
-  // // Placeholder for existing services until detailed content is provided
-  // {
-  //   id: 'training',
-  //   slug: 'ai-productivity-training',
-  //   title: 'AI Productivity Training',
-  //   subtitle: 'Master the tools that multiply your output',
-  //   intro: 'We teach your team how to leverage AI to work smarter, not harder. Master the tools that multiply your output.',
-  //   heroImage: '/services_hero_strategic_v3.png',
-  //   mainImage: '/services_hero_strategic_v3.png',
-  //   whoItIsFor: ['Solopreneurs', 'Small Teams', 'Corporate Departments'],
-  //   coreFeatures: [
-  //     { title: 'Hands-on Workshops', description: 'Practical training on real-world AI tools.' },
-  //     { title: 'Custom Curriculum', description: 'Tailored to your specific industry and needs.' }
-  //   ],
-  //   customizationOptions: ['Team size', 'Industry focus'],
-  //   deploymentOptions: ['On-site training', 'Remote workshops'],
-  //   ctaText: 'Book A Training Session',
-  //   ctaLink: '/contact'
-  // },
-  // {
-  //   id: 'automation',
-  //   slug: 'ai-workflow-automation',
-  //   title: 'AI Workflow Automation',
-  //   subtitle: 'Streamline your operations with intelligent automation',
-  //   intro: 'We build systems that handle the busy work so you can focus on growth. Streamline your operations with intelligent automation.',
-  //   heroImage: '/services_hero_strategic_v3.png',
-  //   mainImage: '/services_hero_strategic_v3.png',
-  //   whoItIsFor: ['Growing Businesses', 'Tech-forward Startups'],
-  //   coreFeatures: [{ title: 'Process Audit', description: 'We identify bottlenecks in your current workflow.' }],
-  //   customizationOptions: ['Integration with existing tools'],
-  //   deploymentOptions: ['Cloud-based automation', 'Local server integration'],
-  //   ctaText: 'Optimize Your Workflow',
-  //   ctaLink: '/contact'
-  // },
-  // {
-  //   id: 'marketing',
-  //   slug: 'ai-powered-marketing-systems',
-  //   title: 'AI-Powered Marketing Systems',
-  //   subtitle: 'Revolutionize your marketing with AI',
-  //   intro: 'From content creation to lead generation, our systems drive results at scale. Revolutionize your marketing with AI.',
-  //   heroImage: '/services_hero_strategic_v3.png',
-  //   mainImage: '/services_hero_strategic_v3.png',
-  //   whoItIsFor: ['Marketing Agencies', 'Business Owners'],
-  //   coreFeatures: [{ title: 'Content Generation', description: 'Automated high-quality content for all channels.' }],
-  //   customizationOptions: ['Brand voice alignment'],
-  //   deploymentOptions: ['SaaS model', 'Custom marketing stack'],
-  //   ctaText: 'Scale Your Marketing',
-  //   ctaLink: '/contact'
-  // },
-  // {
-  //   id: 'tools',
-  //   slug: 'websites-and-custom-tools',
-  //   title: 'Websites & Custom Tools',
-  //   subtitle: 'High-performance websites and bespoke digital tools',
-  //   intro: 'Get high-performance websites and bespoke digital tools tailored to your business needs and driven by innovation.',
-  //   heroImage: '/services_hero_strategic_v3.png',
-  //   mainImage: '/services_hero_strategic_v3.png',
-  //   whoItIsFor: ['Entrepreneurs', 'Established Businesses'],
-  //   coreFeatures: [{ title: 'Responsive Design', description: 'Optimized for all devices and platforms.' }],
-  //   customizationOptions: ['Custom features', 'Full design control'],
-  //   deploymentOptions: ['Managed hosting', 'Client-owned infrastructure'],
-  //   ctaText: 'Build Your Tool',
-  //   ctaLink: '/contact'
-  // }
+  }
 ];
