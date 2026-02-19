@@ -132,7 +132,7 @@ export const ContactForm: React.FC<FormProps> = ({ className = '', theme = 'ligh
         </div>
 
         <div className="space-y-1.5">
-          <label className={`block text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-brand-navy'}`}>Transmission Message *</label>
+          <label className={`block text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-brand-navy'}`}>Message *</label>
           <textarea
             name="message"
             value={formData.message}
@@ -149,7 +149,7 @@ export const ContactForm: React.FC<FormProps> = ({ className = '', theme = 'ligh
           disabled={status === 'sending'}
           className={`w-full group relative overflow-hidden font-black text-[10px] uppercase tracking-[0.4em] py-5 transition-all ${isDark ? 'bg-brand-gold text-brand-navy hover:scale-[1.02]' : 'bg-brand-navy text-white hover:bg-brand-navy/90'}`}
         >
-          <span className="relative z-10">{status === 'sending' ? 'TRANSMITTING...' : 'INITIATE UPLINK'}</span>
+          <span className="relative z-10">{status === 'sending' ? 'Sending...' : 'Send Message'}</span>
           {isDark && <div className="absolute inset-0 bg-white translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500 opacity-20"></div>}
         </button>
       </form>

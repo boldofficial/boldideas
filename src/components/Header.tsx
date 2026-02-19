@@ -107,7 +107,7 @@ const Header: React.FC = () => {
 	];
 
 	// Determine if the current page has a dark background by default for unscrolled state
-	const isDarkPage = ['/', '/contact'].includes(pathname);
+	const isDarkPage = ['/'].includes(pathname);
 
 	// Computation of dynamic theme-based classes
 	const getHeaderBgClass = () => {
