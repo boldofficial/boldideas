@@ -2,8 +2,8 @@ import React from 'react';
 
 const AboutApproach: React.FC = () => {
     return (
-        <section className="py-24 px-6 lg:px-24 bg-white relative overflow-hidden">
-            <div className="max-w-5xl mx-auto relative z-10">
+        <section className="py-12 bg-white relative overflow-hidden">
+            <div className="max-w-[1440px] mx-auto relative z-10 px-6 md:px-16 lg:px-24">
                 <div className="mb-20 text-center">
                     <h2 className="text-4xl lg:text-5xl font-black text-brand-navy tracking-[0.3em] leading-none">
                         <span className="text-brand-navy">Our </span>

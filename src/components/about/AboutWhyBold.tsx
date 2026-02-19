@@ -2,7 +2,7 @@ import React from 'react';
 
 const AboutWhyBold: React.FC = () => {
     return (
-        <section className="py-24 px-6 bg-brand-navy relative overflow-hidden">
+        <section className="py-12 bg-brand-navy relative overflow-hidden">
             {/* Background Tech Decal */}
             <div className="absolute top-0 right-0 p-20 opacity-[0.03] pointer-events-none">
                 <div className="text-[200px] font-black leading-none text-white select-none">
@@ -10,7 +10,7 @@ const AboutWhyBold: React.FC = () => {
                 </div>
             </div>
 
-            <div className="max-w-5xl mx-auto relative z-10">
+            <div className="max-w-[1440px] mx-auto relative z-10 px-6 md:px-16 lg:px-24">
                 <div className="grid lg:grid-cols-2 gap-20 items-center">
                     <div>
                         {/* <div className="inline-flex items-center space-x-2 bg-white/5 px-2 py-1 mb-6 border-l-2 border-brand-gold">

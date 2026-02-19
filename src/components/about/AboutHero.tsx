@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 const AboutHero: React.FC = () => {
     return (
-        <section className="relative py-20 md:py-28 flex items-center justify-center px-6 overflow-hidden bg-brand-navy mt-[88px]">
+        <section className="relative py-20 md:py-28 flex items-center justify-center overflow-hidden bg-brand-navy mt-[88px]">
             {/* Background Image with Dark Overlay */}
             <div className="absolute inset-0 z-0">
                 <img 
@@ -14,7 +14,7 @@ const AboutHero: React.FC = () => {
                 <div className="absolute inset-0 bg-black/40"></div>
             </div>
 
-            <div className="max-w-7xl mx-auto relative z-10 w-full flex flex-col items-center text-center">
+            <div className="max-w-[1440px] mx-auto relative z-10 w-full flex flex-col items-center text-center px-6 md:px-16 lg:px-24">
                 <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white uppercase tracking-tight mb-6">
                     About Us
                 </h1>

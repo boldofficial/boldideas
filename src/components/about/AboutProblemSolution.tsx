@@ -9,7 +9,7 @@ const AboutProblemSolution: React.FC = () => {
     ];
 
     return (
-        <section className="py-24 bg-white relative overflow-hidden">
+        <section className="py-12 bg-white relative overflow-hidden">
             <div className="max-w-[1440px] mx-auto w-full relative z-10 px-6 md:px-16 lg:px-24">
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
                     {/* Left Column: Heading */}

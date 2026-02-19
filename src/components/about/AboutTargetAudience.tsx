@@ -2,9 +2,9 @@ import React from 'react';
 
 const AboutTargetAudience: React.FC = () => {
     return (
-        <section className="py-24 px-6 lg:px-24 bg-white relative overflow-hidden">
+        <section className="py-12 bg-white relative overflow-hidden">
 
-            <div className="max-w-5xl mx-auto relative z-10">
+            <div className="max-w-[1440px] mx-auto relative z-10 px-6 md:px-16 lg:px-24">
                 <div className="bg-white rounded-xl p-10 lg:p-16 shadow-[0_32px_64px_-16px_rgba(0,45,91,0.1)] border border-slate-100 flex flex-col lg:flex-row gap-16 lg:items-start">
 
                     {/* Left: Branding & Intent */}
