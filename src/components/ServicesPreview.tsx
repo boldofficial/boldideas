@@ -13,6 +13,18 @@ import {
     ArrowRight
 } from 'lucide-react';
 
+import { services } from '@/data/services';
+
+const getIcon = (name: string) => {
+    switch (name) {
+        case 'cpu': return <Cpu className="w-10 h-10 text-brand-gold" />;
+        case 'workflow': return <Workflow className="w-10 h-10 text-brand-gold" />;
+        case 'trending-up': return <TrendingUp className="w-10 h-10 text-brand-gold" />;
+        case 'monitor-smartphone': return <MonitorSmartphone className="w-10 h-10 text-brand-gold" />;
+        default: return <Cpu className="w-10 h-10 text-brand-gold" />;
+    }
+};
+
 const ServicesPreview: React.FC = () => {
     const [emblaRef, emblaApi] = useEmblaCarousel({ 
         align: 'start',
@@ -42,29 +54,6 @@ const ServicesPreview: React.FC = () => {
         emblaApi.on('select', onSelect);
     }, [emblaApi, onSelect]);
 
-    const services = [
-        {
-            icon: <Cpu className="w-10 h-10 text-brand-gold" />,
-            title: "AI Productivity Training",
-            description: "Hands-on AI training designed for solopreneurs and small teams to automate daily tasks, improve workflows, and boost productivity immediately."
-        },
-        {
-            icon: <Workflow className="w-10 h-10 text-brand-gold" />,
-            title: "AI Workflow Automation",
-            description: "We design simple AI-powered workflows that reduce repetitive tasks, improve efficiency, and free up your time for growth."
-        },
-        {
-            icon: <TrendingUp className="w-10 h-10 text-brand-gold" />,
-            title: "AI-Powered Marketing Systems",
-            description: "From SEO to automated follow-ups, we build marketing systems that help you generate leads and grow sustainably."
-        },
-        {
-            icon: <MonitorSmartphone className="w-10 h-10 text-brand-gold" />,
-            title: "Websites & Custom Tools",
-            description: "Conversion-focused websites, dashboards, and tailored digital tools designed around your business needs."
-        }
-    ];
-
     return (
         <section id="services-preview" className="py-24 bg-[#F1F3F9]">
             <div className="max-w-[1440px] mx-auto w-full relative z-10 px-6 md:px-16 lg:px-24">
@@ -93,13 +82,13 @@ const ServicesPreview: React.FC = () => {
                                 <div key={index} className="flex-[0_0_100%] min-w-0 pl-4 md:pl-8 md:flex-[0_0_50%] lg:flex-[0_0_33.333%]">
                                     <div className="h-full bg-white rounded-[40px] p-10 flex flex-col items-center text-center shadow-sm border border-slate-100 transition-all duration-500 hover:shadow-xl hover:-translate-y-2">
                                         <div className="mb-8">
-                                            {service.icon}
+                                            {getIcon(service.iconName)}
                                         </div>
                                         <h3 className="text-2xl font-black text-brand-navy uppercase tracking-tight mb-4">
                                             {service.title}
                                         </h3>
                                         <p className="text-slate-500 leading-relaxed font-medium mb-10 text-sm">
-                                            {service.description}
+                                            {service.intro}
                                         </p>
                                         <Link 
                                             href="/services" 
