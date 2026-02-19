@@ -13,11 +13,11 @@ const AboutWhyBold: React.FC = () => {
             <div className="max-w-5xl mx-auto relative z-10">
                 <div className="grid lg:grid-cols-2 gap-20 items-center">
                     <div>
-                        <div className="inline-flex items-center space-x-2 bg-white/5 px-2 py-1 mb-6 border-l-2 border-brand-gold">
+                        {/* <div className="inline-flex items-center space-x-2 bg-white/5 px-2 py-1 mb-6 border-l-2 border-brand-gold">
                             <p className="text-[10px] font-mono text-white/40 uppercase tracking-[0.3em]">
                                 Unique_Value_Proposition
                             </p>
-                        </div>
+                        </div> */}
                         <h2 className="text-5xl lg:text-7xl font-black text-white mb-8 tracking-tighter leading-none">
                             Why <br />
                             <span className="text-brand-gold italic text-4xl lg:text-6xl">Bold Ideas?</span>
@@ -30,11 +30,11 @@ const AboutWhyBold: React.FC = () => {
 
                     <div className="space-y-4">
                         {[
-                            'Practical, implementation-focused AI',
-                            'Local understanding with global standards',
-                            'Custom solutions—not one-size-fits-all',
-                            'Strong focus on training and adoption',
-                            'Long-term partnership mindset'
+                            'We turn abstract AI concepts into concrete workflows',
+                            'Practical automation that saves you hours every week',
+                            'Simplified tech systems designed for real growth',
+                            'A results-first approach—no fluff, just implementation',
+                            'Partner-level support to ensure your long-term success'
                         ].map((spec, i) => (
                             <div
                                 key={i}
@@ -43,7 +43,7 @@ const AboutWhyBold: React.FC = () => {
                                     ✔
                                 </div>
                                 <div>
-                                    <p className="text-white font-medium text-sm leading-snug">{spec}</p>
+                                    <p className="text-white font-medium text-sm leading-snug italic">{spec}</p>
                                 </div>
                             </div>
                         ))}

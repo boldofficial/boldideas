@@ -16,6 +16,9 @@ const AboutPage: React.FC = () => {
 
 			<AboutHero />
 			<AboutProblemSolution />
+			<AboutTargetAudience />
+			<AboutApproach />
+			<AboutWhyBold />
 		</div>
 	);
 };

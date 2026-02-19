@@ -17,18 +17,15 @@ const AboutApproach: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 lg:gap-4">
                         {[
-                            { step: '01', title: 'Discover', desc: 'We understand your goals, workflows, and pain points.' },
-                            { step: '02', title: 'Design', desc: 'We map AI, automation, and digital systems tailored to your needs.' },
-                            { step: '03', title: 'Deploy', desc: 'We build, integrate, and test the solutions.' },
-                            { step: '04', title: 'Train', desc: 'We train your team—especially through AI productivity training—to ensure adoption.' },
-                            { step: '05', title: 'Support & Scale', desc: 'We refine, optimize, and scale as your organization grows.' },
+                            { step: '01', title: 'Discover', desc: 'We audit your specific operations to find the highest-impact automation opportunities.' },
+                            { step: '02', title: 'Design', desc: 'We Architect custom AI workflows and digital systems tailored to your unique scaling needs.' },
+                            { step: '03', title: 'Deploy', desc: 'We implement and integrate the tools directly into your daily operations—no downtime, just results.' },
+                            { step: '04', title: 'Train', desc: 'We provide hands-on AI productivity training to ensure your team is confident and automated.' },
+                            { step: '05', title: 'Support & Scale', desc: 'We provide ongoing implementation support to refine and scale your systems as you grow.' },
                         ].map((item, i) => (
                             <div key={i} className="relative z-10 group">
                                 <div className="mb-6 lg:mb-10 flex justify-center">
                                     <div className="w-20 h-20 bg-white border border-slate-100 flex items-center justify-center font-black text-brand-navy group-hover:bg-brand-navy group-hover:text-brand-gold group-hover:border-brand-navy transition-all duration-500 shadow-sm relative">
-                                        <span className="absolute -top-2 -left-2 text-[8px] font-mono text-brand-gold bg-white px-1 border border-slate-100 uppercase">
-                                            Stage_{item.step}
-                                        </span>
                                         {item.step}
                                     </div>
                                 </div>

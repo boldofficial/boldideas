@@ -26,11 +26,11 @@ const AboutTargetAudience: React.FC = () => {
                     {/* Right: The Service Grid / Matrix */}
                     <div className="lg:w-[65%] w-full space-y-4">
                         {[
-                            { name: 'Small and medium-sized businesses', id: '01', focus: 'EFFICIENCY' },
-                            { name: 'Corporate organizations & enterprises', id: '02', focus: 'SCALABILITY' },
-                            { name: 'Schools, universities & training institutions', id: '03', focus: 'CAPACITY' },
-                            { name: 'NGOs, community organizations', id: '04', focus: 'MISSION' },
-                            { name: 'Local commerce ecosystems', id: '05', focus: 'INFRASTRUCTURE' },
+                            { name: 'Solopreneurs & High-Value Consultants', id: '01', focus: 'AUTOMATION' },
+                            { name: 'Small & Medium Businesses', id: '02', focus: 'EFFICIENCY' },
+                            { name: 'Corporate Teams & Organizations', id: '03', focus: 'PRODUCTIVITY' },
+                            { name: 'Schools & Training Institutions', id: '04', focus: 'CAPACITY' },
+                            { name: 'NGOs & Community Ecosystems', id: '05', focus: 'MISSION' },
                         ].map((item, i) => (
                             <div
                                 key={i}
