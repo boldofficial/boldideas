@@ -9,7 +9,13 @@ import {useAuthStore} from '@/store/authStore';
 const Header: React.FC = () => {
 	const [scrolled, setScrolled] = useState(false);
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const [productMenuOpen, setProductMenuOpen] = useState(false);
 	const pathname = usePathname();
+
+	const closeMenus = () => {
+		setMobileMenuOpen(false);
+		setProductMenuOpen(false);
+	};
 	const {user, isAdmin, checkAuth, signOut} = useAuthStore();
 	const router = useRouter();
 
@@ -73,6 +79,7 @@ const Header: React.FC = () => {
 				logoClicksRef.current = 0;
 			}, 500);
 		}
+		closeMenus();
 	};
 
 	// Lock body scroll when mobile menu is open
@@ -87,7 +94,7 @@ const Header: React.FC = () => {
 	const handleSignOut = async () => {
 		await signOut();
 		router.push('/');
-		setMobileMenuOpen(false);
+		closeMenus();
 	};
 
 	const navLinks = [
@@ -154,23 +161,29 @@ const Header: React.FC = () => {
 				<div className="hidden md:flex items-center space-x-8">
 					{navLinks.map((link) => (
 						link.label === 'Product' ? (
-							<div key={link.href} className="relative group py-4">
+							<div 
+								key={link.href} 
+								className="relative py-4"
+								onMouseEnter={() => setProductMenuOpen(true)}
+								onMouseLeave={() => setProductMenuOpen(false)}
+							>
 								<Link
 									href={link.href}
-									className={`text-sm font-black uppercase tracking-widest transition-colors flex items-center group-hover:text-brand-gold ${getNavLinkClass(link.href)}`}>
+									onClick={closeMenus}
+									className={`text-sm font-black uppercase tracking-widest transition-colors flex items-center hover:text-brand-gold ${getNavLinkClass(link.href)}`}>
 									{link.label}
 								</Link>
 
 								{/* Mega Menu Dropdown */}
-								<div className="absolute top-full left-1/2 -translate-x-1/2 mt-0 w-auto min-w-max bg-white shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-gray-100 py-4 px-2">
+								<div className={`absolute top-full left-1/2 -translate-x-1/2 mt-0 w-auto min-w-max bg-white shadow-xl transition-all duration-300 border border-gray-100 py-4 px-2 ${productMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
 									<div className="flex flex-col items-start gap-y-2">
-										<Link href="/product/ezer-home-care-management" className="px-6 py-4 text-sm font-bold text-brand-navy hover:text-brand-gold transition-colors uppercase tracking-tight whitespace-nowrap border-r border-gray-50 last:border-r-0">
+										<Link href="/product/ezer-home-care-management" onClick={closeMenus} className="px-6 py-4 text-sm font-bold text-brand-navy hover:text-brand-gold transition-colors uppercase tracking-tight whitespace-nowrap border-r border-gray-50 last:border-r-0">
 											Ezer Care Management
 										</Link>
-										<Link href="/product/school-management-system" className="px-6 py-4 text-sm font-bold text-brand-navy hover:text-brand-gold transition-colors uppercase tracking-tight whitespace-nowrap border-r border-gray-50 last:border-r-0">
+										<Link href="/product/school-management-system" onClick={closeMenus} className="px-6 py-4 text-sm font-bold text-brand-navy hover:text-brand-gold transition-colors uppercase tracking-tight whitespace-nowrap border-r border-gray-50 last:border-r-0">
 											School Management System
 										</Link>
-										<Link href="/product/classified-ads-directory-platform" className="px-6 py-4 text-sm font-bold text-brand-navy hover:text-brand-gold transition-colors uppercase tracking-tight whitespace-nowrap">
+										<Link href="/product/classified-ads-directory-platform" onClick={closeMenus} className="px-6 py-4 text-sm font-bold text-brand-navy hover:text-brand-gold transition-colors uppercase tracking-tight whitespace-nowrap">
 											Classified Ads Directory Platform
 										</Link>
 									</div>
@@ -180,6 +193,7 @@ const Header: React.FC = () => {
 							<Link
 								key={link.href}
 								href={link.href}
+								onClick={closeMenus}
 								className={`text-sm font-black uppercase tracking-widest transition-colors ${getNavLinkClass(link.href)}`}>
 								{link.label}
 							</Link>
@@ -270,7 +284,7 @@ const Header: React.FC = () => {
 							<Link
 								key={link.href}
 								href={link.href}
-								onClick={() => setMobileMenuOpen(false)}
+								onClick={closeMenus}
 								className={`text-2xl font-black uppercase tracking-tighter transition-all duration-500 transform ${
 									mobileMenuOpen
 										? 'translate-y-0 opacity-100'
@@ -295,7 +309,7 @@ const Header: React.FC = () => {
 								<>
 									<Link
 										href="/admin"
-										onClick={() => setMobileMenuOpen(false)}
+										onClick={closeMenus}
 										className="text-sm font-bold uppercase tracking-widest text-brand-navy hover:text-brand-gold">
 										Admin Dashboard
 									</Link>
@@ -310,7 +324,7 @@ const Header: React.FC = () => {
 							{staffMode && !user && (
 								<Link
 									href="/signin"
-									onClick={() => setMobileMenuOpen(false)}
+									onClick={closeMenus}
 									className="text-sm font-bold uppercase tracking-widest text-brand-navy">
 									Sign In
 								</Link>
@@ -319,7 +333,7 @@ const Header: React.FC = () => {
 							<Link
 								href="https://crm.getboldideas.com/book"
 								target="_blank"
-								onClick={() => setMobileMenuOpen(false)}
+								onClick={closeMenus}
 								className="bg-brand-navy text-white px-8 py-4 rounded-full text-sm font-black uppercase tracking-widest hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl mt-4">
 								Get Started
 							</Link>

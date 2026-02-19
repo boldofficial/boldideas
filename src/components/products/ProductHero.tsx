@@ -7,7 +7,7 @@ interface ProductsHeroProps {
 
 const ProductHero: React.FC<ProductsHeroProps> = ({ product }) => {
   return (
-    <section className="relative py-32 md:py-48 flex items-center justify-center px-6 overflow-hidden bg-brand-navy">
+    <section className="relative py-20 md:py-28 flex items-center justify-center px-6 overflow-hidden bg-brand-navy mt-[88px]">
       {/* Background Image with Dark Overlay */}
       <div className="absolute inset-0 z-0">
         <img
