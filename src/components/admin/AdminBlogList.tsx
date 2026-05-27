@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { deletePost } from '@/actions/blog';
-import { Edit, Trash2, Plus, Eye, FileText } from 'lucide-react';
+import { Edit, Trash2, Plus, Eye, FileText, ImageIcon } from 'lucide-react';
 
 interface Post {
     id: string;
@@ -13,6 +13,7 @@ interface Post {
     status: string | null;
     publishedAt: Date | null;
     createdAt: Date | null;
+    coverImage: string | null;
 }
 
 interface AdminBlogListProps {
@@ -56,6 +57,7 @@ const AdminBlogList: React.FC<AdminBlogListProps> = ({ initialPosts }) => {
                 <table className="w-full text-left">
                     <thead className="bg-brand-navy/5 text-brand-navy font-mono text-[10px] uppercase tracking-widest border-b border-brand-navy/10">
                         <tr>
+                            <th className="p-4 font-bold w-12">Image</th>
                             <th className="p-4 font-bold">Signal_Title</th>
                             <th className="p-4 font-bold">Status</th>
                             <th className="p-4 font-bold">Published</th>
@@ -65,13 +67,26 @@ const AdminBlogList: React.FC<AdminBlogListProps> = ({ initialPosts }) => {
                     <tbody className="divide-y divide-brand-navy/5">
                         {initialPosts.length === 0 ? (
                             <tr>
-                                <td colSpan={4} className="p-8 text-center text-slate-400 font-mono text-sm">
+                                <td colSpan={5} className="p-8 text-center text-slate-400 font-mono text-sm">
                                     NO_SIGNALS_DETECTED
                                 </td>
                             </tr>
                         ) : (
                             initialPosts.map((post) => (
                                 <tr key={post.id} className="hover:bg-brand-navy/5 transition-colors group">
+                                    <td className="p-4">
+                                        {post.coverImage ? (
+                                            <img
+                                                src={post.coverImage}
+                                                alt=""
+                                                className="h-12 w-16 rounded object-cover border border-slate-200"
+                                            />
+                                        ) : (
+                                            <div className="flex h-12 w-16 items-center justify-center rounded bg-slate-100 text-slate-300">
+                                                <ImageIcon className="h-5 w-5" />
+                                            </div>
+                                        )}
+                                    </td>
                                     <td className="p-4">
                                         <div className="font-bold text-brand-navy">{post.title}</div>
                                         <div className="text-xs text-slate-400 font-mono">/{post.slug}</div>

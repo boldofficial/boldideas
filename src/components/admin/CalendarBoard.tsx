@@ -1,18 +1,31 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Flag, CheckCircle2, Clock } from 'lucide-react';
+import {
+    ChevronLeft, ChevronRight, Calendar as CalendarIcon, Flag, CheckCircle2, Clock,
+    ExternalLink
+} from 'lucide-react';
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface CalendarItem {
     id: string;
     title: string;
+    description: string | null;
     dueDate: Date | null;
     status: string;
+    priority: string | null;
+    projectId: string | null;
     itemType: 'task' | 'milestone';
 }
 
 export default function CalendarBoard({ initialData }: { initialData: any[] }) {
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedItem, setSelectedItem] = useState<CalendarItem | null>(null);
 
     const daysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
     const firstDayOfMonth = (month: number, year: number) => new Date(year, month, 1).getDay();
@@ -106,7 +119,11 @@ export default function CalendarBoard({ initialData }: { initialData: any[] }) {
                                 </div>
                                 <div className="space-y-1">
                                     {getItemsForDay(day).map(item => (
-                                        <div key={item.id} className={`p-1.5 rounded border text-[10px] font-bold leading-tight truncate flex items-center gap-1 cursor-pointer hover:shadow-sm transition-all ${getItemColor(item)}`}>
+                                        <div
+                                            key={item.id}
+                                            onClick={() => setSelectedItem(item as CalendarItem)}
+                                            className={`p-1.5 rounded border text-[10px] font-bold leading-tight truncate flex items-center gap-1 cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all ${getItemColor(item)}`}
+                                        >
                                             {item.itemType === 'milestone' ? <Flag className="w-3 h-3 shrink-0" /> : <Clock className="w-3 h-3 shrink-0" />}
                                             <span className="truncate">{item.title}</span>
                                         </div>
@@ -129,6 +146,107 @@ export default function CalendarBoard({ initialData }: { initialData: any[] }) {
                     <span className="w-2 h-2 rounded-full bg-green-500"></span> Completed
                 </div>
             </div>
+
+            {/* Item Detail Dialog */}
+            <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
+                <DialogContent className="max-w-lg max-h-[90vh] p-0 gap-0 overflow-hidden">
+                    <DialogHeader className="p-6 pb-4 border-b bg-slate-50/50">
+                        <div className="flex items-center gap-2 mb-2">
+                            <Badge variant={selectedItem?.itemType === 'milestone' ? 'secondary' : 'default'}>
+                                {selectedItem?.itemType === 'milestone' ? 'Milestone' : 'Task'}
+                            </Badge>
+                            {selectedItem?.priority && selectedItem?.itemType === 'task' && (
+                                <Badge variant={
+                                    selectedItem.priority === 'urgent' ? 'destructive' :
+                                    selectedItem.priority === 'high' ? 'secondary' :
+                                    'outline'
+                                }>
+                                    {selectedItem.priority}
+                                </Badge>
+                            )}
+                            <Badge variant="outline">
+                                {selectedItem?.status?.replace('_', ' ') || 'Todo'}
+                            </Badge>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <DialogTitle className="text-xl font-bold text-brand-navy">
+                                {selectedItem?.title}
+                            </DialogTitle>
+                        </div>
+                        {selectedItem?.dueDate && (
+                            <DialogDescription className="flex items-center gap-1.5 mt-1">
+                                <CalendarIcon className="w-3.5 h-3.5" />
+                                Due: {new Date(selectedItem.dueDate).toLocaleDateString('en-US', {
+                                    weekday: 'long',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                })}
+                            </DialogDescription>
+                        )}
+                    </DialogHeader>
+
+                    <div className="p-6 space-y-4">
+                        {/* Description */}
+                        <div>
+                            <h4 className="text-xs font-bold uppercase text-slate-400 mb-2">Description</h4>
+                            <div className="p-4 bg-slate-50 rounded-xl border text-sm leading-relaxed whitespace-pre-wrap">
+                                {selectedItem?.description || 'No description provided.'}
+                            </div>
+                        </div>
+
+                        {/* Details grid */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-3 bg-slate-50 rounded-xl border">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Status</p>
+                                <p className="text-sm font-semibold capitalize">
+                                    {selectedItem?.status?.replace('_', ' ') || 'Todo'}
+                                </p>
+                            </div>
+                            <div className="p-3 bg-slate-50 rounded-xl border">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Type</p>
+                                <p className="text-sm font-semibold capitalize">
+                                    {selectedItem?.itemType === 'milestone' ? 'Milestone' : 'Task'}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Notes for booking tasks */}
+                        {selectedItem?.description && selectedItem.description.startsWith('Booking from') && (
+                            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                                <p className="text-[10px] font-bold text-amber-600 uppercase mb-1">💡 Booking Note</p>
+                                <p className="text-xs text-amber-700">
+                                    This is a strategy call booking from the website. Check the CRM for the full lead details.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    <DialogFooter className="p-4 border-t bg-slate-50/50 flex items-center justify-between">
+                        <div className="flex gap-2">
+                            {selectedItem?.itemType === 'task' && (
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={`/admin/tasks`}>
+                                        <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                                        View in Tasks
+                                    </Link>
+                                </Button>
+                            )}
+                            {selectedItem?.projectId && (
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={`/admin/projects/${selectedItem.projectId}`}>
+                                        <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                                        View Project
+                                    </Link>
+                                </Button>
+                            )}
+                        </div>
+                        <Button size="sm" onClick={() => setSelectedItem(null)} className="bg-brand-navy hover:bg-brand-navy/90">
+                            Close
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

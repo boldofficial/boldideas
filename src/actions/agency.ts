@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { internalProjects, tasks, campaigns, projectMembers } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { createNotification } from './notifications';
 
 // --- Projects ---
 export async function getInternalProjects(clientId?: string) {
@@ -42,6 +43,7 @@ export async function createInternalProject(formData: FormData) {
     const type = formData.get('type') as string || 'internal';
     const budget = formData.get('budget') as string;
     const managerId = formData.get('managerId') as string;
+    const clientId = formData.get('clientId') as string;
     const startDate = formData.get('startDate') as string;
     const dueDate = formData.get('dueDate') as string;
     const memberIds = formData.get('memberIds') as string; // Expecting JSON array or comma-separated
@@ -54,6 +56,7 @@ export async function createInternalProject(formData: FormData) {
             type,
             budget,
             managerId: managerId === 'unassigned' ? null : managerId,
+            clientId: (clientId && clientId !== 'none' && clientId !== 'unassigned') ? clientId : null,
             startDate: startDate ? new Date(startDate) : null,
             dueDate: dueDate ? new Date(dueDate) : null,
         }).returning({ id: internalProjects.id });
@@ -71,7 +74,20 @@ export async function createInternalProject(formData: FormData) {
             }
         }
 
+        // Notify client if project is assigned to them
+        const finalClientId = (clientId && clientId !== 'none' && clientId !== 'unassigned') ? clientId : null;
+        if (finalClientId && project) {
+            await createNotification(
+                finalClientId,
+                'project_assigned',
+                'New Project Assigned',
+                `You have been assigned to project "${title}"`,
+                `/client/projects/${project.id}`
+            );
+        }
+
         revalidatePath('/admin/projects');
+        revalidatePath('/client');
         return { success: true };
     } catch (error) {
         console.error("Create Project Error:", error);

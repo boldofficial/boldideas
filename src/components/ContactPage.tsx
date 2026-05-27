@@ -1,172 +1,117 @@
-"use client";
-
 import React from 'react';
-
-import { submitContactForm } from '@/actions/contact';
-import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { ContactForm } from './CRMForms';
 
 const ContactPage: React.FC = () => {
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [status, setStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-      event.preventDefault();
-      setIsSubmitting(true);
-      
-      const formData = new FormData(event.currentTarget);
-      const res = await submitContactForm(formData);
-
-      if (res.success) {
-          setStatus('success');
-          (event.target as HTMLFormElement).reset();
-      } else {
-          setStatus('error');
-      }
-      setIsSubmitting(false);
-  }
-
   return (
-    <div className="bg-white min-h-screen pt-32 pb-24 relative overflow-hidden">
-      {/* Schematic Grid Background */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-           style={{ backgroundImage: 'linear-gradient(#002D5B 1px, transparent 1px), linear-gradient(90deg, #002D5B 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
-      </div>
+    <div className="min-h-screen bg-white flex flex-col font-sans">
+      {/* ═══════════════════════════════════════════════════════════════
+          PAGE HEADER — Blog Archive Style
+         ═══════════════════════════════════════════════════════════════ */}
+      <section className="relative overflow-hidden bg-brand-navy pt-24 pb-12 md:pb-16">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(249,186,81,0.15),transparent_28%),radial-gradient(circle_at_82%_22%,rgba(75,143,191,0.15),transparent_32%),linear-gradient(135deg,#061b35_0%,#082849_56%,#0b355f_100%)]" />
 
-      <div className="max-w-7xl mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
-          
-          {/* Left Column: Context & Info */}
-          <div className="animate-fade-in relative">
-             <div className="absolute -left-6 top-0 bottom-0 w-1 bg-brand-gold/50 hidden lg:block"></div>
-             
-             <div className="inline-flex items-center space-x-2 border border-brand-navy/10 bg-brand-light px-3 py-1 mb-8 rounded-sm">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                <span className="text-[10px] md:text-xs font-mono font-black uppercase tracking-[0.3em] text-brand-navy">Uplink_Ready</span>
-             </div>
+        <div className="relative mx-auto max-w-[1280px] px-6 md:px-12 lg:px-20">
+          <nav
+            className="mb-4 flex items-center gap-3 text-xs font-black uppercase tracking-[0.18em] text-white/60"
+            aria-label="Breadcrumb"
+          >
+            <Link href="/" className="transition hover:text-brand-gold">
+              Home
+            </Link>
+            <span aria-hidden="true">/</span>
+            <span className="text-brand-gold" aria-current="page">
+              Contact
+            </span>
+          </nav>
 
-             <h1 className="text-5xl md:text-7xl font-black text-brand-navy leading-none tracking-tighter mb-8">
-               Establish <br />
-               <span className="text-brand-gold italic">Connection.</span>
-             </h1>
+          <div className="max-w-4xl">
+            <div className="mb-6 inline-flex flex-wrap gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full border border-brand-gold/30 bg-brand-gold/12 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-brand-gold">
+                Let&apos;s talk
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-white/78">
+                Illinois &amp; Wisconsin
+              </span>
+            </div>
 
-             <p className="text-lg text-slate-600 mb-12 max-w-lg leading-relaxed font-light">
-               Ready to automate and thrive? Let's discuss how we can transform your business with intelligent automation and data-driven marketing.
-             </p>
-
-             <div className="space-y-8">
-                <div className="flex items-start space-x-6 group">
-                   <div className="w-12 h-12 flex items-center justify-center border border-brand-navy/10 bg-white rounded-sm group-hover:border-brand-gold transition-colors">
-                      <span className="text-2xl">📧</span>
-                   </div>
-                   <div>
-                      <h3 className="text-xs md:text-sm font-black uppercase tracking-widest text-brand-navy mb-1">Transmission_Target</h3>
-                      <p className="text-slate-500 font-mono text-sm">{process.env.NEXT_PUBLIC_ADMIN_EMAIL}</p>
-                   </div>
-                </div>
-
-                <div className="flex items-start space-x-6 group">
-                   <div className="w-12 h-12 flex items-center justify-center border border-brand-navy/10 bg-white rounded-sm group-hover:border-brand-gold transition-colors">
-                      <span className="text-2xl">📍</span>
-                   </div>
-                   <div>
-                      <h3 className="text-xs md:text-sm font-black uppercase tracking-widest text-brand-navy mb-1">Base_Coordinates</h3>
-                      <p className="text-slate-500 font-mono text-sm">San Francisco, CA<br/>Sector 7G</p>
-                   </div>
-                </div>
-             </div>
+            <h1
+              className={`max-w-3xl text-3xl font-extrabold text-white md:text-4xl lg:text-5xl`}
+            >
+              Let&apos;s build something{" "}
+              <span className="text-brand-gold">bold</span> together.
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-8 text-white/70 md:text-lg">
+              Tell us about your business, where leads get stuck, and what your
+              team repeats every week. We will map the right website and AI plan
+              from there.
+            </p>
           </div>
+        </div>
+      </section>
 
-          {/* Right Column: Schematic Form */}
-          <div className="relative">
-             <div className="bg-white border border-brand-navy/10 p-1 rounded-sm shadow-2xl relative">
-                {/* Tech Corners */}
-                <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-brand-gold"></div>
-                <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-brand-gold"></div>
+      {/* ═══════════════════════════════════════════════════════════════
+          CONTACT FORM
+         ═══════════════════════════════════════════════════════════════ */}
+      <div className="flex-1 bg-[#F1F3F9]">
+        <div className="mx-auto max-w-[1280px] px-6 md:px-12 lg:px-20 py-16 md:py-20">
+          <div className="grid lg:grid-cols-12 gap-16 lg:gap-24 items-start">
+            {/* Left Column: Context */}
+            <div className="lg:col-span-5">
+              <h2 className="text-3xl md:text-4xl font-black text-brand-navy leading-[0.95] tracking-tighter mb-6">
+                Smarter <span className="text-brand-gold italic">Work.</span>
+                <br />
+                Faster <span className="text-brand-gold">Growth.</span>
+                <br />
+                <span className="text-brand-navy">Bold Ideas.</span>
+              </h2>
 
-                <div className="bg-brand-navy/5 p-3 flex justify-between items-center border-b border-brand-navy/5">
-                   <span className="font-mono text-[9px] md:text-[11px] text-brand-navy/40 uppercase tracking-widest">SECURE_CHANNEL_V1</span>
-                   <div className="flex space-x-1">
-                      <div className="w-1.5 h-1.5 bg-brand-navy/20 rounded-full"></div>
-                      <div className="w-1.5 h-1.5 bg-brand-navy/20 rounded-full"></div>
-                   </div>
+              <p className="text-base md:text-lg text-slate-500 mb-12 max-w-md leading-relaxed font-medium">
+                We don&apos;t just talk about AI&mdash;we{" "}
+                <span className="text-brand-navy font-bold">
+                  deploy it into real workflows
+                </span>
+                . Request a strategy session to audit your digital backbone and
+                unlock measurable efficiency.
+              </p>
+
+              <div className="grid sm:grid-cols-2 gap-8">
+                <div className="group">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-gold mb-4 flex items-center">
+                    <span className="mr-3 text-sm">📍</span> HQ_BASE
+                  </h3>
+                  <p className="text-slate-400 font-mono text-xs leading-relaxed uppercase tracking-wider">
+                    Illinois & Wisconsin
+                    <br />
+                    Remote Operations
+                  </p>
                 </div>
 
-                <div className="p-8">
-                   {status === 'success' ? (
-                       <div className="bg-green-50 border border-green-200 p-6 rounded-sm text-center animate-in fade-in slide-in-from-bottom-4">
-                           <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                               <span className="text-xl">✅</span>
-                           </div>
-                           <h3 className="text-brand-navy font-black uppercase tracking-widest text-sm mb-2">Transmission Successful</h3>
-                           <p className="text-slate-600 text-xs font-mono">Secure uplink established. We will respond via designated channel.</p>
-                           <button onClick={() => setStatus('idle')} className="mt-4 text-[10px] md:text-xs font-bold underline text-brand-navy hover:text-brand-gold uppercase tracking-widest">
-                               Send_Another_Packet
-                           </button>
-                       </div>
-                   ) : (
-                   <form onSubmit={handleSubmit} className="space-y-6">
-                      <div className="grid md:grid-cols-2 gap-6">
-                         <div className="relative group">
-                            <label className="block text-[9px] md:text-[11px] font-mono font-bold uppercase tracking-widest text-brand-navy/50 mb-2 group-focus-within:text-brand-gold transition-colors">
-                               Identity_Name
-                            </label>
-                            <input 
-                              name="name"
-                              type="text" 
-                              className="w-full bg-slate-50 border border-slate-200 p-4 text-sm font-mono text-brand-navy focus:outline-none focus:border-brand-gold focus:bg-white transition-all rounded-sm placeholder:text-slate-300"
-                              placeholder="ENTER_NAME"
-                              required
-                            />
-                         </div>
-                         <div className="relative group">
-                            <label className="block text-[9px] md:text-[11px] font-mono font-bold uppercase tracking-widest text-brand-navy/50 mb-2 group-focus-within:text-brand-gold transition-colors">
-                               Comms_Email
-                            </label>
-                            <input 
-                              name="email"
-                              type="email" 
-                              className="w-full bg-slate-50 border border-slate-200 p-4 text-sm font-mono text-brand-navy focus:outline-none focus:border-brand-gold focus:bg-white transition-all rounded-sm placeholder:text-slate-300"
-                              placeholder="ENTER_EMAIL"
-                              required
-                            />
-                         </div>
-                      </div>
-
-                      <div className="relative group">
-                         <label className="block text-[9px] md:text-[11px] font-mono font-bold uppercase tracking-widest text-brand-navy/50 mb-2 group-focus-within:text-brand-gold transition-colors">
-                            Transmission_Content
-                         </label>
-                         <textarea 
-                           name="content"
-                           rows={6}
-                           className="w-full bg-slate-50 border border-slate-200 p-4 text-sm font-mono text-brand-navy focus:outline-none focus:border-brand-gold focus:bg-white transition-all rounded-sm placeholder:text-slate-300 resize-none"
-                           placeholder="INITIATE_MESSAGE_SEQUENCE..."
-                           required
-                         ></textarea>
-                      </div>
-
-                      <button disabled={isSubmitting} className="w-full bg-brand-navy text-white px-8 py-5 rounded-sm font-black hover:bg-brand-gold hover:text-brand-navy transition-all shadow-lg uppercase tracking-widest text-xs md:text-sm border border-transparent hover:border-brand-navy relative group overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed">
-                         <span className="relative z-10 flex items-center justify-center">
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    UPLINKING...
-                                </>
-                            ) : (
-                                <>
-                                    TRANSMIT_DATA
-                                    <span className="ml-2 opacity-50 group-hover:opacity-100 transition-opacity">_&gt;</span>
-                                </>
-                            )}
-                         </span>
-                         <div className="absolute inset-0 bg-white translate-x-full group-hover:translate-x-0 transition-transform duration-300 pointer-events-none opacity-10"></div>
-                      </button>
-                   </form>
-                   )}
+                <div className="group">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-gold mb-4 flex items-center">
+                    <span className="mr-3 text-sm">📧</span> COMM_CHANNEL
+                  </h3>
+                  <p className="text-slate-400 font-mono text-xs uppercase tracking-wider">
+                    admin@getboldideas.com
+                  </p>
+                  <div className="w-0 group-hover:w-full h-px bg-brand-gold/30 transition-all duration-500 mt-2"></div>
                 </div>
-             </div>
+              </div>
+            </div>
+
+            {/* Right Column: Form */}
+            <div className="lg:col-span-7">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-brand-navy blur-3xl opacity-[0.03] group-hover:opacity-[0.05] transition-opacity rounded-3xl"></div>
+
+                <div className="relative bg-white border border-slate-200 p-1 rounded-sm shadow-[0_32px_64px_-16px_rgba(0,45,91,0.08)] overflow-hidden">
+                  <div className="p-8">
+                    <ContactForm theme="light" className="shadow-none border-none p-0" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-
         </div>
       </div>
     </div>

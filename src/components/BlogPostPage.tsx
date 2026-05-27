@@ -3,8 +3,24 @@
 import React from 'react';
 import Header from './Header';
 import Footer from './Footer';
-import { Calendar, Clock, Share2, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, ArrowLeft, MessageSquare, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+
+import BlogRenderer from './blog/BlogRenderer';
+import ShareButtons from './blog/ShareButtons';
+import CommentSystem from './shared/CommentSystem';
+import Image from 'next/image';
+import { postBlogComment } from '@/actions/blog';
+
+interface Comment {
+    id: string;
+    content: string | null;
+    attachmentUrl: string | null;
+    createdAt: Date | null;
+    userName: string | null;
+    userAvatar: string | null;
+    guestName?: string | null;
+}
 
 interface BlogPostPageProps {
     post: {
@@ -13,175 +29,175 @@ interface BlogPostPageProps {
         content: any; // JSON
         publishedAt: Date | null;
         slug: string;
+        coverImage?: string | null;
     };
+    nextPost?: {
+        title: string;
+        slug: string;
+    };
+    comments?: Comment[];
+    relatedPosts?: {
+        id: string;
+        slug: string;
+        title: string;
+        coverImage?: string | null;
+        publishedAt: Date | null;
+    }[];
+    blogUrl?: string;
 }
 
-// --- Custom Renderer Components ---
-const RenderNode = ({ node }: { node: any }) => {
-    if (!node) return null;
+const BlogPostPage: React.FC<BlogPostPageProps> = ({ post, nextPost, comments = [], relatedPosts = [], blogUrl }) => {
+    const canonicalUrl = blogUrl || `https://getboldideas.com/blog/${post.slug}`;
 
-    switch (node.type) {
-        case 'doc':
-            return <div className="space-y-6">{node.content?.map((child: any, i: number) => <RenderNode key={i} node={child} />)}</div>;
-        
-        case 'paragraph':
-            return (
-                <p className="text-slate-700 leading-8 text-lg font-light mb-6">
-                    {node.content?.map((child: any, i: number) => <RenderNode key={i} node={child} />)}
-                </p>
-            );
-
-        case 'text':
-            let text = <>{node.text}</>;
-            if (node.marks) {
-                node.marks.forEach((mark: any) => {
-                    if (mark.type === 'bold') text = <strong className="font-black text-brand-navy">{text}</strong>;
-                    if (mark.type === 'italic') text = <em className="italic text-slate-600">{text}</em>;
-                    if (mark.type === 'code') text = <code className="bg-slate-100 px-1.5 py-0.5 rounded text-sm font-mono text-brand-navy">{text}</code>;
-                    if (mark.type === 'link') text = <a href={mark.attrs.href} target="_blank" rel="noopener noreferrer" className="text-brand-gold hover:text-brand-navy underline transition-colors">{text}</a>;
-                });
-            }
-            return text;
-
-        case 'heading':
-            const Level = node.attrs.level as 1 | 2 | 3;
-            const Tag = `h${Level}` as React.ElementType;
-            const sizes: Record<number, string> = {
-                1: "text-4xl md:text-5xl font-black text-brand-navy mt-12 mb-6 uppercase tracking-tight",
-                2: "text-2xl md:text-3xl font-bold text-brand-navy mt-10 mb-5 relative pl-4 border-l-4 border-brand-gold",
-                3: "text-xl font-bold text-brand-navy mt-8 mb-4",
-            };
-            
-            return (
-                <Tag className={sizes[Level] || sizes[3]}>
-                    {node.content?.map((child: any, i: number) => <RenderNode key={i} node={child} />)}
-                </Tag>
-            );
-
-        case 'blockquote':
-            return (
-                <div className="bg-brand-navy/5 border-l-4 border-brand-navy p-6 my-8 rounded-r-sm relative">
-                     <div className="absolute top-0 right-0 bg-brand-navy text-white text-[9px] font-mono px-2 py-1 uppercase tracking-widest">
-                        System_Alert
-                     </div>
-                     <blockquote className="relative z-10 italic text-slate-700 text-lg leading-relaxed font-light">
-                        {node.content?.map((child: any, i: number) => <RenderNode key={i} node={child} />)}
-                     </blockquote>
-                </div>
-            );
-
-        case 'codeBlock':
-            return (
-                <div className="my-8 rounded-sm overflow-hidden border border-brand-navy p-0 bg-[#0A1128] text-green-400 font-mono text-sm relative shadow-2xl">
-                    <div className="bg-brand-navy text-white px-4 py-2 text-[10px] uppercase tracking-widest border-b border-white/10 flex justify-between">
-                         <span>Terminal_Output</span>
-                         <span className="flex gap-2">
-                             <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                             <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                             <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                         </span>
-                    </div>
-                    <pre className="p-6 overflow-x-auto">
-                        <code>
-                            {node.content?.map((child: any, i: number) => child.text).join('\n')}
-                        </code>
-                    </pre>
-                </div>
-            );
-
-        case 'bulletList':
-            return (
-                <ul className="list-none space-y-4 my-8 pl-2">
-                     {node.content?.map((child: any, i: number) => <RenderNode key={i} node={child} />)}
-                </ul>
-            );
-            
-        case 'orderedList':
-             return (
-                <ol className="list-decimal list-inside space-y-4 my-8 pl-4 text-brand-navy font-bold marker:text-brand-gold marker:font-mono">
-                     {node.content?.map((child: any, i: number) => <RenderNode key={i} node={child} />)}
-                </ol>
-            );
-
-        case 'listItem':
-            return (
-                <li className="flex items-start text-slate-700 leading-relaxed font-normal group">
-                    <span className="text-brand-gold mr-4 mt-1.5 text-xs opacity-50 group-hover:opacity-100 transition-opacity">►</span>
-                    <div>
-                        {node.content?.map((child: any, i: number) => <RenderNode key={i} node={child} />)}
-                    </div>
-                </li>
-            );
-        
-        case 'image':
-            return (
-                <div className="my-10 relative group">
-                    <div className="absolute inset-0 bg-brand-gold/20 translate-x-2 translate-y-2 rounded-sm -z-10 group-hover:translate-x-3 group-hover:translate-y-3 transition-transform"></div>
-                    <img 
-                        src={node.attrs.src} 
-                        alt={node.attrs.alt || "Blog Image"} 
-                        className="w-full rounded-sm border border-brand-navy/10 shadow-lg block"
-                    />
-                    <div className="absolute bottom-2 right-2 bg-black/80 text-white text-[9px] font-mono px-2 py-1 uppercase hidden group-hover:block">
-                        IMG_SRC: {node.attrs.src.slice(0, 20)}...
-                    </div>
-                </div>
-            );
-
-        default:
-            console.warn('Unknown node type:', node.type);
-            return null;
-    }
-};
-
-const BlogPostPage: React.FC<BlogPostPageProps> = ({ post }) => {
     return (
         <div className="min-h-screen bg-white flex flex-col font-sans selection:bg-brand-gold/30">
             <Header />
             
-            <main className="flex-grow pt-32 pb-20">
+            <main className="flex-grow pt-24 pb-16">
                 <article className="max-w-4xl mx-auto px-6">
-                    {/* Back Link */}
-                    <Link href="/blog" className="inline-flex items-center text-slate-400 hover:text-brand-navy mb-8 transition-colors text-xs font-mono uppercase tracking-widest group">
-                        <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                        Return_To_Log
-                    </Link>
-
-                    {/* Meta Header */}
-                    <div className="flex flex-wrap items-center gap-6 mb-8 text-xs font-mono uppercase tracking-widest text-slate-500 border-b border-slate-100 pb-8">
-                        <span className="flex items-center">
-                            <Calendar className="w-4 h-4 mr-2 text-brand-gold" />
-                            {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : 'Draft'}
-                        </span>
-                        <span className="flex items-center">
-                             <Clock className="w-4 h-4 mr-2 text-brand-gold" />
-                             {Math.ceil(JSON.stringify(post.content).length / 500)} MIN READ
-                        </span>
-                        <div className="flex-grow"></div>
-                        <button className="flex items-center hover:text-brand-navy transition-colors">
-                            <Share2 className="w-4 h-4 mr-2" />
-                            Share_Protocol
-                        </button>
+                    {/* Back Link & Share */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-16 border-b border-slate-100 pb-12">
+                        <Link href="/blog" className="inline-flex items-center text-slate-400 hover:text-brand-navy transition-colors text-xs font-mono uppercase tracking-[0.4em] group">
+                            <ArrowLeft className="w-4 h-4 mr-3 group-hover:-translate-x-2 transition-transform" />
+                            Return_To_Log
+                        </Link>
+                        
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                            <div className="flex items-center space-x-6 text-[10px] font-mono font-bold text-slate-400 uppercase tracking-[0.3em]">
+                                <span className="flex items-center">
+                                    <Calendar className="w-3 h-3 mr-2 text-brand-gold" />
+                                    {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : 'REALTIME'}
+                                </span>
+                                <span className="w-1 h-1 bg-brand-gold/30 rounded-full"></span>
+                                <span className="flex items-center">
+                                     <Clock className="w-3 h-3 mr-2 text-brand-gold" />
+                                     {Math.ceil(JSON.stringify(post.content).length / 500)} MIN_READ
+                                </span>
+                            </div>
+                            <ShareButtons url={canonicalUrl} title={post.title} />
+                        </div>
                     </div>
 
-                    {/* Title */}
-                    <h1 className="text-4xl md:text-6xl font-black text-brand-navy mb-12 leading-tight uppercase tracking-tight">
-                        {post.title}
-                    </h1>
+                    {/* Title & Entry ID */}
+                    <div className="mb-20">
+                        <div className="inline-block bg-brand-navy text-white text-[9px] font-mono px-3 py-1 uppercase tracking-[0.5em] mb-8">
+                            ENTRY_SIGNAL // {post.id.slice(0, 12)}
+                        </div>
+                        <h1 className="text-4xl md:text-6xl font-black text-brand-navy leading-[0.95] tracking-tighter uppercase mb-6">
+                            {post.title}
+                        </h1>
+                    </div>
+
+                    {/* Feature Image */}
+                    {post.coverImage && (
+                      <div className="relative mb-14 overflow-hidden rounded-2xl border border-slate-200">
+                        <Image
+                          src={post.coverImage}
+                          alt={post.title}
+                          width={1200}
+                          height={675}
+                          className="w-full object-cover"
+                          priority
+                        />
+                      </div>
+                    )}
 
                     {/* Content Renderer */}
-                    <div className="prose prose-lg md:prose-xl max-w-none prose-headings:font-bold prose-headings:text-brand-navy prose-p:text-slate-600 prose-a:text-brand-gold hover:prose-a:text-brand-navy">
-                        <RenderNode node={post.content} />
+                    <div className="relative">
+                        <div className="absolute -left-12 top-0 bottom-0 w-[1px] bg-slate-100 hidden xl:block"></div>
+                        <BlogRenderer content={post.content} />
                     </div>
 
-                    {/* Footer Signature */}
-                    <div className="mt-20 pt-10 border-t-2 border-brand-navy flex justify-between items-center">
-                         <div className="text-3xl font-black text-brand-navy/20 uppercase tracking-tighter">
-                             End_Of_Transmission
-                         </div>
-                         <div className="font-mono text-[10px] text-slate-400">
-                             ID: {post.id}
-                         </div>
+                    {/* Share Bar at Bottom */}
+                    <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <p className="text-xs text-slate-400 font-medium">
+                            Found this helpful? Share it with your network.
+                        </p>
+                        <ShareButtons url={canonicalUrl} title={post.title} />
+                    </div>
+
+                    {/* Related Posts */}
+                    {relatedPosts.length > 0 && (
+                        <div className="mt-20">
+                            <div className="flex items-center gap-3 mb-10">
+                                <Sparkles className="w-5 h-5 text-brand-gold" />
+                                <h2 className="text-xl font-black text-brand-navy uppercase tracking-tight">
+                                    Related Articles
+                                </h2>
+                                <div className="flex-1 h-[1px] bg-slate-100"></div>
+                            </div>
+                            <div className="grid md:grid-cols-3 gap-6">
+                                {relatedPosts.map((rp) => (
+                                    <Link
+                                        key={rp.id}
+                                        href={`/blog/${rp.slug}`}
+                                        className="group block bg-white border border-slate-100 rounded-xl overflow-hidden hover:shadow-lg hover:border-brand-gold/30 transition-all duration-300"
+                                    >
+                                        <div className="aspect-video bg-slate-50 overflow-hidden">
+                                            {rp.coverImage ? (
+                                                <img
+                                                    src={rp.coverImage}
+                                                    alt={rp.title}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <Sparkles className="w-8 h-8 text-slate-300" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="p-5">
+                                            <h3 className="text-sm font-bold text-brand-navy uppercase leading-tight group-hover:text-brand-gold transition-colors line-clamp-2">
+                                                {rp.title}
+                                            </h3>
+                                            {rp.publishedAt && (
+                                                <p className="text-[10px] font-mono text-slate-400 uppercase tracking-[0.2em] mt-3">
+                                                    {new Date(rp.publishedAt).toLocaleDateString()}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Blog Comments */}
+                    <div className="mt-20">
+                        <CommentSystem
+                            postId={post.id}
+                            initialComments={comments}
+                            onSubmit={postBlogComment}
+                            title="Discussion"
+                            placeholder="Share your thoughts on this article..."
+                            className="border border-slate-200 rounded-2xl overflow-hidden"
+                        />
+                    </div>
+
+                    {/* Footer Signature & Next Signal */}
+                    <div className="mt-20">
+                        <div className="pt-10 border-t-2 border-brand-navy flex flex-col md:flex-row justify-between items-center gap-10">
+                             <div className="text-3xl md:text-4xl font-black text-brand-navy/10 uppercase tracking-tighter select-none">
+                                END_OF_TRANS
+                             </div>
+                             
+                             {nextPost && (
+                                 <Link 
+                                    href={`/blog/${nextPost.slug}`}
+                                    className="group text-right"
+                                 >
+                                    <span className="block text-[10px] font-black uppercase tracking-[0.5em] text-brand-gold mb-2">Next_Signal_&gt;</span>
+                                    <span className="text-lg font-black text-brand-navy uppercase group-hover:text-brand-gold transition-colors">{nextPost.title}</span>
+                                 </Link>
+                             )}
+
+                             {!nextPost && (
+                                <div className="text-right">
+                                    <span className="block text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 mb-2">End_Of_Queue</span>
+                                    <Link href="/blog" className="text-xs font-bold text-brand-navy hover:text-brand-gold transition-colors underline uppercase tracking-widest">Back to archives</Link>
+                                </div>
+                             )}
+                        </div>
                     </div>
                 </article>
             </main>

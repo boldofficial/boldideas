@@ -3,6 +3,7 @@
 import { db } from '@/lib/db';
 import { messages } from '@/lib/db/schema';
 import { resend } from '@/lib/resend';
+import { createWebsiteLead } from './crm';
 
 export async function submitContactForm(formData: FormData) {
     const name = formData.get('name') as string;
@@ -21,6 +22,14 @@ export async function submitContactForm(formData: FormData) {
             content,
             status: 'new'
         });
+
+        const leadForm = new FormData();
+        leadForm.set('name', name);
+        leadForm.set('email', email);
+        leadForm.set('message', content);
+        leadForm.set('source', 'contact_form');
+        leadForm.set('serviceInterest', 'Website contact inquiry');
+        await createWebsiteLead(leadForm);
 
         // 2. Send Admin Notification Email (if RESEND_API_KEY is configured)
         // We'll wrap this in a try-catch so DB save succeeds even if email fails

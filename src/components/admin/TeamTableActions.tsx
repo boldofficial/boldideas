@@ -58,6 +58,9 @@ export default function TeamTableActions({ user }: Props) {
                     <DropdownMenuItem onClick={() => handleRoleChange('staff')} disabled={user.role === 'staff'}>
                         <Shield className="mr-2 h-4 w-4" /> Set as Staff
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleRoleChange('client')} disabled={user.role === 'client'}>
+                        <User className="mr-2 h-4 w-4" /> Set as Client
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleRoleChange('user')} disabled={user.role === 'user'}>
                         <User className="mr-2 h-4 w-4" /> Set as User
                     </DropdownMenuItem>

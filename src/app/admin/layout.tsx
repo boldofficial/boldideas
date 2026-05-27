@@ -6,6 +6,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
 import NotificationBell from '@/components/NotificationBell';
+import { getUserProfile } from '@/actions/users';
+import { Settings, GraduationCap } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -16,6 +18,7 @@ export default function AdminLayout({
   const pathname = usePathname();
   const { user, isAdmin, role, isLoading, checkAuth, signOut } = useAuthStore();
   const [authorized, setAuthorized] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -27,7 +30,7 @@ export default function AdminLayout({
   useEffect(() => {
     if (!isLoading) {
       if (!user) {
-        router.push('/auth/signin');
+        router.push('/signin');
         return;
       }
 
@@ -47,6 +50,12 @@ export default function AdminLayout({
       setAuthorized(true);
     }
   }, [user, isAdmin, role, isLoading, router, pathname]);
+
+  useEffect(() => {
+    if (user) {
+      getUserProfile(user.id).then(({ data }) => setProfile(data));
+    }
+  }, [user]);
 
 
   if (isLoading || !authorized) {
@@ -102,7 +111,7 @@ export default function AdminLayout({
           >
             Messages
           </Link>
-          <Link 
+          {/* <Link 
             href="/admin/inbox" 
             className={`block px-4 py-3 rounded text-sm transition-all ${
               pathname === '/admin/inbox' 
@@ -111,7 +120,7 @@ export default function AdminLayout({
             }`}
           >
             Contact Inbox
-          </Link>
+          </Link> */}
           <Link 
             href="/admin/blog" 
             className={`block px-4 py-3 rounded text-sm transition-all ${
@@ -155,6 +164,29 @@ export default function AdminLayout({
               }`}
             >
               Tasks
+            </Link>
+            <Link 
+              href="/admin/tickets" 
+              className={`block px-4 py-2 rounded text-sm transition-colors ${
+                pathname?.startsWith('/admin/tickets') 
+                  ? 'bg-brand-gold/20 text-brand-gold font-semibold' 
+                  : 'text-slate-300 hover:text-brand-gold hover:bg-white/5'
+              }`}
+            >
+              Tickets
+            </Link>
+            <Link 
+              href="/admin/training" 
+              className={`block px-4 py-2 rounded text-sm transition-colors ${
+                pathname?.startsWith('/admin/training') 
+                  ? 'bg-brand-gold/20 text-brand-gold font-semibold' 
+                  : 'text-slate-300 hover:text-brand-gold hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <GraduationCap className="w-4 h-4" />
+                Training
+              </div>
             </Link>
             <Link 
               href="/admin/marketing" 
@@ -202,13 +234,31 @@ export default function AdminLayout({
                 </Link>
               </>
             )}
+
+            <Link 
+              href={role === 'admin' ? "/admin/settings" : "/staff/settings"} 
+              className={`block px-4 py-2 rounded text-sm transition-colors ${
+                pathname?.includes('/settings') 
+                  ? 'bg-brand-gold/20 text-brand-gold font-semibold' 
+                  : 'text-slate-300 hover:text-brand-gold hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                Settings
+              </div>
+            </Link>
           </div>
         </nav>
 
         <div className="p-4 border-t border-brand-gold/10">
           <div className="flex items-center space-x-3 mb-4 px-2">
-            <div className="w-8 h-8 rounded-full bg-brand-gold/20 flex items-center justify-center text-brand-gold font-bold">
-              {user?.email?.[0].toUpperCase()}
+            <div className="w-8 h-8 rounded-full bg-brand-gold/20 flex items-center justify-center text-brand-gold font-bold overflow-hidden border border-brand-gold/30">
+              {profile?.avatarUrl ? (
+                <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                user?.email?.[0].toUpperCase()
+              )}
             </div>
             <div className="overflow-hidden">
               <p className="text-white text-sm truncate">{user?.email}</p>
@@ -216,7 +266,7 @@ export default function AdminLayout({
             </div>
           </div>
           <button
-            onClick={() => signOut().then(() => router.push('/auth/signin'))}
+            onClick={() => signOut().then(() => router.push('/signin'))}
             className="w-full text-left px-4 py-2 text-slate-400 hover:text-red-400 text-sm transition-colors flex items-center space-x-2"
           >
             <span>Sign Out</span>

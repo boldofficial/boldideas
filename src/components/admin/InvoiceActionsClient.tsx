@@ -3,33 +3,27 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PaymentModal from '@/components/admin/PaymentModal';
-import { Printer, Download, CreditCard, Receipt, Eye } from 'lucide-react';
 import Link from 'next/link';
+import EditInvoiceModal from './EditInvoiceModal';
+import { Printer, Download, CreditCard, Receipt, Settings } from 'lucide-react';
 
 interface InvoiceActionsClientProps {
-    invoiceId: string;
-    invoiceNumber: string;
-    totalAmount: string;
-    amountPaid: string;
-    currency: string;
-    status: string;
+    invoice: any;
+    clients: any[];
     receiptId?: string | null;
 }
 
 export default function InvoiceActionsClient({
-    invoiceId,
-    invoiceNumber,
-    totalAmount,
-    amountPaid,
-    currency,
-    status,
+    invoice,
+    clients,
     receiptId
 }: InvoiceActionsClientProps) {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const router = useRouter();
 
-    const isPaid = status === 'paid';
-    const outstanding = parseFloat(totalAmount) - parseFloat(amountPaid || '0');
+    const isPaid = invoice.status === 'paid';
+    const outstanding = parseFloat(invoice.totalAmount || '0') - parseFloat(invoice.amountPaid || '0');
 
     return (
         <>
@@ -44,6 +38,14 @@ export default function InvoiceActionsClient({
                         Record Payment
                     </button>
                 )}
+
+                <button
+                    onClick={() => setShowEditModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-brand-navy text-brand-gold rounded-lg text-sm font-medium hover:scale-105 transition-all shadow-lg shadow-brand-navy/20"
+                >
+                    <Settings className="w-4 h-4" />
+                    Edit Invoice
+                </button>
 
                 {/* View Receipt - Only show if paid and receipt exists */}
                 {isPaid && receiptId && (
@@ -76,12 +78,21 @@ export default function InvoiceActionsClient({
             {/* Payment Modal */}
             {showPaymentModal && (
                 <PaymentModal
-                    invoiceId={invoiceId}
-                    invoiceNumber={invoiceNumber}
-                    totalAmount={totalAmount}
-                    amountPaid={amountPaid}
-                    currency={currency}
+                    invoiceId={invoice.id}
+                    invoiceNumber={invoice.invoiceNumber || ''}
+                    totalAmount={invoice.totalAmount || '0'}
+                    amountPaid={invoice.amountPaid || '0'}
+                    currency={invoice.currency || 'USD'}
                     onClose={() => setShowPaymentModal(false)}
+                    onSuccess={() => router.refresh()}
+                />
+            )}
+
+            {showEditModal && (
+                <EditInvoiceModal
+                    invoice={invoice}
+                    clients={clients}
+                    onClose={() => setShowEditModal(false)}
                     onSuccess={() => router.refresh()}
                 />
             )}

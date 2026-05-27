@@ -2,15 +2,53 @@
 import { pgTable, text, timestamp, boolean, uuid, jsonb, integer } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
-  id: uuid('id').primaryKey(), // Matches Supabase Auth ID
-  email: text('email').notNull(),
-  name: text('name'),
+  id: uuid('id').defaultRandom().primaryKey(),
+  email: text('email').notNull().unique(),
+  emailVerified: boolean('email_verified').notNull().default(false),
+  name: text('name').notNull(),
   role: text('role').default('user'), // 'admin' | 'user'
   isActive: boolean('is_active').default(true),
   avatarUrl: text('avatar_url'),
   bio: text('bio'),
   address: text('address'),
   createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const sessions = pgTable('session', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  expiresAt: timestamp('expires_at').notNull(),
+  token: text('token').notNull().unique(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+});
+
+export const accounts = pgTable('account', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  accountId: text('account_id').notNull(),
+  providerId: text('provider_id').notNull(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  accessToken: text('access_token'),
+  refreshToken: text('refresh_token'),
+  idToken: text('id_token'),
+  accessTokenExpiresAt: timestamp('access_token_expires_at'),
+  refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
+  scope: text('scope'),
+  password: text('password'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const verifications = pgTable('verification', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  identifier: text('identifier').notNull(),
+  value: text('value').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
 export const projects = pgTable('projects', {
@@ -65,6 +103,10 @@ export const leads = pgTable('leads', {
   company: text('company'),
   status: text('status').default('new'), // 'new' | 'contacted' | 'qualified' | 'proposal' | 'won' | 'lost'
   source: text('source'), // 'website', 'referral', 'ads', etc.
+  serviceInterest: text('service_interest'),
+  priority: text('priority').default('medium'), // 'low' | 'medium' | 'high'
+  nextFollowUpAt: timestamp('next_follow_up_at'),
+  lostReason: text('lost_reason'),
   notes: text('notes'),
   assignedTo: uuid('assigned_to').references(() => users.id), // Staff assigned
   value: text('value'), // Estimated deal value
@@ -268,7 +310,7 @@ export const expenses = pgTable('expenses', {
 // Company Global Settings
 export const companySettings = pgTable('company_settings', {
   id: uuid('id').defaultRandom().primaryKey(),
-  companyName: text('company_name').notNull().default('Bold Ideas Innovations Ltd.'),
+  companyName: text('company_name').notNull().default('Bold Ideas'),
   companyAddress: text('company_address'),
   companyEmail: text('company_email'),
   companyPhone: text('company_phone'),
@@ -303,8 +345,10 @@ export const comments = pgTable('comments', {
   content: text('content').notNull(),
   attachmentUrl: text('attachment_url'),
   userId: uuid('user_id').references(() => users.id),
+  postId: uuid('post_id').references(() => posts.id, { onDelete: 'cascade' }),
   projectId: uuid('project_id').references(() => internalProjects.id, { onDelete: 'cascade' }),
   taskId: uuid('task_id').references(() => tasks.id, { onDelete: 'cascade' }),
+  guestName: text('guest_name'),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -355,3 +399,117 @@ export const activityLog = pgTable('activity_log', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+// --- Client Portal Tables ---
+
+export const projectFiles = pgTable('project_files', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  projectId: uuid('project_id').references(() => internalProjects.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  url: text('url').notNull(),
+  type: text('type').default('document'), // 'deliverable', 'document', 'asset', 'image'
+  sizeBytes: integer('size_bytes'),
+  uploadedBy: uuid('uploaded_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// --- Client Ticket System ---
+
+export const tickets = pgTable('tickets', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  ticketNumber: text('ticket_number').unique(), // Auto-generated: TKT-YYYYMMDD-0001
+  clientId: uuid('client_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  projectId: uuid('project_id').references(() => internalProjects.id, { onDelete: 'set null' }),
+  assignedTo: uuid('assigned_to').references(() => users.id, { onDelete: 'set null' }),
+  department: text('department').default('general'), // 'general' | 'billing' | 'technical' | 'sales'
+  subject: text('subject').notNull(),
+  description: text('description').notNull(),
+  priority: text('priority').default('medium'), // 'low' | 'medium' | 'high' | 'urgent'
+  status: text('status').default('open'), // 'open' | 'awaiting_reply' | 'in_progress' | 'on_hold' | 'resolved' | 'closed'
+  rating: integer('rating'), // 1-5 customer satisfaction rating
+  ratingComment: text('rating_comment'),
+  firstResponseAt: timestamp('first_response_at'), // For SLA tracking
+  resolvedAt: timestamp('resolved_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const ticketAttachments = pgTable('ticket_attachments', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  ticketId: uuid('ticket_id').references(() => tickets.id, { onDelete: 'cascade' }).notNull(),
+  name: text('name').notNull(),
+  url: text('url').notNull(),
+  sizeBytes: integer('size_bytes'),
+  uploadedBy: uuid('uploaded_by').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const ticketComments = pgTable('ticket_comments', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  ticketId: uuid('ticket_id').references(() => tickets.id, { onDelete: 'cascade' }).notNull(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }).notNull(),
+  content: text('content').notNull(),
+  isInternal: boolean('is_internal').default(false), // Internal notes visible only to staff
+  attachmentUrl: text('attachment_url'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const cannedResponses = pgTable('canned_responses', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  title: text('title').notNull(),
+  content: text('content').notNull(),
+  department: text('department'), // Optional: filter by department
+  createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const ticketActivity = pgTable('ticket_activity', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  ticketId: uuid('ticket_id').references(() => tickets.id, { onDelete: 'cascade' }).notNull(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  action: text('action').notNull(), // 'created' | 'status_changed' | 'assigned' | 'priority_changed' | 'commented'
+  oldValue: text('old_value'),
+  newValue: text('new_value'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const trainingRegistrations = pgTable('training_registrations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  fullName: text('full_name').notNull(),
+  email: text('email').notNull().unique(),
+  phone: text('phone').notNull(),
+  location: text('location').notNull(),
+  mode: text('mode').notNull(), // 'virtual' | 'physical'
+  experienceLevel: text('experience_level').notNull(), // 'beginner' | 'intermediate'
+  goal: text('goal'),
+  status: text('status').default('pending'), // 'pending'|'contacted'|'enrolled'|'rejected'
+  adminNotes: text('admin_notes'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export type TrainingRegistration = typeof trainingRegistrations.$inferSelect;
+export type NewTrainingRegistration = typeof trainingRegistrations.$inferInsert;
+
+// --- Purchases (Stripe product checkout) ---
+
+export const purchases = pgTable('purchases', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  serviceSlug: text('service_slug').notNull(),
+  packageName: text('package_name').notNull(),
+  amount: text('amount').notNull(),
+  currency: text('currency').default('USD'),
+  customerName: text('customer_name').notNull(),
+  customerEmail: text('customer_email').notNull(),
+  customerPhone: text('customer_phone'),
+  stripeSessionId: text('stripe_session_id'),
+  stripePaymentIntentId: text('stripe_payment_intent_id'),
+  status: text('status').default('pending'), // 'pending' | 'completed' | 'failed' | 'refunded'
+  invoiceId: uuid('invoice_id').references(() => invoices.id, { onDelete: 'set null' }),
+  receiptId: uuid('receipt_id').references(() => receipts.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export type Purchase = typeof purchases.$inferSelect;
+export type NewPurchase = typeof purchases.$inferInsert;

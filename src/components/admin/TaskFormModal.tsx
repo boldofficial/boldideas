@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import {
-    Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter
-} from '@/components/ui/sheet';
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -60,20 +61,20 @@ export default function TaskFormModal({ open, onClose, task, users }: Props) {
     };
 
     return (
-        <Sheet open={open} onOpenChange={(open) => !open && onClose()}>
-            <SheetContent className="w-full sm:max-w-lg p-0 flex flex-col">
-                <SheetHeader className="p-6 pb-4 border-b bg-slate-50/50">
-                    <SheetTitle className="text-xl font-bold">
-                        {isEditing ? 'Edit Task' : 'New Task'}
-                    </SheetTitle>
-                    <SheetDescription>
-                        {isEditing ? 'Update task details below' : 'Fill in the details to create a new task'}
-                    </SheetDescription>
-                </SheetHeader>
+        <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-lg max-h-[90vh] p-0 gap-0 overflow-hidden">
+                <DialogHeader className="p-6 pb-4 border-b bg-slate-50/50">
+                    <DialogTitle className="text-xl font-bold">
+                        {isEditing ? 'Edit Task' : 'Create New Task'}
+                    </DialogTitle>
+                    <DialogDescription>
+                        {isEditing ? 'Update the task details below' : 'Fill in the details to create a new task'}
+                    </DialogDescription>
+                </DialogHeader>
 
-                <form onSubmit={handleSubmit} encType="multipart/form-data" className="flex-1 flex flex-col overflow-hidden">
-                    <ScrollArea className="flex-1 p-6">
-                        <div className="space-y-5">
+                <form onSubmit={handleSubmit} encType="multipart/form-data" className="flex flex-col overflow-hidden">
+                    <ScrollArea className="flex-1 max-h-[calc(90vh-220px)]">
+                        <div className="p-6 space-y-5">
                             <div className="space-y-2">
                                 <Label htmlFor="title">Title</Label>
                                 <Input
@@ -92,7 +93,7 @@ export default function TaskFormModal({ open, onClose, task, users }: Props) {
                                     name="description"
                                     defaultValue={task?.description || ''}
                                     placeholder="Add more details about this task..."
-                                    className="min-h-[120px] resize-none"
+                                    className="min-h-[100px] resize-none"
                                 />
                             </div>
 
@@ -104,6 +105,7 @@ export default function TaskFormModal({ open, onClose, task, users }: Props) {
                                             <SelectValue placeholder="Select priority" />
                                         </SelectTrigger>
                                         <SelectContent>
+                                            <SelectItem value="low">Low</SelectItem>
                                             <SelectItem value="medium">Medium</SelectItem>
                                             <SelectItem value="high">High</SelectItem>
                                             <SelectItem value="urgent">Urgent</SelectItem>
@@ -148,17 +150,7 @@ export default function TaskFormModal({ open, onClose, task, users }: Props) {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="file">Attachment</Label>
-                                <Input
-                                    id="file"
-                                    name="file"
-                                    type="file"
-                                    className="cursor-pointer"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="subtasks">Steps / Checklist</Label>
+                                <Label htmlFor="subtasks">Subtasks / Checklist</Label>
                                 <Textarea
                                     id="subtasks-text"
                                     defaultValue={task?.subtasks?.map((s: any) => s.title).join('\n') || ''}
@@ -169,23 +161,33 @@ export default function TaskFormModal({ open, onClose, task, users }: Props) {
                                         if (input) input.value = JSON.stringify(subtasks);
                                     }}
                                     placeholder="Enter each step on a new line..."
-                                    className="min-h-[80px] resize-none"
+                                    className="min-h-[60px] resize-none"
                                 />
                                 <input type="hidden" name="subtasks" defaultValue={JSON.stringify(task?.subtasks || [])} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="file">Attachment</Label>
+                                <Input
+                                    id="file"
+                                    name="file"
+                                    type="file"
+                                    className="cursor-pointer"
+                                />
                             </div>
                         </div>
                     </ScrollArea>
 
-                    <SheetFooter className="p-6 pt-4 border-t bg-slate-50/50">
+                    <DialogFooter className="p-6 pt-4 border-t bg-slate-50/50">
                         <Button type="button" variant="outline" onClick={onClose}>
                             Cancel
                         </Button>
                         <Button type="submit" className="bg-brand-navy hover:bg-brand-navy/90">
                             {isEditing ? 'Update Task' : 'Create Task'}
                         </Button>
-                    </SheetFooter>
+                    </DialogFooter>
                 </form>
-            </SheetContent>
-        </Sheet>
+            </DialogContent>
+        </Dialog>
     );
 }

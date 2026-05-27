@@ -32,7 +32,7 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
     const currencySymbol = getCurrencySymbol(data.invoice?.currency);
 
     return (
-        <div className="max-w-2xl mx-auto space-y-8 animate-fade-in pb-20">
+        <div className="max-w-2xl mx-auto space-y-8 animate-fade-in pb-20 print:pb-0 print:space-y-0">
             {/* Navigation */}
             <div className="flex justify-between items-center no-print">
                 <Link
@@ -55,18 +55,14 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
                     <div className="relative z-10">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg overflow-hidden p-1">
+                                <div className="relative w-[236px] h-24">
                                     <Image
-                                        src={settings?.logoUrl || "/logo.png"}
+                                        src={settings?.logoUrl || "/boldideas_logo.png"}
                                         alt="Company Logo"
-                                        width={32}
-                                        height={32}
-                                        className="object-contain"
+                                        fill
+                                        className="!w-full !h-full object-fill mix-blend-multiply"
+                                        style={{ objectFit: 'fill' }}
                                     />
-                                </div>
-                                <div>
-                                    <h1 className="text-2xl font-bold">Payment Receipt</h1>
-                                    <p className="text-emerald-100 italic">{settings?.companyName || "Bold Ideas Innovations Ltd."}</p>
                                 </div>
                             </div>
                             <div className="text-right">
@@ -129,11 +125,14 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
                     {/* Signature and Company Footer */}
                     <div className="pt-8 flex justify-between items-end border-t border-slate-100">
                         <div className="space-y-4">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-brand-navy rounded flex items-center justify-center overflow-hidden p-1">
-                                    <Image src={settings?.logoUrl || "/logo.png"} alt="Logo" width={20} height={20} className="object-contain" />
-                                </div>
-                                <span className="font-bold text-brand-navy uppercase tracking-tight italic">{settings?.companyName || "Bold Ideas Innovations Ltd."}</span>
+                            <div className="relative w-[236px] h-24">
+                                <Image
+                                    src={settings?.logoUrl || "/boldideas_logo.png"}
+                                    alt="Logo"
+                                    fill
+                                    className="!w-full !h-full object-fill"
+                                    style={{ objectFit: 'fill' }}
+                                />
                             </div>
                             <p className="text-[10px] text-slate-400 max-w-[200px]">
                                 {settings?.companyName}<br />
@@ -165,46 +164,69 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
                 @media print {
                     @page { 
                         size: A4;
-                        margin: 0 !important;
+                        margin: 0;
+                    }
+                    
+                    * {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
                     }
                     
                     html, body {
-                        width: 210mm !important;
-                        height: 297mm !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        overflow: hidden !important;
+                        width: 210mm;
+                        height: 297mm;
+                        margin: 0;
+                        padding: 0;
+                        background: white;
                     }
 
                     body { 
-                        background: white !important; 
-                        -webkit-print-color-adjust: exact !important; 
-                        print-color-adjust: exact !important;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
                     }
 
-                    aside, nav, .no-print { display: none !important; }
-                    main { margin: 0 !important; padding: 0 !important; width: 100% !important; display: block !important; }
+                    aside, nav, .no-print { 
+                        display: none !important; 
+                    }
+                    
+                    main { 
+                        margin: 0 !important;
+                        padding: 20mm 15mm !important;
+                        width: 210mm !important;
+                        max-width: 210mm !important;
+                        box-sizing: border-box !important;
+                    }
                     
                     #receipt-content { 
                         box-shadow: none !important; 
                         border: none !important; 
                         border-radius: 0 !important;
-                        width: 210mm !important;
-                        height: 297mm !important;
-                        max-height: 297mm !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
                         margin: 0 !important;
-                        padding: 15mm !important;
+                        padding: 0 !important;
                         box-sizing: border-box !important;
-                        position: relative !important;
                         background: white !important;
                     }
+
+                    /* Aggressive spacing reduction for print */
+                    .p-8 { padding: 1.5rem !important; }
+                    .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem !important; }
+                    .mt-8 { margin-top: 1rem !important; }
+                    .pt-8 { padding-top: 1rem !important; }
+                    .gap-8 { gap: 1rem !important; }
+                    .mb-4 { margin-bottom: 0.5rem !important; }
                     
                     /* Ensure backgrounds and colors show in print */
                     .bg-emerald-600 { background-color: #059669 !important; }
                     .bg-emerald-50 { background-color: #ecfdf5 !important; }
                     .bg-emerald-500 { background-color: #10b981 !important; }
+                    .border-emerald-100 { border-color: #d1fae5 !important; }
                     .text-emerald-100 { color: #d1fae5 !important; }
                     .text-emerald-200 { color: #a7f3d0 !important; }
+                    .text-emerald-600 { color: #059669 !important; }
+                    .text-emerald-900 { color: #064e3b !important; }
                     .text-white { color: #ffffff !important; }
                 }
                 
@@ -217,4 +239,3 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
         </div>
     );
 }
-

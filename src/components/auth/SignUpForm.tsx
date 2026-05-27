@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { signUpAction } from '@/actions/auth';
 import { useRouter } from 'next/navigation';
+import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 
 export default function SignUpForm() {
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [message, setMessage] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
 
     async function handleSubmit(formData: FormData) {
@@ -18,7 +20,7 @@ export default function SignUpForm() {
         if (res.success) {
             setStatus('success');
             setMessage('Account created! Redirecting to login...');
-            setTimeout(() => router.push('/auth/signin'), 2000);
+            setTimeout(() => router.push('/signin'), 2000);
         } else {
             setStatus('error');
             setMessage(res.error || 'Failed to sign up');
@@ -29,59 +31,125 @@ export default function SignUpForm() {
     }
 
     return (
-        <form action={handleSubmit} className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {status === 'error' && (
-                <div className="p-3 bg-red-50 text-red-600 text-sm rounded border border-red-100 flex items-center gap-2">
-                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    {message}
-                </div>
-            )}
-            {status === 'success' && (
-                <div className="p-3 bg-green-50 text-green-600 text-sm rounded border border-green-100 flex items-center gap-2">
-                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                    {message}
-                </div>
-            )}
-
-            <div>
-                <label className="block text-xs font-mono uppercase tracking-widest text-[#64748b] mb-2">Full Name</label>
-                <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400 group-focus-within:text-[#D4AF37] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
+        <div className="w-full">
+            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10">
+                <div className="flex justify-center mb-8">
+                    <div className="h-20 w-20 rounded-2xl bg-brand-navy flex items-center justify-center shadow-lg">
+                        <span className="text-xl font-black text-white">
+                            B<span className="text-brand-gold">I</span>
+                        </span>
                     </div>
-                    <input name="name" type="text" required className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded text-sm placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all bg-white/50 backdrop-blur-sm" placeholder="John Doe" />
                 </div>
-            </div>
 
-            <div>
-                <label className="block text-xs font-mono uppercase tracking-widest text-[#64748b] mb-2">Email Identity</label>
-                <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400 group-focus-within:text-[#D4AF37] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                        </svg>
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <h2 className="text-3xl font-black text-brand-navy mb-2">
+                        Create Account
+                    </h2>
+                    <p className="text-slate-500 text-sm">
+                        Join Bold Ideas Innovation
+                    </p>
+                </div>
+
+                {/* Status Messages */}
+                {status === 'error' && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+                        <p className="font-medium">Registration Failed</p>
+                        <p className="text-xs mt-1">{message}</p>
                     </div>
-                    <input name="email" type="email" required className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded text-sm placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all bg-white/50 backdrop-blur-sm" placeholder="agent@agency.os" />
-                </div>
-            </div>
-
-            <div>
-                <label className="block text-xs font-mono uppercase tracking-widest text-[#64748b] mb-2">Secure Passcode</label>
-                <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400 group-focus-within:text-[#D4AF37] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
+                )}
+                {status === 'success' && (
+                    <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 text-sm">
+                        <p className="font-medium">Success!</p>
+                        <p className="text-xs mt-1">{message}</p>
                     </div>
-                    <input name="password" type="password" required className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded text-sm placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all bg-white/50 backdrop-blur-sm" placeholder="••••••••" />
-                </div>
-            </div>
+                )}
 
-            <button disabled={status === 'loading'} className="w-full flex justify-center py-3 px-4 border border-transparent rounded shadow-sm text-sm font-bold text-[#0A1128] bg-[#D4AF37] hover:bg-[#b0912d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D4AF37] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                {status === 'loading' ? 'INITIALIZING...' : 'ESTABLISH IDENTITY'}
-            </button>
-        </form>
+                {/* Form */}
+                <form action={handleSubmit} className="space-y-5">
+                    {/* Name Input */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-700">
+                            Full Name
+                        </label>
+                        <div className="relative">
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                <User className="w-5 h-5" />
+                            </div>
+                            <input
+                                name="name"
+                                type="text"
+                                required
+                                placeholder="John Doe"
+                                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/20 text-slate-900 rounded-lg outline-none transition-all placeholder:text-slate-400"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Email Input */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-700">
+                            Email Address
+                        </label>
+                        <div className="relative">
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                <Mail className="w-5 h-5" />
+                            </div>
+                            <input
+                                name="email"
+                                type="email"
+                                required
+                                placeholder="you@example.com"
+                                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/20 text-slate-900 rounded-lg outline-none transition-all placeholder:text-slate-400"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Password Input */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-700">
+                            Password
+                        </label>
+                        <div className="relative">
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                <Lock className="w-5 h-5" />
+                            </div>
+                            <input
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                required
+                                placeholder="Create a strong password"
+                                className="w-full pl-11 pr-12 py-3 bg-slate-50 border border-slate-200 focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/20 text-slate-900 rounded-lg outline-none transition-all placeholder:text-slate-400"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-navy transition-colors"
+                            >
+                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                        disabled={status === 'loading'}
+                        className="w-full bg-brand-navy text-white font-bold py-3.5 rounded-lg hover:bg-brand-gold hover:text-brand-navy transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {status === 'loading' ? (
+                            <span className="flex items-center justify-center gap-2">
+                                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Creating account...
+                            </span>
+                        ) : (
+                            'Create Account'
+                        )}
+                    </button>
+                </form>
+            </div>
+        </div>
     );
 }

@@ -12,6 +12,20 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      keyframes: {
+        flow: {
+          '0%': { strokeDashoffset: '100' },
+          '100%': { strokeDashoffset: '0' },
+        },
+        scan: {
+          '0%': { transform: 'translateY(-100%)' },
+          '100%': { transform: 'translateY(600px)' },
+        },
+      },
+      animation: {
+        flow: 'flow 2s linear infinite',
+        scan: 'scan 6s linear infinite',
+      },
     },
   },
   plugins: [],

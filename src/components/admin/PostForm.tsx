@@ -21,6 +21,7 @@ interface PostFormProps {
         excerpt: string | null;
         content: any; // JSON
         status: string | null;
+        coverImage?: string | null;
     };
     isEditMode?: boolean;
 }
@@ -28,11 +29,39 @@ interface PostFormProps {
 const PostForm: React.FC<PostFormProps> = ({ initialData, isEditMode = false }) => {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
-    const [content, setContent] = useState(initialData?.content || {});
-    const [title, setTitle] = useState(initialData?.title || '');
-    const [slug, setSlug] = useState(initialData?.slug || '');
-    const [status, setStatus] = useState(initialData?.status || 'draft');
-    const [manuallyEditedSlug, setManuallyEditedSlug] = useState(!!initialData?.slug);
+    
+    // Default test data for "prefilling" the form
+    const defaultTestContent = {
+        type: 'doc',
+        content: [
+            { type: 'heading', attrs: { level: 1 }, content: [{ type: 'text', text: 'Operational Protocol: The New Intelligence Layer' }] },
+            { type: 'paragraph', content: [{ type: 'text', text: 'In the current landscape, simply using AI is no longer a competitive advantage. The real leverage lies in internal ' }, { type: 'text', marks: [{ type: 'bold' }], text: 'integration' }, { type: 'text', text: '.' }] },
+            { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'The Schematic of Scale' }] },
+            { type: 'paragraph', content: [{ type: 'text', text: 'Most teams fail because they treat AI as an external tool. At Bold Ideas, we treat it as an internal nervous system.' }] },
+            { type: 'blockquote', content: [{ type: 'paragraph', content: [{ type: 'text', text: '"AI is not a replacement for talent; it\'s the substrate on which talent performs at scale."' }, { type: 'hardBreak' }, { type: 'text', text: '— System_Operator // Bold_Ideas' }] }] },
+            { type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: 'Terminal Workflow Initialization' }] },
+            { type: 'paragraph', content: [{ type: 'text', text: 'Here is how we initialize a basic automation uplink in our proprietary environment:' }] },
+            { type: 'codeBlock', attrs: { language: 'bash' }, content: [{ type: 'text', text: '# Initialize Bold_Intelligence_API\nuplink --protocol secure --target internal-database\ndeploy --workflow-id ai-triage-v1 --mode autonomous' }] },
+            { type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: 'Visualizing the Uplink' }] },
+            { type: 'image', attrs: { src: '/images/blog/test-schematic.png', alt: 'Strategic Uplink Schematic' } },
+            { type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: 'Core Protocols' }] },
+            { 
+                type: 'bulletList', 
+                content: [
+                    { type: 'listItem', content: [{ type: 'paragraph', content: [{ type: 'text', marks: [{ type: 'bold' }], text: 'Data Integrity' }, { type: 'text', text: ': Every transmission is verified against ground-truth benchmarks.' }] }] },
+                    { type: 'listItem', content: [{ type: 'paragraph', content: [{ type: 'text', marks: [{ type: 'bold' }], text: 'Modular Architecture' }, { type: 'text', text: ': Swap models instantly as the frontier moves.' }] }] },
+                    { type: 'listItem', content: [{ type: 'paragraph', content: [{ type: 'text', marks: [{ type: 'bold' }], text: 'Human-in-the-Loop' }, { type: 'text', text: ': Strategic oversight remains the primary directive.' }] }] }
+                ] 
+            }
+        ]
+    };
+
+    const [content, setContent] = useState(initialData?.content || defaultTestContent);
+    const [title, setTitle] = useState(initialData?.title || 'Deploying The Intelligence Layer: AI Adoption in 2026');
+    const [slug, setSlug] = useState(initialData?.slug || 'ai-intelligence-layer-2026');
+    const [status, setStatus] = useState(initialData?.status || 'published');
+    const [coverImage, setCoverImage] = useState(initialData?.coverImage || '');
+    const [manuallyEditedSlug, setManuallyEditedSlug] = useState(!!initialData?.slug || true);
 
     // Slugify helper
     const slugify = (text: string) => {
@@ -56,6 +85,10 @@ const PostForm: React.FC<PostFormProps> = ({ initialData, isEditMode = false }) 
         }
     };
 
+    const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setCoverImage(e.target.value);
+    };
+
     const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSlug(e.target.value);
         setManuallyEditedSlug(true);
@@ -73,6 +106,7 @@ const PostForm: React.FC<PostFormProps> = ({ initialData, isEditMode = false }) 
         formData.set('title', title);
         formData.set('slug', slug);
         formData.set('status', status);
+        formData.set('coverImage', coverImage);
 
         let res;
         if (isEditMode && initialData?.id) {
@@ -155,6 +189,30 @@ const PostForm: React.FC<PostFormProps> = ({ initialData, isEditMode = false }) 
                                        rows={3}
                                        placeholder="Brief summary..." 
                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                   <Label htmlFor="coverImage">Cover Image URL</Label>
+                                   <Input
+                                       id="coverImage"
+                                       name="coverImage"
+                                       value={coverImage}
+                                       onChange={handleCoverImageChange}
+                                       placeholder="https://images.unsplash.com/..."
+                                       className="font-mono text-sm"
+                                   />
+                                   {coverImage && (
+                                     <div className="relative mt-2 h-28 w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                                       <img
+                                         src={coverImage}
+                                         alt="Cover preview"
+                                         className="h-full w-full object-cover"
+                                         onError={(e) => {
+                                           (e.target as HTMLImageElement).style.display = 'none';
+                                         }}
+                                       />
+                                     </div>
+                                   )}
                                 </div>
 
                                 <div className="space-y-2">

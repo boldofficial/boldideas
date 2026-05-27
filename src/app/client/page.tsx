@@ -1,154 +1,235 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getInternalProjects } from '@/actions/agency';
+import { useAuthStore } from '@/store/authStore';
+import { getClientProjects, ClientProject } from '@/actions/clientPortal';
 import { getProjectMilestones } from '@/actions/pm';
 import { getInvoices } from '@/actions/finance';
-import { useAuthStore } from '@/store/authStore';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { FolderKanban, Clock, CheckCircle2, FileText, ArrowRight } from 'lucide-react';
 
 export default function ClientDashboard() {
-    const { user, role, isLoading } = useAuthStore();
-    const [projects, setProjects] = useState<any[]>([]);
-    const [milestones, setMilestones] = useState<any[]>([]);
-    const [invoices, setInvoices] = useState<any[]>([]);
-    const router = useRouter();
+  const { user } = useAuthStore();
+  const [projects, setProjects] = useState<ClientProject[]>([]);
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const init = async () => {
-            await useAuthStore.getState().checkAuth();
-        };
-        init();
-    }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
+      setLoading(true);
 
-    useEffect(() => {
-        if (!isLoading && !user) {
-            router.push('/auth/signin');
-        }
-    }, [user, isLoading, router]);
+      console.log('🔍 DEBUG: Client User ID:', user.id);
+      console.log('🔍 DEBUG: Client Email:', user.email);
 
-    useEffect(() => {
-        const fetchProjects = async () => {
-            if (user) {
-                const { data: projData } = await getInternalProjects(user.id);
-                setProjects(projData || []);
+      const [projectsRes, invoicesRes] = await Promise.all([
+        getClientProjects(user.id),
+        getInvoices(user.id),
+      ]);
 
-                // If there is an active project, fetch its milestones
-                if (projData && projData.length > 0) {
-                    const { data: msData } = await getProjectMilestones(projData[0].id);
-                    setMilestones(msData || []);
-                }
+      console.log('🔍 DEBUG: Projects Response:', projectsRes);
+      console.log('🔍 DEBUG: Projects Data:', projectsRes.data);
 
-                // Fetch invoices
-                const { data: invData } = await getInvoices(user.id);
-                setInvoices(invData || []);
-            }
-        };
-        fetchProjects();
-    }, [user]);
+      setProjects(projectsRes.data || []);
+      setInvoices(invoicesRes.data || []);
+      setLoading(false);
+    };
 
-    if (isLoading) return <div className="p-8">Loading...</div>;
+    fetchData();
+  }, [user]);
 
+  if (loading) {
     return (
-        <div className="min-h-screen bg-slate-50 p-8">
-            <div className="max-w-4xl mx-auto">
-                <header className="flex justify-between items-center mb-12 border-b border-brand-navy/10 pb-8">
-                    <div>
-                        <h1 className="text-3xl font-black text-brand-navy">Client Portal</h1>
-                        <p className="text-slate-500 font-mono text-sm">Overview for {user?.email}</p>
-                    </div>
-                    <div className="bg-brand-gold text-brand-navy px-4 py-1 rounded text-xs font-bold uppercase tracking-widest">
-                        Client Access
-                    </div>
-                </header>
-
-                <section className="mb-12">
-                    <h2 className="text-xl font-bold text-slate-800 mb-6">Active Projects</h2>
-
-                    <div className="grid grid-cols-1 gap-6">
-                        {projects.map((project) => (
-                            <div key={project.id} className="bg-white p-8 rounded-lg shadow-lg border-t-4 border-brand-gold relative overflow-hidden">
-                                <div className="absolute top-0 right-0 bg-slate-100 px-4 py-1 rounded-bl text-xs font-bold uppercase text-slate-500">
-                                    {project.status}
-                                </div>
-                                <h3 className="text-2xl font-black text-brand-navy mb-2">{project.title}</h3>
-                                <p className="text-slate-600 mb-8">{project.description || 'Project is underway.'}</p>
-
-                                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mb-1">
-                                    <div
-                                        className="bg-brand-navy h-full transition-all duration-1000"
-                                        style={{ width: `${project.progress || 0}%` }}
-                                    ></div>
-                                </div>
-                                <div className="flex justify-between items-center mb-6">
-                                    <span className="text-[10px] font-bold text-brand-navy uppercase tracking-widest">{project.progress || 0}% Complete</span>
-                                    <span className="text-[10px] text-slate-400 font-mono">{project.completedTasks || 0} / {project.totalTasks || 0} Tasks</span>
-                                </div>
-                                <div className="flex justify-between text-xs text-slate-400 font-mono">
-                                    <span>Kickoff: {project.createdAt ? new Date(project.createdAt).toLocaleDateString() : '-'}</span>
-                                    <span>Target: {project.dueDate ? new Date(project.dueDate).toLocaleDateString() : 'Ongoing'}</span>
-                                </div>
-
-                                {/* Milestones Preview */}
-                                <div className="mt-8 pt-6 border-t border-slate-100">
-                                    <h4 className="font-bold text-slate-800 mb-4 text-sm uppercase">Recent Milestones</h4>
-                                    <div className="space-y-3">
-                                        {milestones.map(ms => (
-                                            <div key={ms.id} className="flex justify-between items-center text-sm">
-                                                <span className={`${ms.status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700'}`}>{ms.title}</span>
-                                                <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded ${ms.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>{ms.status}</span>
-                                            </div>
-                                        ))}
-                                        {milestones.length === 0 && <p className="text-slate-400 text-xs text-center italic">No milestones set.</p>}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                        {projects.length === 0 && (
-                            <div className="text-center p-12 bg-white rounded border border-dashed border-slate-300 text-slate-400">
-                                No active projects linked to your account.
-                            </div>
-                        )}
-                    </div>
-                </section>
-
-                <section>
-                    <h2 className="text-xl font-bold text-slate-800 mb-6">Invoices</h2>
-                    <div className="bg-white rounded-lg shadow overflow-hidden">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-slate-50 border-b border-slate-200">
-                                <tr>
-                                    <th className="p-4 font-semibold text-slate-600">ID</th>
-                                    <th className="p-4 font-semibold text-slate-600">Amount</th>
-                                    <th className="p-4 font-semibold text-slate-600">Status</th>
-                                    <th className="p-4 font-semibold text-slate-600">Due Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {invoices.map((inv) => (
-                                    <tr key={inv.id} className="border-b border-slate-100">
-                                        <td className="p-4 font-mono text-xs text-slate-500">#{inv.id.slice(0, 8)}</td>
-                                        <td className="p-4 font-bold text-slate-900">${inv.totalAmount}</td>
-                                        <td className="p-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wide
-                                                ${inv.status === 'paid' ? 'bg-green-100 text-green-700' :
-                                                    inv.status === 'overdue' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                {inv.status}
-                                            </span>
-                                        </td>
-                                        <td className="p-4 text-slate-600">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '-'}</td>
-                                    </tr>
-                                ))}
-                                {invoices.length === 0 && (
-                                    <tr>
-                                        <td colSpan={4} className="p-8 text-center text-slate-500">No invoices found.</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-            </div>
-        </div>
+      <div className="flex items-center justify-center p-20">
+        <div className="w-8 h-8 border-4 border-brand-gold border-t-transparent rounded-full animate-spin"></div>
+      </div>
     );
+  }
+
+  const activeProjects = projects.filter(p => p.status === 'active');
+  const completedProjects = projects.filter(p => p.status === 'completed');
+
+  const statusColor = (status: string | null) => {
+    switch (status) {
+      case 'active': return 'bg-emerald-100 text-emerald-700';
+      case 'completed': return 'bg-blue-100 text-blue-700';
+      case 'on_hold': return 'bg-amber-100 text-amber-700';
+      case 'planning': return 'bg-slate-100 text-slate-700';
+      default: return 'bg-slate-100 text-slate-600';
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-brand-navy">Welcome Back</h1>
+        <p className="text-slate-500 mt-1">Here's an overview of your projects</p>
+      </div>
+
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-brand-navy/10 flex items-center justify-center">
+                <FolderKanban className="w-6 h-6 text-brand-navy" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-brand-navy">{projects.length}</p>
+                <p className="text-sm text-slate-500">Total Projects</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center">
+                <Clock className="w-6 h-6 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-brand-navy">{activeProjects.length}</p>
+                <p className="text-sm text-slate-500">In Progress</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                <CheckCircle2 className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-brand-navy">{completedProjects.length}</p>
+                <p className="text-sm text-slate-500">Completed</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-brand-gold/20 flex items-center justify-center">
+                <FileText className="w-6 h-6 text-brand-gold" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-brand-navy">{invoices.length}</p>
+                <p className="text-sm text-slate-500">Invoices</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Active Projects */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-brand-navy">Active Projects</h2>
+          <Link 
+            href="/client/projects" 
+            className="text-sm text-brand-navy hover:text-brand-gold flex items-center gap-1 transition-colors"
+          >
+            View All <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        {activeProjects.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center text-slate-400">
+              <FolderKanban className="w-12 h-12 mx-auto mb-4 opacity-20" />
+              <p>No active projects at the moment</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4">
+            {activeProjects.slice(0, 3).map((project) => (
+              <Link key={project.id} href={`/client/projects/${project.id}`}>
+                <Card className="hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-brand-gold">
+                  <CardContent className="pt-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="font-bold text-lg text-brand-navy">{project.title}</h3>
+                        <p className="text-sm text-slate-500 mt-1">{project.description || 'No description'}</p>
+                      </div>
+                      <Badge className={statusColor(project.status)}>
+                        {project.status}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">Progress</span>
+                        <span className="font-medium text-brand-navy">{project.progress}%</span>
+                      </div>
+                      <Progress value={project.progress} className="h-2 bg-slate-100" indicatorClassName="bg-brand-navy" />
+                      <p className="text-xs text-slate-400">
+                        {project.completedTasks} of {project.totalTasks} tasks completed
+                      </p>
+                    </div>
+
+                    <div className="flex justify-between text-xs text-slate-400 mt-4 pt-4 border-t">
+                      <span>Started: {project.createdAt ? new Date(project.createdAt).toLocaleDateString() : '-'}</span>
+                      <span>Due: {project.dueDate ? new Date(project.dueDate).toLocaleDateString() : 'Ongoing'}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Recent Invoices */}
+      <div>
+        <h2 className="text-xl font-bold text-brand-navy mb-4">Recent Invoices</h2>
+        <Card>
+          <CardContent className="p-0">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 border-b">
+                <tr>
+                  <th className="p-4 font-semibold text-slate-600">Invoice</th>
+                  <th className="p-4 font-semibold text-slate-600">Amount</th>
+                  <th className="p-4 font-semibold text-slate-600">Status</th>
+                  <th className="p-4 font-semibold text-slate-600">Due Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoices.slice(0, 5).map((inv) => (
+                  <tr key={inv.id} className="border-b last:border-0 hover:bg-slate-50">
+                    <td className="p-4 font-mono text-xs text-slate-500">#{inv.id.slice(0, 8)}</td>
+                    <td className="p-4 font-bold text-brand-navy">${inv.totalAmount}</td>
+                    <td className="p-4">
+                      <Badge className={
+                        inv.status === 'paid' ? 'bg-emerald-100 text-emerald-700' :
+                        inv.status === 'overdue' ? 'bg-red-100 text-red-700' :
+                        'bg-amber-100 text-amber-700'
+                      }>
+                        {inv.status}
+                      </Badge>
+                    </td>
+                    <td className="p-4 text-slate-500">
+                      {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '-'}
+                    </td>
+                  </tr>
+                ))}
+                {invoices.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="p-8 text-center text-slate-400">No invoices found</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
 }

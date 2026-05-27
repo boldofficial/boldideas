@@ -19,7 +19,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
 
     useEffect(() => {
         if (!isLoading && !user) {
-            router.push('/auth/signin');
+            router.push('/signin');
         }
     }, [user, isLoading, router]);
 
@@ -74,6 +74,15 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
                         My Projects
                     </Link>
                     <Link
+                        href="/admin/tickets"
+                        className={`block px-4 py-3 rounded-md text-sm font-medium transition-all ${pathname?.startsWith('/admin/tickets')
+                            ? 'bg-[#D4AF37] text-[#0A1128] shadow-lg shadow-[#D4AF37]/20'
+                            : 'text-slate-400 hover:text-white hover:bg-white/5'
+                            }`}
+                    >
+                        Tickets
+                    </Link>
+                    <Link
                         href="/staff/inbox"
                         className={`block px-4 py-3 rounded-md text-sm font-medium transition-all ${pathname === '/staff/inbox'
                             ? 'bg-[#D4AF37] text-[#0A1128] shadow-lg shadow-[#D4AF37]/20'
@@ -95,7 +104,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
 
                 <div className="p-4 border-t border-[#D4AF37]/10">
                     <button
-                        onClick={() => signOut().then(() => router.push('/auth/signin'))}
+                        onClick={() => signOut().then(() => router.push('/signin'))}
                         className="w-full flex items-center gap-2 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-md text-sm font-medium transition-all"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>

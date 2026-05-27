@@ -20,6 +20,17 @@ export async function getUsers(page: number = 1) {
     }
 }
 
+export async function getClientUsers() {
+    try {
+        const data = await db.select().from(users)
+            .where(eq(users.role, 'client'))
+            .orderBy(desc(users.createdAt));
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: 'Failed to fetch clients' };
+    }
+}
+
 export async function getUsersCount() {
     try {
         const [result] = await db.select({ count: count() }).from(users);
@@ -31,7 +42,7 @@ export async function getUsersCount() {
 
 export async function updateUserRole(userId: string, role: string) {
     // Validate role
-    const validRoles = ['admin', 'staff', 'user'];
+    const validRoles = ['admin', 'staff', 'client', 'user'];
     if (!validRoles.includes(role)) {
         return { success: false, error: 'Invalid role' };
     }
@@ -103,6 +114,7 @@ export async function hardDeleteUser(userId: string) {
         return { success: true };
     } catch (error) {
         // May fail due to foreign key constraints
+        console.error('Hard delete error:', error);
         return { success: false, error: 'Failed to permanently delete user. They may have related records.' };
     }
 }

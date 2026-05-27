@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import { supabase } from '@/lib/supabase';
 
 import { sendPasswordResetAction } from '@/actions/auth';
 
@@ -80,7 +79,7 @@ const ForgotPasswordForm: React.FC = () => {
                        </button>
                        
                        <div className="text-center pt-2">
-                           <a href="/auth/signin" className="text-[10px] font-mono text-brand-gold/70 hover:text-brand-gold uppercase tracking-widest hover:underline">
+                           <a href="/signin" className="text-[10px] font-mono text-brand-gold/70 hover:text-brand-gold uppercase tracking-widest hover:underline">
                                &lt; Abort_Sequence
                            </a>
                        </div>

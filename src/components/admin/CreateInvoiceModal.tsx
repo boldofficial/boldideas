@@ -2,7 +2,20 @@
 
 import { useState } from 'react';
 import { createInvoice, addInvoiceItem } from '@/actions/finance';
-import { Plus, X, Trash2, DollarSign, Calendar, User, CreditCard, FileText, Percent, BadgePercent } from 'lucide-react';
+import { 
+    Plus, X, Trash2, DollarSign, Calendar, User, CreditCard, 
+    FileText, Check, AlertCircle 
+} from 'lucide-react';
+import { toast } from 'sonner';
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface InvoiceItem {
     title: string;
@@ -17,6 +30,8 @@ export default function CreateInvoiceModal({ clients }: { clients: any[] }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [discountAmount, setDiscountAmount] = useState<number>(0);
     const [discountType, setDiscountType] = useState<'fixed' | 'percentage'>('fixed');
+    const [currency, setCurrency] = useState<string>('USD');
+    const [clientId, setClientId] = useState<string>('unassigned');
     const [items, setItems] = useState<InvoiceItem[]>([
         { title: '', description: '', quantity: 1, unitPrice: 0, amount: 0 }
     ]);
@@ -56,11 +71,11 @@ export default function CreateInvoiceModal({ clients }: { clients: any[] }) {
         setIsSubmitting(true);
 
         const formData = new FormData(e.currentTarget);
-        formData.set('totalAmount', subtotal.toString()); // Store subtotal as totalAmount in DB for consistency? 
-        // Actually, schema usually expects final total. Let's send final total.
         formData.set('totalAmount', totalAmount.toString());
         formData.set('discountAmount', discountAmount.toString());
         formData.set('discountType', discountType);
+        formData.set('clientId', clientId === 'unassigned' ? '' : clientId);
+        formData.set('currency', currency);
 
         const result = await createInvoice(formData);
 
@@ -75,213 +90,251 @@ export default function CreateInvoiceModal({ clients }: { clients: any[] }) {
                     amount: item.amount.toString()
                 });
             }
+            toast.success('Invoice created successfully');
             setIsOpen(false);
             setItems([{ title: '', description: '', quantity: 1, unitPrice: 0, amount: 0 }]);
             setDiscountAmount(0);
+            window.location.reload();
         } else {
-            alert('Failed to create invoice');
+            toast.error('Failed to create invoice');
         }
         setIsSubmitting(false);
     };
 
     return (
-        <>
-            <button
-                onClick={() => setIsOpen(true)}
-                className="bg-brand-navy text-brand-gold px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform flex items-center gap-2 shadow-lg shadow-brand-navy/20"
-            >
-                <Plus className="w-4 h-4" />
-                New Invoice
-            </button>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                <Button 
+                    className="bg-brand-navy text-brand-gold px-6 font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-brand-navy/20 h-10 italic"
+                >
+                    <Plus className="w-4 h-4 mr-2" /> New Invoice
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl p-0 overflow-hidden bg-white border-none shadow-2xl">
+                <DialogHeader className="p-6 border-b bg-slate-50/80">
+                    <div>
+                        <DialogTitle className="font-black text-2xl text-brand-navy uppercase tracking-tight italic">Create New Invoice</DialogTitle>
+                        <DialogDescription className="text-[10px] font-mono text-slate-400 mt-1 uppercase tracking-widest">
+                            Professional Billing Transmission // Digital Secure Infrastructure
+                        </DialogDescription>
+                    </div>
+                </DialogHeader>
 
-            {isOpen && (
-                <div className="fixed inset-0 bg-brand-navy/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg shadow-2xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-slate-200">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <div>
-                                <h3 className="font-black text-xl text-brand-navy uppercase tracking-tight italic">Create New Invoice</h3>
-                                <p className="text-[10px] font-mono text-slate-400">Professional Billing System</p>
-                            </div>
-                            <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-brand-navy transition-colors">
-                                <X className="w-6 h-6" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[85vh] overflow-y-auto">
-                            <div className="grid md:grid-cols-3 gap-6">
+                <form onSubmit={handleSubmit} className="flex flex-col">
+                    <ScrollArea className="max-h-[70vh]">
+                        <div className="p-6 space-y-8">
+                            <div className="grid md:grid-cols-3 gap-8">
                                 <div className="space-y-4">
                                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-1">Client Information</h4>
-                                    <div className="relative">
-                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                        <select
-                                            name="clientId"
-                                            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded text-xs font-bold focus:ring-1 focus:ring-brand-gold outline-none appearance-none"
-                                            required
-                                        >
-                                            <option value="unassigned">Select Client</option>
-                                            {clients.map((c: any) => (
-                                                <option key={c.id} value={c.id}>{c.name || c.email}</option>
-                                            ))}
-                                        </select>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] uppercase font-bold text-slate-500">Select Client</Label>
+                                        <Select value={clientId} onValueChange={setClientId}>
+                                            <SelectTrigger className="w-full bg-slate-50 border-slate-200 h-10 text-xs font-bold">
+                                                <div className="flex items-center gap-2">
+                                                    <User className="w-3.5 h-3.5 text-slate-400" />
+                                                    <SelectValue placeholder="Select Client" />
+                                                </div>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="unassigned">Select Client</SelectItem>
+                                                {clients.map((c: any) => (
+                                                    <SelectItem key={c.id} value={c.id}>{c.name || c.email}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
-                                    <div className="relative">
-                                        <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                        <select
-                                            name="currency"
-                                            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded text-xs font-bold focus:ring-1 focus:ring-brand-gold outline-none appearance-none"
-                                        >
-                                            <option value="USD">USD ($)</option>
-                                            <option value="NGN">NGN (₦)</option>
-                                            <option value="EUR">EUR (€)</option>
-                                            <option value="GBP">GBP (£)</option>
-                                        </select>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] uppercase font-bold text-slate-500">Currency</Label>
+                                        <Select value={currency} onValueChange={setCurrency}>
+                                            <SelectTrigger className="w-full bg-slate-50 border-slate-200 h-10 text-xs font-bold">
+                                                <div className="flex items-center gap-2">
+                                                    <CreditCard className="w-3.5 h-3.5 text-slate-400" />
+                                                    <SelectValue placeholder="Currency" />
+                                                </div>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="USD">USD ($)</SelectItem>
+                                                <SelectItem value="NGN">NGN (₦)</SelectItem>
+                                                <SelectItem value="EUR">EUR (€)</SelectItem>
+                                                <SelectItem value="GBP">GBP (£)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 </div>
 
                                 <div className="space-y-4">
                                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-1">Billing Dates</h4>
-                                    <div className="relative">
-                                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                        <input
-                                            name="dueDate"
-                                            type="date"
-                                            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded text-xs font-bold focus:ring-1 focus:ring-brand-gold outline-none"
-                                            required
-                                        />
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] uppercase font-bold text-slate-500">Due Date</Label>
+                                        <div className="relative">
+                                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
+                                            <Input
+                                                name="dueDate"
+                                                type="date"
+                                                className="pl-10 bg-slate-50 border-slate-200 text-xs font-bold h-10"
+                                                required
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="text-[10px] text-slate-400 italic">Sets the deadline for payment.</div>
                                 </div>
 
                                 <div className="space-y-4">
                                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-1">Notes</h4>
-                                    <textarea
-                                        name="notes"
-                                        placeholder="Internal notes or terms..."
-                                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded text-xs font-medium focus:ring-1 focus:ring-brand-gold outline-none min-h-[82px]"
-                                    ></textarea>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] uppercase font-bold text-slate-500">Internal Remarks</Label>
+                                        <Textarea
+                                            name="notes"
+                                            placeholder="Terms, bank info, or notes..."
+                                            className="bg-slate-50 border-slate-200 text-xs font-medium resize-none min-h-[92px]"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="space-y-4">
-                                <h4 className="text-[10px] font-black text-brand-navy uppercase tracking-widest flex justify-between items-center bg-slate-100 p-2 rounded">
+                                <h4 className="text-[10px] font-black text-brand-navy uppercase tracking-widest flex justify-between items-center bg-slate-100/50 p-2 rounded border border-slate-200/50">
                                     <span>Line Items & Services</span>
-                                    <button type="button" onClick={addItem} className="text-blue-600 hover:text-blue-800 flex items-center gap-1 font-bold">
-                                        <Plus className="w-3 h-3" /> Add Item
-                                    </button>
+                                    <Button 
+                                        type="button" 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={addItem} 
+                                        className="h-7 text-[10px] text-blue-600 hover:text-blue-700 font-black uppercase tracking-tighter"
+                                    >
+                                        <Plus className="w-3 h-3 mr-1" /> Add Service
+                                    </Button>
                                 </h4>
 
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                     {items.map((item, index) => (
-                                        <div key={index} className="p-3 bg-slate-50/50 rounded border border-dashed border-slate-200 group space-y-3">
-                                            <div className="grid md:grid-cols-12 gap-2">
-                                                <div className="md:col-span-11">
-                                                    <input
+                                        <div key={index} className="p-4 bg-slate-50/30 rounded-lg border border-slate-200/60 group space-y-4 relative overflow-hidden">
+                                            <div className="absolute top-0 left-0 w-1 h-full bg-brand-gold opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <div className="grid md:grid-cols-12 gap-4">
+                                                <div className="md:col-span-11 space-y-3">
+                                                    <Input
                                                         value={item.title}
                                                         onChange={(e) => updateItem(index, 'title', e.target.value)}
-                                                        placeholder="Service Title (e.g. Web Development)"
-                                                        className="w-full p-2 bg-white border border-slate-200 rounded text-xs font-bold text-brand-navy focus:ring-1 focus:ring-brand-gold outline-none"
+                                                        placeholder="Service Title (e.g. Creative Direction)"
+                                                        className="bg-white border-slate-200 text-xs font-black text-brand-navy h-9 shadow-sm"
                                                         required
                                                     />
+                                                    <div className="grid md:grid-cols-12 gap-3 pb-1">
+                                                        <div className="md:col-span-7">
+                                                            <Input
+                                                                value={item.description}
+                                                                onChange={(e) => updateItem(index, 'description', e.target.value)}
+                                                                placeholder="Scope of work details..."
+                                                                className="bg-white border-slate-200 text-[10px] font-medium h-8"
+                                                            />
+                                                        </div>
+                                                        <div className="md:col-span-2">
+                                                            <div className="relative">
+                                                                <Input
+                                                                    type="number"
+                                                                    value={item.quantity}
+                                                                    onChange={(e) => updateItem(index, 'quantity', e.target.value)}
+                                                                    className="bg-white border-slate-200 text-xs font-bold text-center h-8"
+                                                                    required
+                                                                />
+                                                                <span className="absolute -top-3 left-0 text-[8px] font-black text-slate-300 uppercase">Qty</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="md:col-span-3">
+                                                            <div className="relative">
+                                                                <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 w-2.5 h-2.5 text-slate-300" />
+                                                                <Input
+                                                                    type="number"
+                                                                    value={item.unitPrice}
+                                                                    onChange={(e) => updateItem(index, 'unitPrice', e.target.value)}
+                                                                    className="pl-6 bg-white border-slate-200 text-xs font-bold h-8"
+                                                                    required
+                                                                />
+                                                                <span className="absolute -top-3 left-0 text-[8px] font-black text-slate-300 uppercase">Unit Price</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="md:col-span-1 flex items-center justify-center">
-                                                    <button
+                                                <div className="md:col-span-1 flex flex-col items-center justify-between py-1">
+                                                    <Button
                                                         type="button"
+                                                        variant="ghost"
+                                                        size="icon"
                                                         onClick={() => removeItem(index)}
-                                                        className="p-2 text-slate-300 hover:text-rose-500 transition-colors"
+                                                        className="h-8 w-8 text-slate-300 hover:text-rose-600 transition-colors"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div className="grid md:grid-cols-12 gap-2 pb-1">
-                                                <div className="md:col-span-6">
-                                                    <input
-                                                        value={item.description}
-                                                        onChange={(e) => updateItem(index, 'description', e.target.value)}
-                                                        placeholder="Detailed description or scope..."
-                                                        className="w-full p-2 bg-white border border-slate-200 rounded text-[10px] font-medium focus:ring-1 focus:ring-brand-gold outline-none"
-                                                    />
-                                                </div>
-                                                <div className="md:col-span-1">
-                                                    <input
-                                                        type="number"
-                                                        value={item.quantity}
-                                                        onChange={(e) => updateItem(index, 'quantity', e.target.value)}
-                                                        placeholder="Qty"
-                                                        className="w-full p-2 bg-white border border-slate-200 rounded text-xs font-bold text-center focus:ring-1 focus:ring-brand-gold outline-none"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="md:col-span-2">
-                                                    <input
-                                                        type="number"
-                                                        value={item.unitPrice}
-                                                        onChange={(e) => updateItem(index, 'unitPrice', e.target.value)}
-                                                        placeholder="Price"
-                                                        className="w-full p-2 bg-white border border-slate-200 rounded text-xs font-bold focus:ring-1 focus:ring-brand-gold outline-none"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="md:col-span-3 flex items-center justify-end px-3 font-black text-brand-navy text-xs">
-                                                    ${item.amount.toLocaleString()}
+                                                    </Button>
+                                                    <div className="text-[10px] font-black text-brand-navy">
+                                                        ${item.amount.toLocaleString()}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
+                        </div>
+                    </ScrollArea>
 
-                            <div className="flex flex-col md:flex-row justify-between items-start gap-8 border-t border-slate-100 pt-6">
-                                <div className="w-full max-w-sm space-y-4">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-1">Adjustments</h4>
-                                    <div className="flex gap-2">
-                                        <div className="flex-1 relative">
-                                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
-                                            <input
-                                                type="number"
-                                                value={discountAmount}
-                                                onChange={e => setDiscountAmount(Number(e.target.value))}
-                                                placeholder="Discount"
-                                                className="w-full pl-8 pr-4 py-2 bg-slate-50 border border-slate-200 rounded text-xs font-bold focus:ring-1 focus:ring-brand-gold outline-none"
-                                            />
-                                        </div>
-                                        <select
-                                            value={discountType}
-                                            onChange={e => setDiscountType(e.target.value as any)}
-                                            className="bg-slate-50 border border-slate-200 rounded px-3 py-2 text-[10px] font-bold uppercase outline-none"
-                                        >
-                                            <option value="fixed">Fixed ($)</option>
-                                            <option value="percentage">Percent (%)</option>
-                                        </select>
+                    <DialogFooter className="p-6 pt-6 border-t bg-slate-50/50 flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div className="flex gap-4 items-center">
+                            <div className="space-y-1">
+                                <Label className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Discount Adjustment</Label>
+                                <div className="flex items-center gap-2">
+                                    <div className="relative w-24">
+                                        <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                                        <Input
+                                            type="number"
+                                            value={discountAmount}
+                                            onChange={e => setDiscountAmount(Number(e.target.value))}
+                                            className="pl-6 h-8 text-xs font-bold border-slate-200 bg-white"
+                                        />
                                     </div>
-                                </div>
-
-                                <div className="flex items-center gap-6">
-                                    <div className="text-right">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Final Total</p>
-                                        <h3 className="text-3xl font-black text-brand-navy italic">
-                                            <span className="text-slate-300 mr-2">$</span>
-                                            {totalAmount.toLocaleString()}
-                                        </h3>
-                                    </div>
-                                    <button
-                                        type="submit"
-                                        disabled={isSubmitting}
-                                        className="bg-brand-navy text-brand-gold px-10 py-4 rounded text-xs font-black uppercase tracking-widest hover:scale-105 transition-transform shadow-xl shadow-brand-navy/30 disabled:opacity-50 flex items-center gap-2"
+                                    <Select 
+                                        value={discountType} 
+                                        onValueChange={(val: any) => setDiscountType(val)}
                                     >
-                                        {isSubmitting ? 'Processing...' : (
-                                            <>
-                                                <FileText className="w-4 h-4" />
-                                                Create Invoice
-                                            </>
-                                        )}
-                                    </button>
+                                        <SelectTrigger className="w-20 h-8 text-[9px] font-black uppercase bg-white border-slate-200">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="fixed">Fixed</SelectItem>
+                                            <SelectItem value="percentage">Percent</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-        </>
+                        </div>
+
+                        <div className="flex items-center gap-8">
+                            <div className="text-right">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Estimated Total</p>
+                                <h3 className="text-3xl font-black text-brand-navy italic leading-none">
+                                    <span className="text-slate-200 mr-2 text-xl italic">$</span>
+                                    {totalAmount.toLocaleString()}
+                                </h3>
+                            </div>
+                            <Button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="bg-brand-navy text-brand-gold h-14 px-8 font-black uppercase tracking-[0.1em] hover:scale-105 transition-all shadow-xl shadow-brand-navy/30 disabled:opacity-50"
+                            >
+                                {isSubmitting ? (
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-4 h-4 border-2 border-brand-gold/30 border-t-brand-gold rounded-full animate-spin"></div>
+                                        <span>Transmitting</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <FileText className="w-5 h-5" />
+                                        <span>Create Invoice</span>
+                                    </div>
+                                )}
+                            </Button>
+                        </div>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     );
 }

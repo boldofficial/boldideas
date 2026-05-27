@@ -1,10 +1,12 @@
 import { getInvoices, getClients } from '@/actions/finance';
 import { getFinanceAnalytics, getExpenses } from '@/actions/financeEnhancements';
+import { getPurchases } from '@/actions/purchases';
 import InvoiceManager from '@/components/admin/InvoiceManager';
 import CreateInvoiceModal from '@/components/admin/CreateInvoiceModal';
 import FinanceDashboard from '@/components/admin/FinanceDashboard';
 import ExpenseManager from '@/components/admin/ExpenseManager';
 import FinancePageTabs from '@/components/admin/FinancePageTabs';
+import PurchasesManager from '@/components/admin/PurchasesManager';
 import BrandingManager from '@/components/admin/BrandingManager';
 import { Landmark } from 'lucide-react';
 
@@ -17,12 +19,14 @@ export default async function FinancePage() {
         { data: invoices },
         { data: clients },
         { data: analytics },
-        { data: expenses }
+        { data: expenses },
+        { data: purchases }
     ] = await Promise.all([
         getInvoices(),
         getClients(),
         getFinanceAnalytics(),
-        getExpenses()
+        getExpenses(),
+        getPurchases()
     ]);
 
     return (
@@ -46,7 +50,10 @@ export default async function FinancePage() {
                     analytics ? <FinanceDashboard analytics={analytics} /> : <p>Loading analytics...</p>
                 }
                 invoicesContent={
-                    <InvoiceManager initialInvoices={invoices || []} />
+                    <InvoiceManager initialInvoices={invoices || []} clients={clients || []} />
+                }
+                purchasesContent={
+                    <PurchasesManager initialPurchases={purchases || []} />
                 }
                 expensesContent={
                     <ExpenseManager initialExpenses={expenses || []} />

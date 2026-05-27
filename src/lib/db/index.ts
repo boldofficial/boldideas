@@ -4,9 +4,23 @@ import postgres from 'postgres';
 import * as schema from './schema';
 
 const connectionString = process.env.DATABASE_URL!;
+const ssl = process.env.DATABASE_SSL === 'true' ? 'require' : false;
 
-// Disable prefetch as it is not supported for "Transaction" pool mode 
-// (though we are running Session mode now, it's safer).
-const client = postgres(connectionString, { prepare: false });
+/**
+ * DATABASE SINGLETON: Essential for Next.js Development.
+ * Without this, every hot-reload creates a NEW connection pool.
+ * Managed PostgreSQL hosts can quickly hit connection limits during hot reloads.
+ */
+const globalForDb = global as unknown as {
+    db: ReturnType<typeof drizzle<typeof schema>> | undefined;
+};
 
-export const db = drizzle(client, { schema });
+const client = globalForDb.db ? null : postgres(connectionString, { 
+    prepare: false, 
+    ssl,
+    connect_timeout: 20 
+});
+
+export const db = globalForDb.db ?? drizzle(client!, { schema });
+
+if (process.env.NODE_ENV !== 'production') globalForDb.db = db;

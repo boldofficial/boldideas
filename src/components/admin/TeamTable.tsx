@@ -114,7 +114,12 @@ export default function TeamTable({ users, page, totalPages }: Props) {
                                 </TableCell>
                                 <TableCell className="font-mono text-sm text-muted-foreground">{user.email}</TableCell>
                                 <TableCell>
-                                    <Badge variant={user.role === 'admin' ? 'default' : user.role === 'staff' ? 'secondary' : 'outline'}>
+                                    <Badge variant={
+                                        user.role === 'admin' ? 'default' : 
+                                        user.role === 'staff' ? 'secondary' : 
+                                        user.role === 'client' ? 'outline' : 
+                                        'outline'
+                                    } className={user.role === 'client' ? 'border-brand-gold text-brand-gold' : ''}>
                                         {user.role}
                                     </Badge>
                                 </TableCell>

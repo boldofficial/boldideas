@@ -1,141 +1,152 @@
+"use client"
+
 import React from 'react';
 
 const StorySection: React.FC = () => {
-	return (
-		<section
-			id="aboutus"
-			className="relative py-32 px-4 lg:px-24 bg-white overflow-hidden border-t border-brand-navy/5">
-			{/* Schematic Grid Background */}
-			<div
-				className="absolute inset-0 opacity-[0.03] pointer-events-none"
-				style={{
-					backgroundImage:
-						'linear-gradient(#002D5B 1px, transparent 1px), linear-gradient(90deg, #002D5B 1px, transparent 1px)',
-					backgroundSize: '40px 40px',
-				}}
-			/>
+    const [currentSlide, setCurrentSlide] = React.useState(0);
+    
+    const slides = [
+        {
+            text: "At Bold Ideas, we specialize in helping non-technical founders and growing teams adopt AI in ways that deliver real results—without complexity, hype, or wasted tools.",
+            label: "The Bold Ideas Promise"
+        },
+        {
+            text: "We believe technology should be invisible. Our goal is to build systems so seamless that you forget they're there, leaving you free to focus on what only you can do.",
+            label: "Our Core Drive"
+        },
+        {
+            text: "Automation isn't just about efficiency; it's about freedom. We build the digital backbone that gives you back your most valuable asset: your time.",
+            label: "Mission Philosophy"
+        }
+    ];
 
-			<div className="max-w-7xl mx-auto relative z-10">
-				<div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
-					<div className="order-2 lg:order-1 relative">
-						<div className="absolute -left-8 top-0 bottom-0 w-px bg-brand-navy/10 hidden lg:block"></div>
+    React.useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % slides.length);
+        }, 8000);
+        return () => clearInterval(timer);
+    }, [slides.length]);
 
-						<div className="inline-block px-3 py-1 mb-8 border border-brand-navy/10 bg-brand-light">
-							<span className="text-[10px] md:text-xs font-mono font-black uppercase tracking-[0.3em] text-brand-navy">
-								Mission_Log: 01
-							</span>
-						</div>
+    return (
+        <section
+            id="aboutus"
+            className="relative py-16 px-6 md:px-24 bg-white overflow-hidden"
+        >
+            <div className="max-w-[1440px] mx-auto relative z-10">
+                {/* Section Header - Architectural Style */}
+                <div className="flex flex-col mb-8">
+                    <div className="flex items-center space-x-4 mb-6">
+                        <div className="w-12 h-[2px] bg-brand-gold"></div>
+                        <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-brand-navy/60">
+                            Our Philosophy
+                        </span>
+                    </div>
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-brand-navy leading-tight tracking-tighter uppercase max-w-3xl">
+                        Built for Founders, <br />
+                        <span className="text-brand-gold italic">Creators & Growing</span> <br />
+                        Businesses.
+                    </h2>
+                </div>
 
-						<h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-brand-navy leading-none tracking-tighter mb-8 bg-clip-text">
-							The Future of Work <br />
-							<span className="text-brand-gold italic">Is Automated.</span>
-						</h2>
+                <div className="grid lg:grid-cols-2 gap-16 lg:gap-32 items-start">
+                    {/* Left Column: Focal Statement Carousel */}
+                    <div className="relative">
+                        <p className="text-xl md:text-2xl text-slate-800 font-bold leading-relaxed mb-8">
+                            Small businesses don't need more apps. They need <span className="text-brand-navy italic">systems that save time</span>, reduce stress, and increase revenue.
+                        </p>
+                        
+                        <div className="bg-brand-navy p-10 md:p-14 text-white relative overflow-hidden group shadow-2xl min-h-[380px] flex flex-col justify-between">
+                            {/* Decorative Gold Accent */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/10 blur-[60px] rounded-full"></div>
+                            
+                            <div className="relative z-10 h-full">
+                                {slides.map((slide, idx) => (
+                                    <div 
+                                        key={idx}
+                                        className={`transition-all duration-700 absolute inset-0 ${
+                                            idx === currentSlide 
+                                            ? "opacity-100 translate-x-0" 
+                                            : "opacity-0 translate-x-8 pointer-events-none"
+                                        }`}
+                                    >
+                                        <p className="text-lg md:text-xl font-medium leading-relaxed italic opacity-90">
+                                            &ldquo;{slide.text}&rdquo;
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            <div className="mt-auto relative z-20 pt-10 border-t border-white/10 flex items-center justify-between">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-brand-gold">
+                                    {slides[currentSlide].label}
+                                </span>
+                                <div className="flex space-x-3">
+                                    {slides.map((_, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => setCurrentSlide(idx)}
+                                            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                                idx === currentSlide 
+                                                ? "bg-brand-gold w-6" 
+                                                : "bg-white/20 hover:bg-white/40"
+                                            }`}
+                                            aria-label={`Go to slide ${idx + 1}`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-						<div className="pl-6 border-l-2 border-brand-gold/20 mb-12">
-							<p className="text-lg text-slate-600 font-light leading-relaxed">
-								Manual processes are a glitch in the system. Repetitive tasks,
-								unscalable content, and uncontrolled ad spend are errors we
-								patch. We built Bold Ideas Innovation to deploy the fix: simple
-								systems, clear playbooks, and campaigns that compound.
-							</p>
-						</div>
-
-						<div className="relative group">
-							<div className="absolute -inset-1 bg-linear-to-r from-brand-navy to-brand-gold opacity-20 blur rounded-sm group-hover:opacity-40 transition-opacity"></div>
-							<div className="bg-white p-8 relative border border-brand-navy/10 shadow-xl rounded-sm">
-								{/* Technical Header */}
-								<div className="flex justify-between items-center mb-4 border-b border-brand-navy/5 pb-2">
-									<span className="font-mono text-[9px] md:text-[10px] text-brand-gold uppercase tracking-widest">
-										TARGET_AUDIENCE
-									</span>
-									<div className="flex space-x-1">
-										<div className="w-1 h-1 bg-brand-navy rounded-full"></div>
-										<div className="w-1 h-1 bg-brand-navy rounded-full"></div>
-										<div className="w-1 h-1 bg-brand-navy rounded-full"></div>
-									</div>
-								</div>
-								<p className="text-brand-navy font-bold leading-relaxed italic">
-									&ldquo;We partner with forward-thinking SMEs, ambitious
-									entrepreneurs, and scaling startups. If you&lsquo;re ready to
-									embrace the future of work and build a self-sustaining growth
-									machine, initiate the partnership.&ldquo;
-								</p>
-							</div>
-						</div>
-					</div>
-
-					<div className="order-1 lg:order-2">
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							{/* Header Block */}
-							<div className="md:col-span-2 bg-brand-navy p-8 text-white relative overflow-hidden group border border-brand-navy rounded-sm">
-								<div className="absolute top-0 right-0 p-4 font-mono text-[9px] md:text-[10px] text-white/20 tracking-widest">
-									CORE_VALUES
-								</div>
-								<div className="absolute bottom-0 right-0 w-32 h-32 bg-brand-gold/10 blur-[50px] rounded-full"></div>
-
-								<span className="text-brand-gold font-mono text-xs md:text-sm mb-2 block">
-									&gt; SYSTEM_VALUES
-								</span>
-								<h3 className="text-2xl font-black uppercase tracking-tight relative z-10">
-									Operating <br />
-									Principles
-								</h3>
-							</div>
-
-							{[
-								{
-									label: 'Human Centric',
-									text: 'Tech serves people.',
-									id: '01',
-									icon: '👤',
-								},
-								{
-									label: 'Scalability',
-									text: 'Simplicity scales.',
-									id: '02',
-									icon: '📈',
-								},
-								{
-									label: 'Objectivity',
-									text: 'Data > Opinion.',
-									id: '03',
-									icon: '📊',
-								},
-								{
-									label: 'Advantage',
-									text: 'Speed is leverage.',
-									id: '04',
-									icon: '⚡',
-								},
-							].map((item, i) => (
-								<div
-									key={i}
-									className="bg-white p-6 border border-brand-navy/10 hover:border-brand-gold hover:shadow-lg transition-all duration-300 group rounded-sm relative">
-									{/* Corner Accents */}
-									<div className="absolute top-0 right-0 w-0 h-0 border-t-8 border-r-8 border-t-transparent border-r-brand-navy/10 group-hover:border-r-brand-gold transition-colors"></div>
-
-									<div className="font-mono text-[9px] md:text-[10px] text-slate-300 mb-4 group-hover:text-brand-gold transition-colors">
-										VAL_{item.id}
-									</div>
-
-									<div className="mb-3 text-2xl grayscale group-hover:grayscale-0 transition-all">
-										{item.icon}
-									</div>
-
-									<h4 className="text-sm md:text-base font-black text-brand-navy uppercase tracking-wide mb-2">
-										{item.label}
-									</h4>
-									<p className="text-xs md:text-sm text-slate-500 font-mono leading-relaxed group-hover:text-brand-navy transition-colors">
-										{item.text}
-									</p>
-								</div>
-							))}
-						</div>
-					</div>
-				</div>
-			</div>
-		</section>
-	);
+                    {/* Right Column: Benefits List */}
+                    <div className="space-y-12">
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-brand-navy mb-8 border-b border-gray-100 pb-4">
+                            Bold Ideas exists to help you:
+                        </h3>
+                        
+                        <div className="grid gap-10">
+                            {[
+                                {
+                                    title: "Use AI to reclaim hours every week",
+                                    desc: "Turn time-consuming manual processes into swift, automated workflows."
+                                },
+                                {
+                                    title: "Automate routine business tasks",
+                                    desc: "Focus on your genius while AI handles the repetitive administrative heavy lifting."
+                                },
+                                {
+                                    title: "Improve marketing consistency and reach",
+                                    desc: "Deploy AI-enhanced systems that speak your brand voice across every channel."
+                                },
+                                {
+                                    title: "Build simple, scalable digital systems",
+                                    desc: "No bloated software. Just lean, efficient tools that grow with your ambition."
+                                },
+                                {
+                                    title: "Stay competitive—without hiring a large team",
+                                    desc: "Leverage AI to punch way above your weight class in any market."
+                                }
+                            ].map((benefit, idx) => (
+                                <div key={idx} className="group flex items-start space-x-6">
+                                    <span className="text-brand-gold font-black text-sm italic mt-1 transition-transform group-hover:translate-x-1">
+                                        0{idx + 1}.
+                                    </span>
+                                    <div>
+                                        <h4 className="text-base font-black text-brand-navy uppercase tracking-tight mb-2">
+                                            {benefit.title}
+                                        </h4>
+                                        <p className="text-slate-500 text-sm leading-relaxed font-medium">
+                                            {benefit.desc}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
 };
 
 export default StorySection;

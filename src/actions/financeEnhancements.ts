@@ -1,10 +1,11 @@
 'use server'
 
 import { db } from '@/lib/db';
-import { payments, receipts, invoices, expenses, bankAccounts, companySettings } from '@/lib/db/schema';
+import { payments, receipts, invoices, expenses, bankAccounts, companySettings, users } from '@/lib/db/schema';
 import { eq, desc, sql, and, gte, lte } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { recordActivity } from './activity';
+import { createNotification } from './notifications';
 
 // ============= PAYMENTS =============
 
@@ -64,6 +65,21 @@ export async function recordPayment(data: {
             details: { invoiceId: data.invoiceId.slice(0, 8), amount: data.amount, status: newStatus }
         });
 
+        // Notify all admins of payment
+        const admins = await db.select({ id: users.id })
+            .from(users)
+            .where(eq(users.role, 'admin'));
+        
+        for (const admin of admins) {
+            await createNotification(
+                admin.id,
+                'payment_recorded',
+                'Payment Received',
+                `Payment of ${invoice.currency} ${parseFloat(data.amount).toLocaleString()} recorded for invoice ${invoice.invoiceNumber}`,
+                `/admin/finance/invoice/${data.invoiceId}`
+            );
+        }
+
         return { success: true, payment, receipt };
     } catch (error) {
         console.error('recordPayment error:', error);
@@ -104,6 +120,22 @@ export async function createReceipt(data: {
         }).returning();
 
         revalidatePath('/admin/finance');
+
+        // Notify client of receipt generation
+        const [invoice] = await db.select()
+            .from(invoices)
+            .where(eq(invoices.id, data.invoiceId))
+            .limit(1);
+        
+        if (invoice?.clientId) {
+            await createNotification(
+                invoice.clientId,
+                'receipt_generated',
+                'Payment Receipt Generated',
+                `Receipt ${receiptNumber} has been generated for your payment`,
+                `/admin/finance/receipt/${receipt.id}`
+            );
+        }
 
         return { success: true, data: receipt };
     } catch (error) {
@@ -168,6 +200,21 @@ export async function createExpense(data: {
         }).returning();
 
         revalidatePath('/admin/finance');
+
+        // Notify all admins of new expense
+        const admins = await db.select({ id: users.id })
+            .from(users)
+            .where(eq(users.role, 'admin'));
+        
+        for (const admin of admins) {
+            await createNotification(
+                admin.id,
+                'expense_created',
+                'New Expense Recorded',
+                `${data.category}: ${data.currency || 'USD'} ${parseFloat(data.amount).toLocaleString()}${data.vendor ? ` - ${data.vendor}` : ''}`,
+                `/admin/finance`
+            );
+        }
 
         return { success: true, data: expense };
     } catch (error) {
@@ -346,7 +393,7 @@ export async function getCompanySettings() {
         if (!settings) {
             // Create default if missing
             const [newSettings] = await db.insert(companySettings).values({
-                companyName: 'Bold Ideas Innovations Ltd.',
+                companyName: 'Bold Ideas',
                 companyWebsite: 'boldideas.agency',
                 companyEmail: 'HQ@boldideas.agency',
             }).returning();

@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
+import { Eye, EyeOff } from 'lucide-react';
 
 import { setupAdminAction } from '@/actions/auth';
 
@@ -12,6 +13,8 @@ const AdminSetupForm: React.FC = () => {
     const { checkAuth } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -60,7 +63,7 @@ const AdminSetupForm: React.FC = () => {
             }
 
             // Success
-            router.push('/auth/signin?setup=success');
+            router.push('/signin?setup=success');
             
         } catch (err: any) {
             setError(err.message);
@@ -131,32 +134,50 @@ const AdminSetupForm: React.FC = () => {
                             <label className="text-[9px] font-mono font-bold uppercase tracking-widest text-brand-gold/70">
                                Passcode
                             </label>
-                            <input 
-                                type="password" 
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="********"
-                                required
-                                minLength={8}
-                                className="w-full bg-brand-navy/50 border border-brand-navy/30 focus:border-brand-gold text-white p-3 rounded-sm text-sm font-mono placeholder:text-white/20 outline-none transition-colors"
-                            />
+                            <div className="relative">
+                                <input 
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="********"
+                                    required
+                                    minLength={8}
+                                    className="w-full bg-brand-navy/50 border border-brand-navy/30 focus:border-brand-gold text-white p-3 pr-10 rounded-sm text-sm font-mono placeholder:text-white/20 outline-none transition-colors"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-brand-gold transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
                        </div>
 
                        <div className="space-y-1">
                             <label className="text-[9px] font-mono font-bold uppercase tracking-widest text-brand-gold/70">
                                Confirm Passcode
                             </label>
-                            <input 
-                                type="password" 
-                                name="confirmPassword"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                placeholder="********"
-                                required
-                                minLength={8}
-                                className="w-full bg-brand-navy/50 border border-brand-navy/30 focus:border-brand-gold text-white p-3 rounded-sm text-sm font-mono placeholder:text-white/20 outline-none transition-colors"
-                            />
+                            <div className="relative">
+                                <input 
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    placeholder="********"
+                                    required
+                                    minLength={8}
+                                    className="w-full bg-brand-navy/50 border border-brand-navy/30 focus:border-brand-gold text-white p-3 pr-10 rounded-sm text-sm font-mono placeholder:text-white/20 outline-none transition-colors"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-brand-gold transition-colors"
+                                >
+                                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
                        </div>
 
                        <button 

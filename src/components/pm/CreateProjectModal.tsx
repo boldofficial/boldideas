@@ -1,20 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createInternalProject } from '@/actions/agency';
-
-import { getUsers } from '@/actions/team';
-import { useEffect } from 'react';
+import { getUsers, getClientUsers } from '@/actions/team';
 
 export default function CreateProjectModal() {
     const [isOpen, setIsOpen] = useState(false);
     const [users, setUsers] = useState<any[]>([]);
+    const [clients, setClients] = useState<any[]>([]);
     const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+    const [projectType, setProjectType] = useState<string>('internal');
 
     useEffect(() => {
         if (isOpen) {
             getUsers().then(({ data }) => setUsers(data || []));
+            getClientUsers().then(({ data }) => setClients(data || []));
             setSelectedMembers([]); // Reset on open
+            setProjectType('internal');
         }
     }, [isOpen]);
 
@@ -68,11 +70,31 @@ export default function CreateProjectModal() {
 
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Type</label>
-                                    <select name="type" className="w-full p-2 border rounded focus:ring-1 focus:ring-brand-navy outline-none">
+                                    <select 
+                                        name="type" 
+                                        value={projectType}
+                                        onChange={(e) => setProjectType(e.target.value)}
+                                        className="w-full p-2 border rounded focus:ring-1 focus:ring-brand-navy outline-none"
+                                    >
                                         <option value="internal">Internal Project</option>
                                         <option value="client">Client Project</option>
                                     </select>
                                 </div>
+
+                                {projectType === 'client' && (
+                                    <div className="col-span-2">
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Assign to Client</label>
+                                        <select name="clientId" className="w-full p-2 border rounded focus:ring-1 focus:ring-brand-navy outline-none">
+                                            <option value="none">Select a client...</option>
+                                            {clients.map((c: any) => (
+                                                <option key={c.id} value={c.id}>{c.name || c.email}</option>
+                                            ))}
+                                        </select>
+                                        {clients.length === 0 && (
+                                            <p className="text-xs text-amber-600 mt-1">No clients found. Add users with 'client' role in Team settings.</p>
+                                        )}
+                                    </div>
+                                )}
 
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Start Date</label>

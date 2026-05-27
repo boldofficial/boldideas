@@ -77,9 +77,9 @@ export default function TaskDetailModal({ task, onClose, onEdit, onStatusChange,
                 </DialogHeader>
 
                 {/* Content */}
-                <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+                <div className="flex-1 flex flex-col lg:flex-row overflow-hidden max-h-[calc(90vh-180px)]">
                     {/* Left - Task Info */}
-                    <ScrollArea className="flex-1 p-6">
+                    <ScrollArea className="flex-1 p-6 overflow-y-auto">
                         <div className="space-y-6 max-w-xl">
                             {/* Meta Cards */}
                             <div className="grid grid-cols-2 gap-4">
