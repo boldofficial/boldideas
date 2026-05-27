@@ -1,25 +1,24 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import {usePathname, useRouter, useSearchParams} from 'next/navigation';
+import Image from 'next/image';
+import {usePathname, useRouter} from 'next/navigation';
 import {useAuthStore} from '@/store/authStore';
 
 const Header: React.FC = () => {
 	const [scrolled, setScrolled] = useState(false);
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-	const [productMenuOpen, setProductMenuOpen] = useState(false);
+	const [servicesMenuOpen, setServicesMenuOpen] = useState(false);
 	const pathname = usePathname();
 
 	const closeMenus = () => {
 		setMobileMenuOpen(false);
-		setProductMenuOpen(false);
+		setServicesMenuOpen(false);
 	};
-	const {user, isAdmin, checkAuth, signOut} = useAuthStore();
+	const {isAdmin, checkAuth, signOut} = useAuthStore();
 	const router = useRouter();
 
-	const searchParams = useSearchParams();
 	const [staffMode, setStaffMode] = useState(false);
 	const logoClickTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 	const logoClicksRef = React.useRef(0);
@@ -32,25 +31,31 @@ const Header: React.FC = () => {
 		// Check for staff mode activation
 		const isStaffHidden = localStorage.getItem('bold_staff_hidden') === 'true';
 		const isStaffForced = localStorage.getItem('bold_staff_mode') === 'true';
-		const activateViaQuery = searchParams.get('staff') === 'true';
+		const activateViaQuery = new URLSearchParams(window.location.search).get('staff') === 'true';
 		
+		let nextStaffMode = staffMode;
+
 		// Priority 1: URL Query (Explicit activation)
 		if (activateViaQuery) {
 			localStorage.setItem('bold_staff_mode', 'true');
 			localStorage.removeItem('bold_staff_hidden');
-			setStaffMode(true);
+			nextStaffMode = true;
 		} 
 		// Priority 2: Admin Auto-Reveal (If not explicitly hidden)
 		else if (isAdmin && !isStaffHidden) {
-			setStaffMode(true);
+			nextStaffMode = true;
 		}
 		// Priority 3: Manual persistence from previous session
 		else if (isStaffForced && !isStaffHidden) {
-			setStaffMode(true);
+			nextStaffMode = true;
+		}
+
+		if (nextStaffMode !== staffMode) {
+			queueMicrotask(() => setStaffMode(nextStaffMode));
 		}
 
 		return () => window.removeEventListener('scroll', handleScroll);
-	}, [searchParams, isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [isAdmin, staffMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const handleLogoClick = (e: React.MouseEvent) => {
 		// If it's the home page and we are NOT logged in, let the link work normally
@@ -95,19 +100,19 @@ const Header: React.FC = () => {
 		await signOut();
 		router.push('/');
 		closeMenus();
-	};
-
-	const navLinks = [
+	};    const navLinks = [
 		{href: '/', label: 'Home'},
 		{href: '/about', label: 'About Us'},
 		{href: '/services', label: 'Services'},
+		{href: '/locations', label: 'Service Areas'},
 		{href: '/blog', label: 'Blog'},
 		{href: '/contact', label: 'Contact'},
-		{href: '/product', label: 'Product'},
 	];
 
 	// Determine if the current page has a dark background by default for unscrolled state
-	const isDarkPage = ['/'].includes(pathname);
+	// Pages that start with a dark/navy background section — need white nav text until scrolled
+	const darkBgPages = ['/', '/about', '/services', '/contact', '/blog', '/book'];
+	const isDarkPage = darkBgPages.includes(pathname) || pathname.startsWith('/services/') || pathname.startsWith('/locations');
 
 	// Computation of dynamic theme-based classes
 	const getHeaderBgClass = () => {
@@ -134,11 +139,6 @@ const Header: React.FC = () => {
 		return isDarkPage ? 'text-white' : 'text-brand-navy';
 	};
 
-	const getLogoFilter = () => {
-		if (scrolled) return '';
-		return isDarkPage ? 'brightness-200 contrast-100' : '';
-	};
-
 	return (
 		<header className="fixed top-0 left-0 z-50 w-full transition-all duration-300">
 			<nav
@@ -146,45 +146,52 @@ const Header: React.FC = () => {
 				<Link
 					href="/"
 					onClick={handleLogoClick}
-					className="flex items-center space-x-3 group relative z-50">
-					<Image
-						src="/logo.png"
-						alt="Bold Ideas Innovation"
-						width={120}
-						height={40}
-						className={`h-8 md:h-10 w-auto transition-all duration-500 ${getLogoFilter()}`}
-						priority
-					/>
+					className="relative z-50 flex items-center">
+					<span className={`relative block h-12 w-44 rounded-md bg-white/95 p-2 shadow-sm transition-all ${scrolled ? 'h-10 w-40' : ''}`}>
+						<Image
+							src="/boldideas_logo.png"
+							alt="Bold Ideas"
+							fill
+							priority
+							className="object-contain"
+						/>
+					</span>
 				</Link>
 
 				{/* Desktop Navigation */}
 				<div className="hidden md:flex items-center space-x-8">
 					{navLinks.map((link) => (
-						link.label === 'Product' ? (
+						link.label === 'Services' ? (
 							<div 
 								key={link.href} 
 								className="relative py-4"
-								onMouseEnter={() => setProductMenuOpen(true)}
-								onMouseLeave={() => setProductMenuOpen(false)}
+								onMouseEnter={() => setServicesMenuOpen(true)}
+								onMouseLeave={() => setServicesMenuOpen(false)}
 							>
 								<Link
 									href={link.href}
 									onClick={closeMenus}
-									className={`text-sm font-black uppercase tracking-widest transition-colors flex items-center hover:text-brand-gold ${getNavLinkClass(link.href)}`}>
+									className={`text-sm font-black tracking-widest transition-colors flex items-center hover:text-brand-gold ${getNavLinkClass(link.href)}`}>
 									{link.label}
+									<svg className={`ml-1.5 h-3 w-3 transition-transform duration-200 ${servicesMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+										<path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+									</svg>
 								</Link>
 
-								{/* Mega Menu Dropdown */}
-								<div className={`absolute top-full left-1/2 -translate-x-1/2 mt-0 w-auto min-w-max bg-white shadow-xl transition-all duration-300 border border-gray-100 py-4 px-2 ${productMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
-									<div className="flex flex-col items-start gap-y-2">
-										<Link href="/product/ezer-home-care-management" onClick={closeMenus} className="px-6 py-4 text-sm font-bold text-brand-navy hover:text-brand-gold transition-colors uppercase tracking-tight whitespace-nowrap border-r border-gray-50 last:border-r-0">
-											Ezer Care Management
+								{/* Services Dropdown */}
+								<div className={`absolute top-full left-1/2 -translate-x-1/2 mt-0 w-auto min-w-[200px] bg-white shadow-xl transition-all duration-300 border border-gray-100 py-3 px-0 ${servicesMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+									<div className="flex flex-col items-stretch">
+										<Link href="/services" onClick={closeMenus} className="px-6 py-3 text-xs font-black tracking-[0.16em] text-brand-gold border-b border-gray-50 hover:bg-gray-50 transition-colors">
+											All Services
 										</Link>
-										<Link href="/product/school-management-system" onClick={closeMenus} className="px-6 py-4 text-sm font-bold text-brand-navy hover:text-brand-gold transition-colors uppercase tracking-tight whitespace-nowrap border-r border-gray-50 last:border-r-0">
-											School Management System
+										<Link href="/services/websites" onClick={closeMenus} className="px-6 py-3 text-sm font-bold text-brand-navy hover:text-brand-gold hover:bg-gray-50 transition-colors">
+											Website Development
 										</Link>
-										<Link href="/product/classified-ads-directory-platform" onClick={closeMenus} className="px-6 py-4 text-sm font-bold text-brand-navy hover:text-brand-gold transition-colors uppercase tracking-tight whitespace-nowrap">
-											Classified Ads Directory Platform
+										<Link href="/services/ai-agents" onClick={closeMenus} className="px-6 py-3 text-sm font-bold text-brand-navy hover:text-brand-gold hover:bg-gray-50 transition-colors">
+											AI Agents
+										</Link>
+										<Link href="/services/workflow-automation" onClick={closeMenus} className="px-6 py-3 text-sm font-bold text-brand-navy hover:text-brand-gold hover:bg-gray-50 transition-colors">
+											Workflow Automation
 										</Link>
 									</div>
 								</div>
@@ -194,7 +201,7 @@ const Header: React.FC = () => {
 								key={link.href}
 								href={link.href}
 								onClick={closeMenus}
-								className={`text-sm font-black uppercase tracking-widest transition-colors ${getNavLinkClass(link.href)}`}>
+								className={`text-sm font-black tracking-widest transition-colors ${getNavLinkClass(link.href)}`}>
 								{link.label}
 							</Link>
 						)
@@ -207,16 +214,16 @@ const Header: React.FC = () => {
 						<>
 							<Link
 								href="/admin"
-								className={`text-sm font-black uppercase tracking-widest transition-colors mr-4 ${
-									pathname.startsWith('/admin')
-										? 'text-brand-gold'
-										: getAuthBtnClass()
-								}`}>
+								className={`text-sm font-black tracking-widest transition-colors mr-4 ${
+										pathname.startsWith('/admin')
+											? 'text-brand-gold'
+											: getAuthBtnClass()
+										}`}>
 								Admin
 							</Link>
 							<button
 								onClick={handleSignOut}
-								className={`text-sm font-black uppercase tracking-widest transition-colors mr-4 ${
+								className={`text-sm font-black tracking-widest transition-colors mr-4 ${
 									scrolled ? 'text-brand-navy/60 hover:text-red-500' : (isDarkPage ? 'text-white/60 hover:text-red-400' : 'text-brand-navy/60 hover:text-red-500')
 								}`}>
 								Sign Out
@@ -224,24 +231,14 @@ const Header: React.FC = () => {
 						</>
 					)}
 					
-					{/* Guest-only Sign In - Only visible in Staff Mode */}
-					{staffMode && !user && (
-						<Link
-							href="/signin"
-							className={`text-sm font-black uppercase tracking-widest transition-colors mr-4 ${getAuthBtnClass()}`}>
-							Sign In
-						</Link>
-					)}
-
 					<Link
-						href="https://crm.getboldideas.com/book"
-						target="_blank"
+						href="/book"
 						className={`px-6 py-2.5 rounded-full text-sm font-black transition-all hover:scale-105 active:scale-95 shadow-md ${
 							scrolled || !isDarkPage
 								? 'bg-brand-navy text-white hover:bg-brand-gold hover:text-brand-navy'
 								: 'bg-brand-gold text-brand-navy hover:bg-white'
 						}`}>
-						GET STARTED
+						Get Started
 					</Link>
 				</div>
 
@@ -281,25 +278,39 @@ const Header: React.FC = () => {
 					}`}>
 					<div className="flex-1 flex flex-col items-center justify-center space-y-8 p-8 bg-brand-navy/50">
 						{navLinks.map((link, idx) => (
-							<Link
-								key={link.href}
-								href={link.href}
-								onClick={closeMenus}
-								className={`text-2xl font-black uppercase tracking-tighter transition-all duration-500 transform ${
-									mobileMenuOpen
-										? 'translate-y-0 opacity-100'
-										: 'translate-y-8 opacity-0'
-								}`}
-								style={{transitionDelay: `${idx * 100}ms`}}>
-								<span
-									className={
-										pathname === link.href
-											? 'text-brand-gold'
-											: 'text-brand-navy'
-									}>
-									{link.label}
-								</span>
-							</Link>
+							<div key={link.href} className="flex flex-col items-center">
+								<Link
+									href={link.href}
+									onClick={closeMenus}
+									className={`text-2xl font-black tracking-tighter transition-all duration-500 transform ${
+										mobileMenuOpen
+											? 'translate-y-0 opacity-100'
+											: 'translate-y-8 opacity-0'
+									}`}
+									style={{transitionDelay: `${idx * 100}ms`}}>
+									<span
+										className={
+											pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href))
+												? 'text-brand-gold'
+												: 'text-brand-navy'
+										}>
+										{link.label}
+									</span>
+								</Link>
+								{link.label === 'Services' && (
+									<div className="mt-3 flex flex-col items-center gap-3">
+										<Link href="/services/websites" onClick={closeMenus} className="text-sm font-bold text-brand-navy/60 hover:text-brand-gold transition-colors tracking-wider">
+											Website Development
+										</Link>
+										<Link href="/services/ai-agents" onClick={closeMenus} className="text-sm font-bold text-brand-navy/60 hover:text-brand-gold transition-colors tracking-wider">
+											AI Agents
+										</Link>
+										<Link href="/services/workflow-automation" onClick={closeMenus} className="text-sm font-bold text-brand-navy/60 hover:text-brand-gold transition-colors tracking-wider">
+											Workflow Automation
+										</Link>
+									</div>
+								)}
+							</div>
 						))}
 
 						<div className="w-12 h-0.5 bg-gray-100 my-8"></div>
@@ -310,31 +321,20 @@ const Header: React.FC = () => {
 									<Link
 										href="/admin"
 										onClick={closeMenus}
-										className="text-sm font-bold uppercase tracking-widest text-brand-navy hover:text-brand-gold">
+										className="text-sm font-bold tracking-widest text-brand-navy hover:text-brand-gold">
 										Admin Dashboard
 									</Link>
 									<button
 										onClick={handleSignOut}
-										className="text-sm font-bold uppercase tracking-widest text-red-500">
+										className="text-sm font-bold tracking-widest text-red-500">
 										Sign Out
 									</button>
 								</>
 							)}
 							
-							{staffMode && !user && (
-								<Link
-									href="/signin"
-									onClick={closeMenus}
-									className="text-sm font-bold uppercase tracking-widest text-brand-navy">
-									Sign In
-								</Link>
-							)}
-
-							<Link
-								href="https://crm.getboldideas.com/book"
-								target="_blank"
-								onClick={closeMenus}
-								className="bg-brand-navy text-white px-8 py-4 rounded-full text-sm font-black uppercase tracking-widest hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl mt-4">
+							<Link href="/book"
+							onClick={closeMenus}
+							className="bg-brand-navy text-white px-8 py-4 rounded-full text-sm font-black uppercase tracking-widest hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl mt-4">
 								Get Started
 							</Link>
 						</div>

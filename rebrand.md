@@ -10,7 +10,7 @@ we want to rebrand the website. maintan the color scheme, do not change our colo
 
 ![Image](https://cdn.sisense.com/wp-content/uploads/4-ShopSense-Insights-and-Recommnedations-new-1-1024x529-1.png)
 
-Below is a **fully optimized, conversion-focused website copy** for **Bold Ideas Innovations Ltd**.
+Below is a **fully optimized, conversion-focused website copy** for **Bold Ideas**.
 This copy is written to work for **homepage + key service sections**, with strong clarity, authority, and SEO alignment—and it **clearly positions AI Productivity Training for corporate organizations** as a flagship offering.
 
 ---

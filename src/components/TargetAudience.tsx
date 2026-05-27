@@ -33,7 +33,7 @@ const TargetAudience: React.FC = () => {
     ];
 
     return (
-        <section id="who-we-serve" className="py-24 bg-brand-navy relative overflow-hidden">
+        <section id="who-we-serve" className="py-16 bg-brand-navy relative overflow-hidden">
             {/* Architectural Flourish */}
             <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-brand-gold/5 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2"></div>
             <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-blue-500/5 blur-[100px] rounded-full -translate-x-1/2 translate-y-1/2"></div>

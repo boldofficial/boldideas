@@ -2,12 +2,13 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { authClient } from '@/lib/auth-client';
 import { Eye, EyeOff } from 'lucide-react';
 
 const ResetPasswordForm: React.FC = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -27,7 +28,13 @@ const ResetPasswordForm: React.FC = () => {
         setMessage(null);
 
         try {
-            const { error } = await supabase.auth.updateUser({ password: password });
+            const token = searchParams.get('token');
+            if (!token) throw new Error('Reset token is missing or expired.');
+
+            const { error } = await authClient.resetPassword({
+                newPassword: password,
+                token,
+            });
 
             if (error) throw error;
 

@@ -1,126 +1,82 @@
-import Image from 'next/image';
 import Link from 'next/link';
+import Image from 'next/image';
 import React from 'react';
 
 const Footer: React.FC = () => {
     return (
-        <footer className="py-12 bg-brand-navy border-t border-white/5 relative overflow-hidden">
-            {/* Subtle Grounding Glow */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-px bg-brand-gold/20 blur-md pointer-events-none"></div>
-            
-            <div className="max-w-[1440px] mx-auto relative z-10 px-6 md:px-16 lg:px-24">
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-16 mb-8">
+        <footer className="relative overflow-hidden border-t border-white/5 bg-brand-navy py-12">
+            <div className="absolute bottom-0 left-1/2 h-px w-full max-w-4xl -translate-x-1/2 bg-brand-gold/20 blur-md pointer-events-none"></div>
+
+            <div className="relative z-10 mx-auto max-w-[1440px] px-6 md:px-16 lg:px-24">
+                <div className="mb-8 grid grid-cols-2 gap-16 md:grid-cols-4 lg:grid-cols-6">
                     <div className="col-span-2">
                         <div className="mb-8">
-                            <Image
-                                src="/logo.png"
-                                alt="Bold Ideas Innovation"
-                                width={160}
-                                height={50}
-                                className="h-10 w-auto brightness-0 invert opacity-90"
-                            />
+                            <Link href="/" className="relative block h-20 w-72 rounded-md bg-white p-3">
+                                <Image
+                                    src="/boldideas_logo.png"
+                                    alt="Bold Ideas"
+                                    fill
+                                    className="object-contain"
+                                />
+                            </Link>
                         </div>
-                        <p className="text-white/60 text-base max-w-sm leading-relaxed font-medium mb-12">
-                            Practical AI solutions for lean teams and growing businesses. We build the systems that give you back your time.
+                        <p className="mb-12 max-w-sm text-base font-medium leading-relaxed text-white/60">
+                            Websites and practical AI agents for small businesses across Illinois and Wisconsin.
                         </p>
                         <div className="space-y-5">
-                            <div className="flex items-center space-x-4 text-white/40 text-xs font-bold uppercase tracking-widest group">
-                                <span className="text-brand-gold">HQ_UNIT</span>
-                                <span className="w-4 h-px bg-white/10 group-hover:w-8 transition-all"></span>
-                                <span>Lagos, Nigeria</span>
+                            <div className="group flex items-center space-x-4 text-xs font-bold tracking-widest text-white/40">
+                                <span className="text-brand-gold">Region</span>
+                                <span className="h-px w-4 bg-white/10 transition-all group-hover:w-8"></span>
+                                <span>Illinois & Wisconsin</span>
                             </div>
-                            <div className="flex items-center space-x-4 text-white/40 text-xs font-bold uppercase tracking-widest">
-                                <span className="text-brand-gold">COMMS</span>
-                                <span className="w-4 h-px bg-white/10"></span>
-                                <span>info@getboldideas.com</span>
+                            <div className="flex items-center space-x-4 text-xs font-bold tracking-widest text-white/40">
+                                <span className="text-brand-gold">Comms</span>
+                                <span className="h-px w-4 bg-white/10"></span>
+                                <span>admin@getboldideas.com</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="lg:col-start-4">
-                        <h5 className="text-white text-xs font-black uppercase tracking-[0.3em] mb-8">
+                        <h5 className="mb-8 text-xs font-black tracking-[0.3em] text-white">
                             Solutions
                         </h5>
-                        <ul className="space-y-5 text-sm font-bold uppercase tracking-widest text-white/40">
-                            <li>
-                                <Link href="/services" className="hover:text-brand-gold transition-colors">
-                                    AI Training
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/services" className="hover:text-brand-gold transition-colors">
-                                    Workflow Automation
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/services" className="hover:text-brand-gold transition-colors">
-                                    Marketing Systems
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/services" className="hover:text-brand-gold transition-colors">
-                                    Custom Tools
-                                </Link>
-                            </li>
+                        <ul className="space-y-5 text-sm font-bold tracking-widest text-white/40">
+                            <li><Link href="/services" className="transition-colors hover:text-brand-gold">Website Design</Link></li>
+                            <li><Link href="/services" className="transition-colors hover:text-brand-gold">Intake & Automation</Link></li>
+                            <li><Link href="/services" className="transition-colors hover:text-brand-gold">Workflow Automation</Link></li>
+                            <li><Link href="/services" className="transition-colors hover:text-brand-gold">Local SEO</Link></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h5 className="text-white text-xs font-black uppercase tracking-[0.3em] mb-8">
-                            Structure
+                        <h5 className="mb-8 text-xs font-black tracking-[0.3em] text-white">
+                            Company
                         </h5>
-                        <ul className="space-y-5 text-sm font-bold uppercase tracking-widest text-white/40">
-                            <li>
-                                <Link href="/" className="hover:text-brand-gold transition-colors">
-                                    Home
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/about" className="hover:text-brand-gold transition-colors">
-                                    About Us
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/contact" className="hover:text-brand-gold transition-colors">
-                                    Contact
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/privacy" className="hover:text-brand-gold transition-colors">
-                                    Privacy
-                                </Link>
-                            </li>
+                        <ul className="space-y-5 text-sm font-bold tracking-widest text-white/40">
+                            <li><Link href="/" className="transition-colors hover:text-brand-gold">Home</Link></li>
+                            <li><Link href="/about" className="transition-colors hover:text-brand-gold">About Us</Link></li>
+                            <li><Link href="/locations" className="transition-colors hover:text-brand-gold">Service Areas</Link></li>
+                            <li><Link href="/contact" className="transition-colors hover:text-brand-gold">Contact</Link></li>
+                            <li><Link href="/privacy" className="transition-colors hover:text-brand-gold">Privacy</Link></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h5 className="text-white text-xs font-black uppercase tracking-[0.3em] mb-0">
-                            Products
+                        <h5 className="mb-8 text-xs font-black tracking-[0.3em] text-white">
+                            Build With Us
                         </h5>
-                        <ul className="space-y-5 text-sm font-bold uppercase tracking-widest text-white/40">
-                            <li>
-                                <Link href="/contact" className="hover:text-brand-gold transition-colors">
-                                    Ezer
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/contact" className="hover:text-brand-gold transition-colors">
-                                    School MS
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/contact" className="hover:text-brand-gold transition-colors">
-                                    Directories
-                                </Link>
-                            </li>
+                        <ul className="space-y-5 text-sm font-bold tracking-widest text-white/40">
+                            <li><Link href="/book" className="transition-colors hover:text-brand-gold">Book a Call</Link></li>
+                            <li><Link href="/services" className="transition-colors hover:text-brand-gold">Services</Link></li>
+                            <li><Link href="/blog" className="transition-colors hover:text-brand-gold">Blog</Link></li>
                         </ul>
                     </div>
                 </div>
 
-                {/* Final Footer Strip */}
-                <div className="pt-4 border-t border-white/5 flex flex-col md:flex-row items-center justify-center gap-10">
-                    <p className="text-white/20 text-xs font-bold uppercase tracking-[0.4em] text-center">
-                        © 2025 Bold Ideas. All Rights Reserved.
+                <div className="flex flex-col items-center justify-center gap-10 border-t border-white/5 pt-4 md:flex-row">
+                    <p className="text-center text-xs font-bold tracking-[0.4em] text-white/20">
+                        (c) 2026 Bold Ideas. All Rights Reserved.
                     </p>
                 </div>
             </div>

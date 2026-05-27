@@ -68,7 +68,7 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
                         <div className="space-y-4">
                             <div className="relative w-[236px] h-24">
                             <Image
-                                src={settings?.logoUrl || "/logo.png"}
+                                src={settings?.logoUrl || "/boldideas_logo.png"}
                                 alt="Company Logo"
                                 fill
                                 className="!w-full !h-full object-fill"

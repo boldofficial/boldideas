@@ -3,10 +3,9 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { authClient } from '@/lib/auth-client';
 import { useAuthStore } from '@/store/authStore';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import Image from 'next/image';
 
 const SignInForm: React.FC = () => {
     const router = useRouter();
@@ -29,7 +28,7 @@ const SignInForm: React.FC = () => {
         setLoading(true);
 
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
+            const { error } = await authClient.signIn.email({
                 email: formData.email,
                 password: formData.password
             });
@@ -51,8 +50,8 @@ const SignInForm: React.FC = () => {
                 router.push('/');
             }
 
-        } catch (err: any) {
-            setError(err.message || 'Failed to sign in');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Failed to sign in');
         } finally {
             setLoading(false);
         }
@@ -61,16 +60,11 @@ const SignInForm: React.FC = () => {
     return (
         <div className="w-full">
             <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10">
-                {/* Logo */}
                 <div className="flex justify-center mb-8">
-                    <div className="relative w-24 h-24">
-                        <Image
-                            src="/logo.png"
-                            alt="Bold Ideas Innovation"
-                            fill
-                            className="object-contain"
-                            priority
-                        />
+                    <div className="h-20 w-20 rounded-2xl bg-brand-navy flex items-center justify-center shadow-lg">
+                        <span className="text-xl font-black text-white">
+                            B<span className="text-brand-gold">I</span>
+                        </span>
                     </div>
                 </div>
 

@@ -21,6 +21,7 @@ interface PostFormProps {
         excerpt: string | null;
         content: any; // JSON
         status: string | null;
+        coverImage?: string | null;
     };
     isEditMode?: boolean;
 }
@@ -59,6 +60,7 @@ const PostForm: React.FC<PostFormProps> = ({ initialData, isEditMode = false }) 
     const [title, setTitle] = useState(initialData?.title || 'Deploying The Intelligence Layer: AI Adoption in 2026');
     const [slug, setSlug] = useState(initialData?.slug || 'ai-intelligence-layer-2026');
     const [status, setStatus] = useState(initialData?.status || 'published');
+    const [coverImage, setCoverImage] = useState(initialData?.coverImage || '');
     const [manuallyEditedSlug, setManuallyEditedSlug] = useState(!!initialData?.slug || true);
 
     // Slugify helper
@@ -83,6 +85,10 @@ const PostForm: React.FC<PostFormProps> = ({ initialData, isEditMode = false }) 
         }
     };
 
+    const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setCoverImage(e.target.value);
+    };
+
     const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSlug(e.target.value);
         setManuallyEditedSlug(true);
@@ -100,6 +106,7 @@ const PostForm: React.FC<PostFormProps> = ({ initialData, isEditMode = false }) 
         formData.set('title', title);
         formData.set('slug', slug);
         formData.set('status', status);
+        formData.set('coverImage', coverImage);
 
         let res;
         if (isEditMode && initialData?.id) {
@@ -182,6 +189,30 @@ const PostForm: React.FC<PostFormProps> = ({ initialData, isEditMode = false }) 
                                        rows={3}
                                        placeholder="Brief summary..." 
                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                   <Label htmlFor="coverImage">Cover Image URL</Label>
+                                   <Input
+                                       id="coverImage"
+                                       name="coverImage"
+                                       value={coverImage}
+                                       onChange={handleCoverImageChange}
+                                       placeholder="https://images.unsplash.com/..."
+                                       className="font-mono text-sm"
+                                   />
+                                   {coverImage && (
+                                     <div className="relative mt-2 h-28 w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                                       <img
+                                         src={coverImage}
+                                         alt="Cover preview"
+                                         className="h-full w-full object-cover"
+                                         onError={(e) => {
+                                           (e.target as HTMLImageElement).style.display = 'none';
+                                         }}
+                                       />
+                                     </div>
+                                   )}
                                 </div>
 
                                 <div className="space-y-2">

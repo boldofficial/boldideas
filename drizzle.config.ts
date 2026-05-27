@@ -6,7 +6,7 @@ dotenv.config();
 
 export default {
   schema: './src/lib/db/schema.ts',
-  out: './supabase/migrations', // Output standard SQL files here
+  out: './drizzle/migrations',
   dialect: 'postgresql',
   dbCredentials: {
     url: process.env.DATABASE_URL!,

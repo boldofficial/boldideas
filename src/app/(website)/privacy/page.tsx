@@ -5,7 +5,7 @@ export default function PrivacyPolicy() {
   const content = [
     {
       title: "Data Collection Protocols",
-      text: "Bold Ideas Innovations Ltd collects minimal necessary data to provide our AI implementation and digital transformation services. This includes contact information provided during consultations and technical metadata required for system optimization."
+      text: "Bold Ideas collects minimal necessary data to provide our AI implementation and digital transformation services. This includes contact information provided during consultations and technical metadata required for system optimization."
     },
     {
       title: "AI Interaction & Security",
@@ -29,7 +29,7 @@ export default function PrivacyPolicy() {
     },
     {
       title: "Contact Directives",
-      text: "For queries regarding data handling or privacy architecture, contact our Comms Unit at info@getboldideas.com."
+      text: "For queries regarding data handling or privacy architecture, contact our Comms Unit at admin@getboldideas.com."
     }
   ];
 

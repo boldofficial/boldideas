@@ -1,17 +1,24 @@
 
 import { create } from 'zustand';
-import { supabase } from '@/lib/supabase';
-import { User } from '@supabase/supabase-js';
+import { authClient } from '@/lib/auth-client';
+import { getUserProfile } from '@/actions/users';
+
+export type AppUser = {
+    id: string;
+    email: string;
+    name?: string | null;
+    image?: string | null;
+};
 
 interface AuthState {
-    user: User | null;
+    user: AppUser | null;
     isAdmin: boolean;
     role: string | null;
     isLoading: boolean;
     signIn: (email: string) => Promise<void>;
     signOut: () => Promise<void>;
     checkAuth: () => Promise<void>;
-    setUser: (user: User | null) => void;
+    setUser: (user: AppUser | null) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -21,33 +28,29 @@ export const useAuthStore = create<AuthState>((set) => ({
     isLoading: true,
 
     signIn: async (email: string) => {
-        // This is a placeholder as the actual sign-in happens via Supabase Auth UI / magic link / password
+        // The sign-in form owns credential submission; this keeps the store API stable.
         // The store update happens via checkAuth or onAuthStateChange
     },
 
     signOut: async () => {
-        await supabase.auth.signOut();
+        await authClient.signOut();
         set({ user: null, isAdmin: false, role: null });
     },
 
     checkAuth: async () => {
         set({ isLoading: true });
         try {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: session } = await authClient.getSession();
 
-            if (session?.user) {
-                // Verify role in 'users' table
-                const { data: userRecord, error } = await supabase
-                    .from('users')
-                    .select('role')
-                    .eq('id', session.user.id)
-                    .single();
+            if (session?.user?.id) {
+                const profile = await getUserProfile(session.user.id);
+                const userRecord = profile.data;
+                const role = userRecord?.role || 'user';
 
-                if (userRecord?.role === 'admin') {
+                if (role === 'admin') {
                     set({ user: session.user, isAdmin: true, role: 'admin', isLoading: false });
                 } else {
-                    // User is authenticated but not admin
-                    set({ user: session.user, isAdmin: false, role: userRecord?.role || 'user', isLoading: false });
+                    set({ user: session.user, isAdmin: false, role, isLoading: false });
 
                     // SELF-HEALING: If I am logged in but not admin, check if I should be.
                     // This handles the "I downgraded myself but I am the owner" case.

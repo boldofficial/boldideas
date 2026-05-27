@@ -5,7 +5,7 @@ import { tickets, ticketAttachments, ticketComments, cannedResponses, ticketActi
 import { eq, desc, and, or, isNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { createNotification } from './notifications';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import { savePublicUpload } from '@/lib/uploads';
 
 // Types
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -53,42 +53,15 @@ export async function createTicket(clientId: string, data: CreateTicketData, fil
     // Handle file upload if present
     if (file && file.size > 0) {
       try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `ticket-${newTicket.id}-${Date.now()}.${fileExt}`;
-        const filePath = `tickets/${newTicket.id}/${fileName}`;
+        const publicUrl = await savePublicUpload(file, `tickets/${newTicket.id}`, 'ticket');
 
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-
-        // Ensure bucket exists
-        const { data: buckets } = await supabaseAdmin.storage.listBuckets();
-        if (!buckets?.find(b => b.name === 'ticket-files')) {
-          await supabaseAdmin.storage.createBucket('ticket-files', { public: true });
-        }
-
-        const { error: uploadError } = await supabaseAdmin.storage
-          .from('ticket-files')
-          .upload(filePath, buffer, {
-            contentType: file.type,
-            upsert: true
-          });
-
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabaseAdmin.storage
-            .from('ticket-files')
-            .getPublicUrl(filePath);
-
-          // Add attachment record
-          await db.insert(ticketAttachments).values({
-            ticketId: newTicket.id,
-            name: file.name,
-            url: publicUrl,
-            sizeBytes: file.size,
-            uploadedBy: clientId,
-          });
-        } else {
-          console.error('Ticket file upload error:', uploadError);
-        }
+        await db.insert(ticketAttachments).values({
+          ticketId: newTicket.id,
+          name: file.name,
+          url: publicUrl,
+          sizeBytes: file.size,
+          uploadedBy: clientId,
+        });
       } catch (uploadErr) {
         console.error('File processing error:', uploadErr);
       }
@@ -492,35 +465,7 @@ export async function postTicketComment(
     // Handle file upload if present
     if (file && file.size > 0) {
       try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `comment-${Date.now()}.${fileExt}`;
-        const filePath = `tickets/${ticketId}/comments/${fileName}`;
-
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-
-        // Ensure bucket exists
-        const { data: buckets } = await supabaseAdmin.storage.listBuckets();
-        if (!buckets?.find(b => b.name === 'ticket-files')) {
-          await supabaseAdmin.storage.createBucket('ticket-files', { public: true });
-        }
-
-        const { error: uploadError } = await supabaseAdmin.storage
-          .from('ticket-files')
-          .upload(filePath, buffer, {
-            contentType: file.type,
-            upsert: true
-          });
-
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabaseAdmin.storage
-            .from('ticket-files')
-            .getPublicUrl(filePath);
-          attachmentUrl = publicUrl;
-          console.log('Attachment uploaded successfully:', attachmentUrl);
-        } else {
-          console.error('Attachment upload error:', uploadError);
-        }
+        attachmentUrl = await savePublicUpload(file, `tickets/${ticketId}/comments`, 'comment');
       } catch (uploadErr) {
         console.error('Comment file upload error:', uploadErr);
       }

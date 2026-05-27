@@ -2,15 +2,53 @@
 import { pgTable, text, timestamp, boolean, uuid, jsonb, integer } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
-  id: uuid('id').primaryKey(), // Matches Supabase Auth ID
-  email: text('email').notNull(),
-  name: text('name'),
+  id: uuid('id').defaultRandom().primaryKey(),
+  email: text('email').notNull().unique(),
+  emailVerified: boolean('email_verified').notNull().default(false),
+  name: text('name').notNull(),
   role: text('role').default('user'), // 'admin' | 'user'
   isActive: boolean('is_active').default(true),
   avatarUrl: text('avatar_url'),
   bio: text('bio'),
   address: text('address'),
   createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const sessions = pgTable('session', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  expiresAt: timestamp('expires_at').notNull(),
+  token: text('token').notNull().unique(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+});
+
+export const accounts = pgTable('account', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  accountId: text('account_id').notNull(),
+  providerId: text('provider_id').notNull(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  accessToken: text('access_token'),
+  refreshToken: text('refresh_token'),
+  idToken: text('id_token'),
+  accessTokenExpiresAt: timestamp('access_token_expires_at'),
+  refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
+  scope: text('scope'),
+  password: text('password'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const verifications = pgTable('verification', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  identifier: text('identifier').notNull(),
+  value: text('value').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
 export const projects = pgTable('projects', {
@@ -65,6 +103,10 @@ export const leads = pgTable('leads', {
   company: text('company'),
   status: text('status').default('new'), // 'new' | 'contacted' | 'qualified' | 'proposal' | 'won' | 'lost'
   source: text('source'), // 'website', 'referral', 'ads', etc.
+  serviceInterest: text('service_interest'),
+  priority: text('priority').default('medium'), // 'low' | 'medium' | 'high'
+  nextFollowUpAt: timestamp('next_follow_up_at'),
+  lostReason: text('lost_reason'),
   notes: text('notes'),
   assignedTo: uuid('assigned_to').references(() => users.id), // Staff assigned
   value: text('value'), // Estimated deal value
@@ -268,7 +310,7 @@ export const expenses = pgTable('expenses', {
 // Company Global Settings
 export const companySettings = pgTable('company_settings', {
   id: uuid('id').defaultRandom().primaryKey(),
-  companyName: text('company_name').notNull().default('Bold Ideas Innovations Ltd.'),
+  companyName: text('company_name').notNull().default('Bold Ideas'),
   companyAddress: text('company_address'),
   companyEmail: text('company_email'),
   companyPhone: text('company_phone'),
@@ -303,8 +345,10 @@ export const comments = pgTable('comments', {
   content: text('content').notNull(),
   attachmentUrl: text('attachment_url'),
   userId: uuid('user_id').references(() => users.id),
+  postId: uuid('post_id').references(() => posts.id, { onDelete: 'cascade' }),
   projectId: uuid('project_id').references(() => internalProjects.id, { onDelete: 'cascade' }),
   taskId: uuid('task_id').references(() => tasks.id, { onDelete: 'cascade' }),
+  guestName: text('guest_name'),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -427,3 +471,45 @@ export const ticketActivity = pgTable('ticket_activity', {
   newValue: text('new_value'),
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const trainingRegistrations = pgTable('training_registrations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  fullName: text('full_name').notNull(),
+  email: text('email').notNull().unique(),
+  phone: text('phone').notNull(),
+  location: text('location').notNull(),
+  mode: text('mode').notNull(), // 'virtual' | 'physical'
+  experienceLevel: text('experience_level').notNull(), // 'beginner' | 'intermediate'
+  goal: text('goal'),
+  status: text('status').default('pending'), // 'pending'|'contacted'|'enrolled'|'rejected'
+  adminNotes: text('admin_notes'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export type TrainingRegistration = typeof trainingRegistrations.$inferSelect;
+export type NewTrainingRegistration = typeof trainingRegistrations.$inferInsert;
+
+// --- Purchases (Stripe product checkout) ---
+
+export const purchases = pgTable('purchases', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  serviceSlug: text('service_slug').notNull(),
+  packageName: text('package_name').notNull(),
+  amount: text('amount').notNull(),
+  currency: text('currency').default('USD'),
+  customerName: text('customer_name').notNull(),
+  customerEmail: text('customer_email').notNull(),
+  customerPhone: text('customer_phone'),
+  stripeSessionId: text('stripe_session_id'),
+  stripePaymentIntentId: text('stripe_payment_intent_id'),
+  status: text('status').default('pending'), // 'pending' | 'completed' | 'failed' | 'refunded'
+  invoiceId: uuid('invoice_id').references(() => invoices.id, { onDelete: 'set null' }),
+  receiptId: uuid('receipt_id').references(() => receipts.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export type Purchase = typeof purchases.$inferSelect;
+export type NewPurchase = typeof purchases.$inferInsert;

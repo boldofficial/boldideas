@@ -24,7 +24,20 @@ export const RenderNode = ({ node }: { node: any }) => {
                     if (mark.type === 'bold') text = <strong className="font-black text-brand-navy">{text}</strong>;
                     if (mark.type === 'italic') text = <em className="italic text-slate-600">{text}</em>;
                     if (mark.type === 'code') text = <code className="bg-slate-100 px-1.5 py-0.5 rounded text-sm font-mono text-brand-navy">{text}</code>;
-                    if (mark.type === 'link') text = <a href={mark.attrs.href} target="_blank" rel="noopener noreferrer" className="text-brand-gold hover:text-brand-navy underline transition-colors">{text}</a>;
+                    if (mark.type === 'link') {
+                        const href = mark.attrs.href;
+                        const isInternal = href.startsWith('/') || href.includes('getboldideas.com') || href.includes('localhost:3000');
+                        text = (
+                            <a 
+                                href={href} 
+                                target={isInternal ? undefined : '_blank'}
+                                rel={isInternal ? undefined : 'noopener noreferrer'}
+                                className={`${isInternal ? 'text-brand-gold hover:text-brand-navy underline transition-colors font-semibold' : 'text-brand-gold hover:text-brand-navy underline transition-colors'}`}
+                            >
+                                {text}
+                            </a>
+                        );
+                    }
                 });
             }
             return text;

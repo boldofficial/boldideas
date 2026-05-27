@@ -9,7 +9,7 @@ export default function WebsiteLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="relative bg-white min-h-screen flex flex-col">
+    <div className="public-page relative bg-white min-h-screen flex flex-col">
         <Header />
         <main className="transition-opacity duration-500 flex-grow">
             {children}

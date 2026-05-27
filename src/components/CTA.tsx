@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 const CTA: React.FC = () => {
     return (
-        <section id="consultation" className="relative py-24 bg-white overflow-hidden">
+        <section id="consultation" className="relative py-16 bg-white overflow-hidden">
             {/* Architectural Grid Backdrop - Darker for White BG */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute inset-0 opacity-[0.05]" 
@@ -75,9 +75,7 @@ const CTA: React.FC = () => {
                                     </p>
                                     
                                     <a 
-                                        href="https://crm.getboldideas.com/book"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                        href="/book"
                                         className="inline-flex items-center justify-center bg-brand-gold text-brand-navy font-black text-[10px] uppercase tracking-[0.4em] px-10 py-5 hover:bg-white transition-colors w-full"
                                     >
                                         BOOK NOW

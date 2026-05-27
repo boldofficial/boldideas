@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { signUpAction } from '@/actions/auth';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
-import Image from 'next/image';
 
 export default function SignUpForm() {
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -34,16 +33,11 @@ export default function SignUpForm() {
     return (
         <div className="w-full">
             <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10">
-                {/* Logo */}
                 <div className="flex justify-center mb-8">
-                    <div className="relative w-24 h-24">
-                        <Image
-                            src="/logo.png"
-                            alt="Bold Ideas Innovation"
-                            fill
-                            className="object-contain"
-                            priority
-                        />
+                    <div className="h-20 w-20 rounded-2xl bg-brand-navy flex items-center justify-center shadow-lg">
+                        <span className="text-xl font-black text-white">
+                            B<span className="text-brand-gold">I</span>
+                        </span>
                     </div>
                 </div>
 

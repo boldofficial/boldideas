@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
 import NotificationBell from '@/components/NotificationBell';
 import { getUserProfile } from '@/actions/users';
-import { Settings } from 'lucide-react';
+import { Settings, GraduationCap } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -174,6 +174,19 @@ export default function AdminLayout({
               }`}
             >
               Tickets
+            </Link>
+            <Link 
+              href="/admin/training" 
+              className={`block px-4 py-2 rounded text-sm transition-colors ${
+                pathname?.startsWith('/admin/training') 
+                  ? 'bg-brand-gold/20 text-brand-gold font-semibold' 
+                  : 'text-slate-300 hover:text-brand-gold hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <GraduationCap className="w-4 h-4" />
+                Training
+              </div>
             </Link>
             <Link 
               href="/admin/marketing" 

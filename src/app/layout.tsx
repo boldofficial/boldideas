@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import AdminInitCheck from "@/components/auth/AdminInitCheck";
 
@@ -8,9 +8,15 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
 });
 
+const inter = Inter({
+  variable: "--font-body-inter",
+  subsets: ["latin"],
+});
+
+
 export const metadata: Metadata = {
   title: "Bold Ideas Innovation | AI Digital Marketing & Automation Agency",
-  description: "AI Digital Marketing & Automation Agency based in Lagos, Nigeria.",
+  description: "AI Digital Marketing & Automation Agency serving Illinois and Wisconsin.",
 };
 
 export default function RootLayout({
@@ -21,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${plusJakartaSans.variable} antialiased text-slate-800`}
+        className={`${plusJakartaSans.variable} ${inter.variable} antialiased text-slate-800`}
       >
         {children}
         <AdminInitCheck />

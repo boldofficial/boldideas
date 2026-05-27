@@ -57,7 +57,7 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
                             <div className="flex items-center gap-3">
                                 <div className="relative w-[236px] h-24">
                                     <Image
-                                        src={settings?.logoUrl || "/logo.png"}
+                                        src={settings?.logoUrl || "/boldideas_logo.png"}
                                         alt="Company Logo"
                                         fill
                                         className="!w-full !h-full object-fill mix-blend-multiply"
@@ -127,7 +127,7 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
                         <div className="space-y-4">
                             <div className="relative w-[236px] h-24">
                                 <Image
-                                    src={settings?.logoUrl || "/logo.png"}
+                                    src={settings?.logoUrl || "/boldideas_logo.png"}
                                     alt="Logo"
                                     fill
                                     className="!w-full !h-full object-fill"

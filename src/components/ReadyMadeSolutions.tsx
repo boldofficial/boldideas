@@ -59,7 +59,7 @@ const ReadyMadeSolutions: React.FC = () => {
     ];
 
     return (
-        <section id="solutions" className="py-24 bg-white overflow-hidden">
+        <section id="solutions" className="py-16 bg-white overflow-hidden">
             <div className="max-w-[1440px] mx-auto w-full relative z-10 px-6 md:px-16 lg:px-24">
                 {/* Section Header */}
                 <div className="max-w-4xl mb-12 mx-auto text-center">

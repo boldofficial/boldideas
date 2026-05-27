@@ -4,7 +4,9 @@ import { getProjects } from "@/actions/projects";
 import { getDashboardMetrics } from "@/actions/dashboard";
 import ProjectManager from "@/components/admin/ProjectManager";
 import ActivityFeed from "@/components/admin/ActivityFeed";
-import { TrendingUp, Users, FolderKanban, CheckCircle2, Clock, DollarSign, AlertTriangle, Activity } from 'lucide-react';
+import DashboardCharts from "@/components/admin/DashboardCharts";
+import QuickActions from "@/components/admin/QuickActions";
+import { TrendingUp, Users, FolderKanban, CheckCircle2, Clock, DollarSign, AlertTriangle, Activity, Zap } from 'lucide-react';
 import { getGlobalActivity } from "@/actions/activity";
 
 export const metadata = {
@@ -107,6 +109,24 @@ export default async function AdminDashboardPage() {
                 ))}
             </div>
 
+            {/* Quick Actions */}
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="w-8 h-8 bg-brand-gold/10 rounded-lg flex items-center justify-center">
+                        <Zap className="w-4 h-4 text-brand-gold" />
+                    </div>
+                    <h2 className="text-sm font-semibold text-brand-navy">Quick Actions</h2>
+                </div>
+                <QuickActions />
+            </div>
+
+            {/* Dashboard Charts */}
+            <DashboardCharts
+                revenueTrend={metrics?.revenueTrend || []}
+                pipeline={metrics?.pipeline || []}
+                taskTrend={metrics?.taskTrend || []}
+            />
+
             {/* Dashboard Lower Section: Health & Activity */}
             <div className="grid lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
@@ -122,6 +142,11 @@ export default async function AdminDashboardPage() {
                                 <p className="text-sm text-slate-300 mt-2 font-medium">
                                     {metrics?.activeProjects || 0} active projects • {metrics?.pendingTasks || 0} pending tasks • ${(metrics?.pendingInvoicesValue || 0).toLocaleString()} outstanding
                                 </p>
+                                <div className="flex items-center gap-4 mt-3 text-xs text-slate-400">
+                                    <span>{metrics?.totalLeads || 0} total leads</span>
+                                    <span>{metrics?.wonLeads || 0} won</span>
+                                    <span className="text-brand-gold">{metrics?.winRate || 0}% win rate</span>
+                                </div>
                             </div>
                             <div className="text-right">
                                 <div className="text-5xl font-black text-brand-gold">

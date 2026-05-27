@@ -1,5 +1,6 @@
 
 import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
+import { Suspense } from "react";
 
 export const metadata = {
     title: "Update Password | Bold Ideas Innovation",
@@ -15,7 +16,9 @@ export default function ResetPasswordPage() {
             </div>
             
             <div className="relative z-10 w-full">
-                <ResetPasswordForm />
+                <Suspense fallback={null}>
+                    <ResetPasswordForm />
+                </Suspense>
             </div>
         </div>
     );

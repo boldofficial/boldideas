@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Send, Paperclip, MessageSquare, Terminal, ShieldCheck, User, Clock, FileText } from 'lucide-react';
-import { postProjectComment } from '@/actions/pm';
+import { Send, Paperclip, MessageSquare, User, FileText } from 'lucide-react';
 
 interface Comment {
     id: string;
@@ -11,18 +10,23 @@ interface Comment {
     createdAt: Date | null;
     userName: string | null;
     userAvatar: string | null;
+    guestName?: string | null;
 }
 
 interface CommentSystemProps {
     taskId?: string;
     projectId?: string;
-    userId: string;
+    postId?: string;
+    userId?: string;
     initialComments: Comment[];
     title?: string;
     className?: string;
+    onSubmit?: (formData: FormData) => Promise<{ success: boolean }>;
+    placeholder?: string;
+    hideHeader?: boolean;
 }
 
-export default function CommentSystem({ taskId, projectId, userId, initialComments, title = "Comments", className }: CommentSystemProps) {
+export default function CommentSystem({ taskId, projectId, postId, userId, initialComments, title = "Comments", className, onSubmit, placeholder = "Add a comment...", hideHeader }: CommentSystemProps) {
     const [comments, setComments] = useState(initialComments);
 
     // Sync state when initialComments change (loading finished)
@@ -33,21 +37,38 @@ export default function CommentSystem({ taskId, projectId, userId, initialCommen
     const [content, setContent] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [guestName, setGuestName] = useState('');
+    const [showGuestField, setShowGuestField] = useState(!userId);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!content.trim() && !selectedFile && !isSubmitting) return;
+        if (!userId && !guestName.trim()) return;
 
         setIsSubmitting(true);
         const formData = new FormData();
         formData.append('content', content);
-        formData.append('userId', userId);
+        if (userId) {
+            formData.append('userId', userId);
+        } else {
+            formData.append('guestName', guestName);
+        }
         if (taskId) formData.append('taskId', taskId);
         if (projectId) formData.append('projectId', projectId);
+        if (postId) formData.append('postId', postId);
         if (selectedFile) formData.append('file', selectedFile);
 
-        const result = await postProjectComment(formData);
+        let result: { success: boolean; error?: string };
+
+        if (onSubmit) {
+            result = await onSubmit(formData);
+        } else {
+            // Default: use the project comment action
+            const { postProjectComment } = await import('@/actions/pm');
+            result = await postProjectComment(formData);
+        }
+
         if (result.success) {
             setContent('');
             setSelectedFile(null);
@@ -57,7 +78,7 @@ export default function CommentSystem({ taskId, projectId, userId, initialCommen
                 content: content,
                 attachmentUrl: selectedFile ? URL.createObjectURL(selectedFile) : null,
                 createdAt: new Date(),
-                userName: 'You', // Placeholder
+                userName: userId ? 'You' : (guestName || 'Guest'),
                 userAvatar: null
             };
             setComments([newComment, ...comments]);
@@ -79,25 +100,28 @@ export default function CommentSystem({ taskId, projectId, userId, initialCommen
     };
 
     return (
-        <div className={`bg-white flex flex-col h-full ${className}`}>
+        <div className={`bg-white flex flex-col ${className}`}>
             {/* Header */}
-            <div className="p-4 border-b border-slate-100 bg-white flex justify-between items-center">
-                <h3 className="text-sm font-bold text-brand-navy flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-brand-gold" />
-                    {title}
-                </h3>
-                <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Connected</span>
+            {!hideHeader && (
+                <div className="p-4 border-b border-slate-100 bg-white flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-brand-navy flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4 text-brand-gold" />
+                        {title}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Connected</span>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Comments List */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide bg-slate-50/10">
+            <div className={`flex-1 overflow-y-auto space-y-6 scrollbar-hide bg-slate-50/10 ${hideHeader ? 'p-0' : 'p-6'}`}>
                 {comments.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center opacity-30 py-12">
+                    <div className={`flex flex-col items-center justify-center opacity-30 ${hideHeader ? 'py-8' : 'py-12'}`}>
                         <MessageSquare className="w-10 h-10 mb-2 text-slate-300" />
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">No activity reported</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">No comments yet</p>
+                        <p className="text-xs text-slate-300 mt-1">Be the first to share your thoughts</p>
                     </div>
                 ) : (
                     comments.map((comment) => (
@@ -115,7 +139,7 @@ export default function CommentSystem({ taskId, projectId, userId, initialCommen
                                 <div className="flex-1 space-y-1">
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs font-bold text-brand-navy">
-                                            {comment.userName || 'System'}
+                                            {comment.userName || comment.guestName || 'System'}
                                         </span>
                                         <span className="text-[10px] font-bold text-slate-400 uppercase">
                                             {formatRelativeTime(comment.createdAt)}
@@ -146,46 +170,58 @@ export default function CommentSystem({ taskId, projectId, userId, initialCommen
             </div>
 
             {/* Input Area */}
-            <div className="p-4 border-t border-slate-100 bg-white shadow-xl relative z-10">
-                <form onSubmit={handleSubmit} className="relative group">
-                    <input
-                        type="file"
-                        className="hidden"
-                        ref={fileInputRef}
-                        onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                    />
-                    <textarea
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        placeholder="Add a comment..."
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 pr-24 text-sm focus:ring-2 focus:ring-brand-gold/20 focus:border-brand-gold outline-none resize-none transition-all min-h-[50px] group-focus-within:bg-white"
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                handleSubmit(e);
-                            }
-                        }}
-                    />
-                    <div className="absolute right-2 bottom-2 flex items-center gap-2">
-                        {selectedFile && (
-                            <span className="text-[8px] font-bold text-brand-gold bg-brand-navy px-1 py-0.5 rounded truncate max-w-[60px]">
-                                {selectedFile.name}
-                            </span>
-                        )}
-                        <button
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            className={`p-2 transition-colors ${selectedFile ? 'text-brand-gold' : 'text-slate-400 hover:text-brand-navy'}`}
-                        >
-                            <Paperclip className="w-4 h-4" />
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting || (!content.trim() && !selectedFile)}
-                            className="bg-brand-navy text-brand-gold p-2 rounded shadow-sm hover:scale-110 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
-                        >
-                            <Send className="w-4 h-4" />
-                        </button>
+            <div className="p-4 border-t border-slate-100 bg-white">
+                <form onSubmit={handleSubmit} className="space-y-3">
+                    {/* Guest Name Field */}
+                    {showGuestField && !userId && (
+                        <input
+                            type="text"
+                            value={guestName}
+                            onChange={(e) => setGuestName(e.target.value)}
+                            placeholder="Your name..."
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-brand-gold/20 focus:border-brand-gold outline-none resize-none transition-all"
+                        />
+                    )}
+                    <div className="relative group">
+                        <input
+                            type="file"
+                            className="hidden"
+                            ref={fileInputRef}
+                            onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                        />
+                        <textarea
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                            placeholder={placeholder}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 pr-24 text-sm focus:ring-2 focus:ring-brand-gold/20 focus:border-brand-gold outline-none resize-none transition-all min-h-[50px] group-focus-within:bg-white"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSubmit(e);
+                                }
+                            }}
+                        />
+                        <div className="absolute right-2 bottom-2 flex items-center gap-2">
+                            {selectedFile && (
+                                <span className="text-[8px] font-bold text-brand-gold bg-brand-navy px-1 py-0.5 rounded truncate max-w-[60px]">
+                                    {selectedFile.name}
+                                </span>
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className={`p-2 transition-colors ${selectedFile ? 'text-brand-gold' : 'text-slate-400 hover:text-brand-navy'}`}
+                            >
+                                <Paperclip className="w-4 h-4" />
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || (!content.trim() && !selectedFile) || (!userId && !guestName.trim())}
+                                className="bg-brand-navy text-brand-gold p-2 rounded shadow-sm hover:scale-110 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+                            >
+                                <Send className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

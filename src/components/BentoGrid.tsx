@@ -8,22 +8,6 @@ const BentoGrid: React.FC = () => {
     const services = [
         {
             id: '01',
-            category: 'Core Offering',
-            title: 'AI Productivity Training',
-            image: '/images/rebrand/ai-training-small.png',
-            description: 'Practical training designed for non-technical founders and lean teams. Reclaim hours every week by mastering AI for content, admin, and planning.',
-            link: '/training'
-        },
-        {
-            id: '02',
-            category: 'Enterprise',
-            title: 'Team Upskilling',
-            image: '/images/rebrand/ai-training-teams.png',
-            description: 'Structured AI adoption for departments and firms. Focus on secure usage, team-wide workflows, and department-specific use cases.',
-            link: '/training#teams'
-        },
-        {
-            id: '03',
             category: 'Systems',
             title: 'Consulting & Automation',
             image: '/images/rebrand/ai-automation.png',
@@ -31,7 +15,7 @@ const BentoGrid: React.FC = () => {
             link: '/services#automation'
         },
         {
-            id: '04',
+            id: '02',
             category: 'Marketing',
             title: 'Growth Systems',
             image: '/images/rebrand/marketing-growth.png',
@@ -39,7 +23,7 @@ const BentoGrid: React.FC = () => {
             link: '/services#growth'
         },
         {
-            id: '05',
+            id: '03',
             category: 'Development',
             title: 'Websites & Internal Tools',
             image: '/images/rebrand/web-systems.png',
@@ -126,7 +110,7 @@ const BentoGrid: React.FC = () => {
                         <h3 className="text-xl font-black text-slate-400 uppercase tracking-tight text-center mb-8">
                             Custom AI Solutions <br /> for Your Business
                         </h3>
-                        <Link href="https://crm.getboldideas.com/book" target="_blank">
+                        <Link href="/book">
                             <button className="px-6 py-3 border border-brand-navy text-brand-navy text-[10px] font-black uppercase tracking-widest hover:bg-brand-navy hover:text-white transition-all">
                                 Get Started
                             </button>

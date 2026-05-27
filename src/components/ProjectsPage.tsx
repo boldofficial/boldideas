@@ -23,25 +23,8 @@ interface Props {
 
 const ProjectsPage: React.FC<Props> = ({ projects }) => {
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 pb-20">
-      
-      {/* Hero Section */}
-      <section className="bg-brand-navy text-white py-20 px-4 relative overflow-hidden mb-16">
-         <div className="absolute inset-0 opacity-[0.05]" 
-             style={{ backgroundImage: 'linear-gradient(#FFB81C 1px, transparent 1px), linear-gradient(90deg, #FFB81C 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
-         </div>
-         <div className="max-w-7xl mx-auto relative z-10 text-center">
-            <div className="inline-block bg-brand-gold/20 text-brand-gold px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 border border-brand-gold/30">
-               Case Studies
-            </div>
-            <h1 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter">
-               Operational <span className="text-brand-gold">Successes</span>
-            </h1>
-            <p className="text-xl text-slate-300 max-w-2xl mx-auto font-mono">
-               Review successful deployment protocols and outcome analysis.
-            </p>
-         </div>
-      </section>
+    <div className="min-h-screen bg-slate-50 pb-14">
+      {projects.length === 0 && <div className="pt-24" />}
 
       {/* Grid */}
       <div className="max-w-7xl mx-auto px-4 md:px-8">

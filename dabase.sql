@@ -70,7 +70,7 @@ CREATE TABLE public.comments (
 );
 CREATE TABLE public.company_settings (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  company_name text NOT NULL DEFAULT 'Bold Ideas Innovations Ltd.'::text,
+  company_name text NOT NULL DEFAULT 'Bold Ideas'::text,
   company_address text,
   company_email text,
   company_phone text,

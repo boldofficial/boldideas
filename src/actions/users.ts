@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import { savePublicUpload } from '@/lib/uploads';
 
 export async function updateUserProfile(userId: string, formData: FormData) {
     const name = formData.get('name') as string;
@@ -41,36 +41,11 @@ export async function uploadAvatar(formData: FormData) {
     if (!file || !userId) return { success: false, error: "Missing file or user ID" };
 
     try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${userId}-${Math.random()}.${fileExt}`;
-        const filePath = `${fileName}`;
-
-        // Ensure bucket exists
-        const { data: buckets } = await supabaseAdmin.storage.listBuckets();
-        if (!buckets?.find(b => b.name === 'avatars')) {
-            await supabaseAdmin.storage.createBucket('avatars', { public: true });
-        }
-
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-
-        const { data, error } = await supabaseAdmin.storage
-            .from('avatars')
-            .upload(filePath, buffer, {
-                contentType: file.type,
-                upsert: true
-            });
-
-        if (error) throw error;
-
-        const { data: { publicUrl } } = supabaseAdmin.storage
-            .from('avatars')
-            .getPublicUrl(filePath);
-
-        return { success: true, url: publicUrl };
-    } catch (error: any) {
+        const url = await savePublicUpload(file, 'avatars', userId);
+        return { success: true, url };
+    } catch (error: unknown) {
         console.error("Upload Error:", error);
-        return { success: false, error: error.message };
+        return { success: false, error: error instanceof Error ? error.message : 'Upload failed' };
     }
 }
 
@@ -118,12 +93,6 @@ export async function deleteUser(userId: string, adminId: string) {
         // Don't allow deleting yourself
         if (userId === adminId) {
             return { success: false, error: 'Cannot delete your own account' };
-        }
-
-        // Delete from Supabase Auth
-        const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
-        if (authError) {
-            console.error('Auth delete error:', authError);
         }
 
         // Delete from database

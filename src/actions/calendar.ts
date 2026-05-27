@@ -13,10 +13,11 @@ export async function getCalendarData(month: number, year: number) {
         const calendarTasks = await db.select({
             id: tasks.id,
             title: tasks.title,
+            description: tasks.description,
             dueDate: tasks.dueDate,
             status: tasks.status,
+            priority: tasks.priority,
             projectId: tasks.projectId,
-            type: gte(tasks.id, tasks.id) // Dummy field to identify as task
         })
             .from(tasks)
             .where(
@@ -30,6 +31,7 @@ export async function getCalendarData(month: number, year: number) {
         const calendarMilestones = await db.select({
             id: milestones.id,
             title: milestones.title,
+            description: milestones.description,
             dueDate: milestones.dueDate,
             status: milestones.status,
             projectId: milestones.projectId,

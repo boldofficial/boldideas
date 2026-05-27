@@ -5,7 +5,7 @@ export default function TermsOfService() {
   const content = [
     {
       title: "Service Engagement",
-      text: "Bold Ideas Innovations Ltd provides professional AI implementation, productivity training, and digital growth services. By engaging with our systems or booking a 'Strategy Session', you agree to comply with our operational protocols."
+      text: "Bold Ideas provides professional AI implementation, productivity training, and digital growth services. By engaging with our systems or booking a 'Strategy Session', you agree to comply with our operational protocols."
     },
     {
       title: "Capacity Building & Training",
@@ -21,7 +21,7 @@ export default function TermsOfService() {
     },
     {
       title: "Intellectual Property & Code",
-      text: "Unless otherwise specified in a custom service agreement, Bold Ideas Innovations Ltd maintains ownership of the underlying proprietary AI frameworks and deployment logic, while the client retains ownership of their unique organizational data and custom-built front-end assets."
+      text: "Unless otherwise specified in a custom service agreement, Bold Ideas maintains ownership of the underlying proprietary AI frameworks and deployment logic, while the client retains ownership of their unique organizational data and custom-built front-end assets."
     },
     {
       title: "Limitation of Liability",
@@ -29,7 +29,7 @@ export default function TermsOfService() {
     },
     {
       title: "Governing Law",
-      text: "These operational terms are governed by the laws of the Federal Republic of Nigeria, where Bold Ideas Innovations Ltd is registered and headquartered."
+      text: "These operational terms are governed by the laws of the State of Illinois, where Bold Ideas is registered and headquartered."
     }
   ];
 

@@ -393,7 +393,7 @@ export async function getCompanySettings() {
         if (!settings) {
             // Create default if missing
             const [newSettings] = await db.insert(companySettings).values({
-                companyName: 'Bold Ideas Innovations Ltd.',
+                companyName: 'Bold Ideas',
                 companyWebsite: 'boldideas.agency',
                 companyEmail: 'HQ@boldideas.agency',
             }).returning();

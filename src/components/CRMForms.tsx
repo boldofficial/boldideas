@@ -1,9 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-
-// Configuration
-const CRM_URL = 'http://crm_project.test'; // Replace with actual CRM URL
+import { createWebsiteLead } from '@/actions/crm';
 
 interface FormProps {
   className?: string;
@@ -33,23 +31,17 @@ export const ContactForm: React.FC<FormProps> = ({ className = '', theme = 'ligh
     try {
       const formBody = new FormData();
       Object.entries(formData).forEach(([key, value]) => formBody.append(key, value));
+      formBody.set('source', 'website_contact_form');
+      formBody.set('serviceInterest', 'Website or AI agent inquiry');
 
-      const response = await fetch(`${CRM_URL}/public/lead`, {
-        method: 'POST',
-        body: formBody,
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-      });
+      const result = await createWebsiteLead(formBody);
 
-      const data = await response.json();
-
-      if (data.status === 'success') {
+      if (result.success) {
         setStatus('success');
         setFormData({ name: '', email: '', phone: '', company: '', message: '' });
       } else {
         setStatus('error');
-        setErrorMessage(data.errors ? Object.values(data.errors).join(', ') : 'Check your inputs.');
+        setErrorMessage(result.error || 'Check your inputs.');
       }
     } catch (error) {
       console.error(error);

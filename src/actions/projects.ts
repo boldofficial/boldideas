@@ -55,7 +55,6 @@ export async function seedDemoProject() {
  * Validate Admin Role Helper
  */
 async function requireAdmin() {
-    const { supabaseAdmin } = await import('@/lib/supabase-admin'); // Or use db check
     // Actually, Server Actions can't easily see "current user" without cookies.
     // We should rely on the DB abstraction or just check the session via a standard helper.
     // For now, assuming the UI protects the call, but strictly we should check.

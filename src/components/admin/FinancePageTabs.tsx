@@ -1,18 +1,20 @@
 'use client';
 
 import { useState, ReactNode } from 'react';
-import { LayoutDashboard, FileText, Receipt, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, FileText, Receipt, ShieldCheck, ShoppingCart } from 'lucide-react';
 
 interface FinancePageTabsProps {
     dashboardContent: ReactNode;
     invoicesContent: ReactNode;
     expensesContent: ReactNode;
     brandingContent: ReactNode;
+    purchasesContent?: ReactNode;
 }
 
 const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'invoices', label: 'Invoices', icon: FileText },
+    { id: 'purchases', label: 'Purchases', icon: ShoppingCart },
     { id: 'expenses', label: 'Expenses', icon: Receipt },
     { id: 'branding', label: 'Branding', icon: ShieldCheck },
 ];
@@ -21,7 +23,8 @@ export default function FinancePageTabs({
     dashboardContent,
     invoicesContent,
     expensesContent,
-    brandingContent
+    brandingContent,
+    purchasesContent
 }: FinancePageTabsProps) {
     const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -50,6 +53,7 @@ export default function FinancePageTabs({
                 {activeTab === 'invoices' && invoicesContent}
                 {activeTab === 'expenses' && expensesContent}
                 {activeTab === 'branding' && brandingContent}
+                {activeTab === 'purchases' && purchasesContent}
             </div>
         </div>
     );

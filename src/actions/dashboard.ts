@@ -1,8 +1,8 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { users, internalProjects, tasks, invoices } from '@/lib/db/schema';
-import { eq, count, sql, and, gte, lte } from 'drizzle-orm';
+import { users, internalProjects, tasks, invoices, leads } from '@/lib/db/schema';
+import { eq, count, sql, and, gte, lte, desc } from 'drizzle-orm';
 
 export async function getDashboardMetrics() {
     try {
@@ -76,6 +76,83 @@ export async function getDashboardMetrics() {
                 )
             );
 
+        // ── Chart Data: Monthly Revenue Trend (last 6 months) ──
+        const revenueTrend: { month: string; revenue: number }[] = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
+            const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+            const [result] = await db
+                .select({
+                    total: sql<number>`COALESCE(SUM(CAST(${invoices.totalAmount} AS DECIMAL)), 0)`
+                })
+                .from(invoices)
+                .where(
+                    and(
+                        eq(invoices.status, 'paid'),
+                        gte(invoices.createdAt, monthStart),
+                        lte(invoices.createdAt, monthEnd)
+                    )
+                );
+            revenueTrend.push({
+                month: d.toLocaleDateString('en-US', { month: 'short' }),
+                revenue: Number(result?.total) || 0,
+            });
+        }
+
+        // ── Chart Data: Lead Pipeline ──
+        const allLeads = await db.select({ status: leads.status, value: leads.value }).from(leads);
+        const leadStatuses = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'];
+        const pipeline = leadStatuses.map(status => ({
+            status,
+            count: allLeads.filter(l => l.status === status).length,
+            value: allLeads
+                .filter(l => l.status === status)
+                .reduce((s, l) => s + Number(l.value || 0), 0),
+        }));
+
+        // ── Chart Data: Task Completion Trend (last 7 days) ──
+        const taskTrend: { date: string; completed: number; created: number }[] = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(d.getDate() - i);
+            const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+            const dayEnd = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
+
+            const [completed] = await db
+                .select({ count: count() })
+                .from(tasks)
+                .where(
+                    and(
+                        eq(tasks.status, 'done'),
+                        gte(tasks.updatedAt, dayStart),
+                        lte(tasks.updatedAt, dayEnd)
+                    )
+                );
+
+            const [created] = await db
+                .select({ count: count() })
+                .from(tasks)
+                .where(
+                    and(
+                        gte(tasks.createdAt, dayStart),
+                        lte(tasks.createdAt, dayEnd)
+                    )
+                );
+
+            taskTrend.push({
+                date: d.toLocaleDateString('en-US', { weekday: 'short' }),
+                completed: completed?.count || 0,
+                created: created?.count || 0,
+            });
+        }
+
+        // ── Lead Summary Stats ──
+        const totalLeads = allLeads.length;
+        const wonLeads = allLeads.filter(l => l.status === 'won').length;
+        const lostLeads = allLeads.filter(l => l.status === 'lost').length;
+        const winRate = totalLeads > 0 ? Math.round((wonLeads / (wonLeads + lostLeads)) * 100) : 0;
+
         return {
             success: true,
             data: {
@@ -88,6 +165,15 @@ export async function getDashboardMetrics() {
                 pendingInvoicesValue: Number(pendingInvoicesResult?.total) || 0,
                 pendingInvoicesCount: pendingInvoicesResult?.count || 0,
                 overdueTasks: overdueTasks?.count || 0,
+                // Chart data
+                revenueTrend,
+                pipeline,
+                taskTrend,
+                // Lead stats
+                totalLeads,
+                wonLeads,
+                lostLeads,
+                winRate,
             }
         };
     } catch (error) {

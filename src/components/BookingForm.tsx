@@ -1,15 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-
-// Configuration
-const CRM_URL = 'http://crm_project.test'; // Replace with actual CRM URL
+import { submitBooking } from '@/actions/booking';
 
 interface FormProps {
   className?: string;
+  dark?: boolean;
 }
 
-export const BookingForm: React.FC<FormProps> = ({ className = '' }) => {
+export const BookingForm: React.FC<FormProps> = ({ className = '', dark = false }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -33,20 +32,14 @@ export const BookingForm: React.FC<FormProps> = ({ className = '' }) => {
       const formBody = new FormData();
       Object.entries(formData).forEach(([key, value]) => formBody.append(key, value));
 
-      const response = await fetch(`${CRM_URL}/public/appointment`, {
-        method: 'POST',
-        body: formBody,
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      });
+      const result = await submitBooking(formBody);
 
-      const data = await response.json();
-
-      if (data.status === 'success') {
+      if (result.success) {
         setStatus('success');
         setFormData({ name: '', email: '', date: '', time: '', notes: '' });
       } else {
         setStatus('error');
-        setErrorMessage('Check your inputs.');
+        setErrorMessage(result.error || 'Check your inputs.');
       }
     } catch (error) {
       console.error(error);
@@ -59,16 +52,18 @@ export const BookingForm: React.FC<FormProps> = ({ className = '' }) => {
 
   return (
     <div className={`w-full ${className}`}>
-      <h3 className="text-xl font-black text-brand-navy mb-5 text-center lg:text-left">Book an Appointment</h3>
+      <h3 className={`text-xl font-black mb-5 text-center lg:text-left ${dark ? 'text-white' : 'text-brand-navy'}`}>
+        {dark ? 'Book a Strategy Call' : 'Book an Appointment'}
+      </h3>
 
       {status === 'success' && (
-        <div className="mb-4 p-3 bg-green-50 text-green-800 border border-green-100 rounded text-[10px] font-medium leading-tight">
-          ✅ Request Sent!
+        <div className="mb-4 p-3 bg-green-800/30 text-green-300 border border-green-700/50 rounded text-[10px] font-medium leading-tight">
+          ✅ Request Sent! We'll be in touch within 1 business day to schedule your call.
         </div>
       )}
 
       {status === 'error' && (
-        <div className="mb-4 p-3 bg-red-50 text-red-800 border border-red-100 rounded text-[10px] font-medium leading-tight">
+        <div className="mb-4 p-3 bg-red-900/30 text-red-300 border border-red-700/50 rounded text-[10px] font-medium leading-tight">
           ❌ {errorMessage}
         </div>
       )}
@@ -77,31 +72,33 @@ export const BookingForm: React.FC<FormProps> = ({ className = '' }) => {
         {/* Row 1: Name & Email */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            {/* <label className="block text-[9px] font-black uppercase tracking-widest text-brand-navy">
-              Your Name *
-            </label> */}
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full h-10 px-3 bg-slate-50/50 border border-slate-100 focus:border-brand-gold focus:bg-white focus:outline-none transition-all rounded text-xs text-brand-navy font-medium"
-              placeholder="Enter your name"
+              className={`w-full h-11 px-4 transition-all rounded-lg text-sm font-medium placeholder:text-slate-400 ${
+                dark
+                  ? 'bg-white/10 border-white/15 text-white focus:border-brand-gold focus:bg-white/15'
+                  : 'bg-slate-50/50 border-slate-100 text-brand-navy focus:border-brand-gold focus:bg-white'
+              } border focus:outline-none`}
+              placeholder="Your name *"
             />
           </div>
           <div className="space-y-1">
-            {/* <label className="block text-[9px] font-black uppercase tracking-widest text-brand-navy">
-              Email Address *
-            </label> */}
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full h-10 px-3 bg-slate-50/50 border border-slate-100 focus:border-brand-gold focus:bg-white focus:outline-none transition-all rounded text-xs text-brand-navy font-medium"
-              placeholder='Enter your email'
+              className={`w-full h-11 px-4 transition-all rounded-lg text-sm font-medium placeholder:text-slate-400 ${
+                dark
+                  ? 'bg-white/10 border-white/15 text-white focus:border-brand-gold focus:bg-white/15'
+                  : 'bg-slate-50/50 border-slate-100 text-brand-navy focus:border-brand-gold focus:bg-white'
+              } border focus:outline-none`}
+              placeholder="Email address *"
             />
           </div>
         </div>
@@ -109,9 +106,6 @@ export const BookingForm: React.FC<FormProps> = ({ className = '' }) => {
         {/* Row 2: Date & Time */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            {/* <label className="block text-[9px] font-black uppercase tracking-widest text-brand-navy">
-              Date *
-            </label> */}
             <input
               type="date"
               name="date"
@@ -119,52 +113,62 @@ export const BookingForm: React.FC<FormProps> = ({ className = '' }) => {
               onChange={handleChange}
               required
               min={today}
-              className="w-full h-10 px-3 bg-slate-50/50 border border-slate-100 focus:border-brand-gold focus:bg-white focus:outline-none transition-all rounded text-xs text-brand-navy font-medium"
+              className={`w-full h-11 px-4 transition-all rounded-lg text-sm font-medium ${
+                dark
+                  ? 'bg-white/10 border-white/15 text-white focus:border-brand-gold focus:bg-white/15 [color-scheme:dark]'
+                  : 'bg-slate-50/50 border-slate-100 text-brand-navy focus:border-brand-gold focus:bg-white'
+              } border focus:outline-none`}
             />
           </div>
           <div className="space-y-1">
-            {/* <label className="block text-[9px] font-black uppercase tracking-widest text-brand-navy">
-              Time *
-            </label> */}
             <select
               name="time"
               value={formData.time}
               onChange={handleChange}
               required
-              className="w-full h-10 px-3 bg-slate-50/50 border border-slate-100 focus:border-brand-gold focus:bg-white focus:outline-none transition-all rounded text-xs text-brand-navy font-medium appearance-none"
+              className={`w-full h-11 px-4 transition-all rounded-lg text-sm font-medium ${
+                dark
+                  ? 'bg-white/10 border-white/15 text-white focus:border-brand-gold focus:bg-white/15'
+                  : 'bg-slate-50/50 border-slate-100 text-brand-navy focus:border-brand-gold focus:bg-white'
+              } border focus:outline-none appearance-none`}
             >
-              <option value="">Time...</option>
-              <option value="09:00">09:00 AM</option>
-              <option value="10:00">10:00 AM</option>
-              <option value="11:00">11:00 AM</option>
-              <option value="13:00">01:00 PM</option>
-              <option value="14:00">02:00 PM</option>
-              <option value="15:00">03:00 PM</option>
-              <option value="16:00">04:00 PM</option>
+              <option value="" className={dark ? 'bg-[#061b35]' : ''}>Preferred time...</option>
+              <option value="09:00" className={dark ? 'bg-[#061b35]' : ''}>09:00 AM</option>
+              <option value="10:00" className={dark ? 'bg-[#061b35]' : ''}>10:00 AM</option>
+              <option value="11:00" className={dark ? 'bg-[#061b35]' : ''}>11:00 AM</option>
+              <option value="13:00" className={dark ? 'bg-[#061b35]' : ''}>01:00 PM</option>
+              <option value="14:00" className={dark ? 'bg-[#061b35]' : ''}>02:00 PM</option>
+              <option value="15:00" className={dark ? 'bg-[#061b35]' : ''}>03:00 PM</option>
+              <option value="16:00" className={dark ? 'bg-[#061b35]' : ''}>04:00 PM</option>
             </select>
           </div>
         </div>
 
         <div className="space-y-1">
-          {/* <label className="block text-[9px] font-black uppercase tracking-widest text-brand-navy">
-            Notes
-          </label> */}
           <textarea
             name="notes"
             value={formData.notes}
             onChange={handleChange}
             rows={2}
-            className="w-full p-3 bg-slate-50/50 border border-slate-100 focus:border-brand-gold focus:bg-white focus:outline-none transition-all rounded text-xs text-brand-navy font-medium resize-none shadow-sm shadow-slate-200/50"
-            placeholder="Enter your notes"
+            className={`w-full p-4 transition-all rounded-lg text-sm font-medium placeholder:text-slate-400 resize-none ${
+              dark
+                ? 'bg-white/10 border-white/15 text-white focus:border-brand-gold focus:bg-white/15'
+                : 'bg-slate-50/50 border-slate-100 text-brand-navy focus:border-brand-gold focus:bg-white'
+            } border focus:outline-none`}
+            placeholder="Tell us about your project or what you'd like to discuss (optional)"
           />
         </div>
 
         <button
           type="submit"
           disabled={status === 'sending'}
-          className="w-full h-11 bg-brand-gold text-brand-navy text-[10px] font-black uppercase tracking-[0.2em] rounded hover:bg-brand-gold/90 transition-all shadow-lg shadow-brand-gold/10 disabled:opacity-50 disabled:cursor-not-allowed mt-1"
+          className={`w-full h-12 text-xs font-black uppercase tracking-[0.2em] rounded-lg transition-all mt-2 ${
+            dark
+              ? 'bg-brand-gold text-brand-navy hover:bg-white shadow-lg shadow-brand-gold/20'
+              : 'bg-brand-gold text-brand-navy hover:bg-brand-gold/90 shadow-lg shadow-brand-gold/10'
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
-          {status === 'sending' ? 'Sending...' : 'Confirm Booking'}
+          {status === 'sending' ? 'Sending...' : dark ? 'Request a Strategy Call' : 'Confirm Booking'}
         </button>
       </form>
     </div>
