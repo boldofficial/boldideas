@@ -1,289 +1,145 @@
-# Pull Request: Landing Page Implementation
+# Pull Request: Bold Ideas Platform Renewal
 
-## 📝 Summary
+## Summary
 
-This PR implements a comprehensive, conversion-optimized landing page for Bold Ideas Innovation with a distinctive "Schematic" design aesthetic. The landing page features an animated hero section, interactive service showcases, social proof elements, and fully responsive typography.
+This PR renews the Bold Ideas codebase into a full Next.js platform for the public website, admin operations, client collaboration, staff workflows, CRM, finance, support tickets, blog content, and service purchasing. It also adds the database layer, authentication, integrations, UI system, seed scripts, and project tooling needed to run and maintain the application.
 
----
+## Major Changes
 
-## ✨ Features Implemented
+### Website and Brand Experience
 
-### 1. Hero Section (`Hero.tsx`)
+- Built the public marketing website under `src/app/(website)` with pages for home, about, services, service details, projects, locations, booking, contact, privacy, and terms.
+- Added a reusable public layout, header, footer, CTA sections, service blocks, pricing, audience strategy, community blueprint, story sections, and location/service data files.
+- Added brand assets and app icons in `public/` and `src/app/icon.png`.
+- Added blog routes, blog rendering, share buttons, sample content, seed data, and cover-image update scripts.
+- Added purchase success and cancel pages for service/product checkout flows.
 
-**Design Elements:**
-- **Animated schematic circuit graphic** - Custom SVG illustration with animated circuit paths
-- **Glass-morphism card** with subtle grid overlay pattern
-- **Gradient backgrounds** with blur effects for depth
-- **Responsive badge** with pulsing indicator
-- **Typography**: 5xl → 7xl → 8xl scaling
-- **CTA button** with hover animations and shadow effects
+### Authentication and Access
 
-**Key Features:**
-- Split layout: content left, graphic right
-- Skewed background elements for visual interest
-- Smooth fade-in animations on page load
-- Mobile-first responsive design (stacks on small screens)
+- Added auth routes and screens for sign in, sign up, forgot password, reset password, and admin setup.
+- Integrated `better-auth` with shared auth client/server helpers.
+- Added user role handling and role-specific layouts for admin, client, and staff areas.
+- Added profile/settings flows and password visibility improvements.
 
----
+### Admin Platform
 
-### 2. Story Section (`StorySection.tsx`)
+- Added admin dashboard and layout with sidebar navigation, active link handling, quick actions, charts, activity feeds, notifications, and settings.
+- Added admin modules for CRM, projects, tasks, tickets, team/users, finance, marketing, calendar, inbox/messages, training, purchases, and blog management.
+- Added reusable admin components for tables, modals, sheets, forms, detail views, pagination, status toggles, delete confirmations, and user role management.
 
-**Layout:**
-- Two-column grid with mission statement and core values
-- Technical schematic grid background overlay
-- Vertical accent line on desktop
-- "Mission_Log: 01" technical badge
+### CRM and Sales Operations
 
-**Core Values Cards:**
-- 4 interactive cards with hover effects:
-  - **Human Centric**: Tech serves people 👤
-  - **Scalability**: Simplicity scales 📈
-  - **Objectivity**: Data > Opinion 📊
-  - **Advantage**: Speed is leverage ⚡
-- Corner accent decorations
-- Emoji icons with grayscale-to-color hover effect
-- Technical ID labels (VAL_01, VAL_02, etc.)
+- Added CRM actions, forms, detail pages, analytics, activity timeline, pipeline management, and follow-up fields.
+- Added contact capture, booking, chat, and agency actions to support lead generation and client onboarding.
+- Added a test CRM page and shared CRM form components.
 
-**Target Audience Block:**
-- Highlighted quote card with gradient blur effect
-- Technical header with decorative dots
-- Border hover animations
+### Client Portal
 
----
+- Added client dashboard, layout, projects, project detail, tickets, new ticket creation, messages, and settings pages.
+- Added client portal server actions and database support.
+- Added shared project cards, project detail client UI, comment system, and ticket utilities.
 
-### 3. BentoGrid (`BentoGrid.tsx`)
+### Staff Portal
 
-**Interactive Service Cards:**
-- **6 services** displayed in asymmetric grid layout:
-  1. **AI Strategy Consulting** - Blueprint icon
-  2. **Workflow Automation** - Gear icon  
-  3. **Programmatic SEO** - Target icon
-  4. **AI-Powered Content** - Sparkles icon
-  5. **Community Building** - Users icon
-  6. **Paid Media Management** - Megaphone icon
+- Added staff dashboard, layout, inbox, projects, settings, and timer component.
+- Added staff actions for internal workflows and operational updates.
 
-**Card Features:**
-- Expandable cards with "Read More" toggle
-- Icon animations (rotate, pulse, bounce)
-- Technical ID labels (SVC_00X)
-- Benefits bullet lists with gold arrow markers
-- Call-to-action buttons linking to `/services`
-- Gradient backgrounds on hover
-- Border accent corners
+### Tickets, Tasks, and Project Management
 
-**Layout:**
-- Featured card (AI Strategy) spans full width
-- Responsive grid: 1 column (mobile) → 2 columns (tablet) → 3 columns (desktop)
-- Smooth expand/collapse animations
+- Added ticketing flows for admin and client users, including list views, detail pages, comments, status updates, and new ticket creation.
+- Added task board, task detail modal, edit sheet, form modal, and task actions.
+- Added project management actions, project list/detail screens, project cards, and project creation modal.
 
----
+### Finance and Payments
 
-### 4. CommunityBlueprint (`CommunityBlueprint.tsx`)
+- Added finance actions and enhanced finance logic for invoices, receipts, expenses, payments, purchases, and reporting.
+- Added invoice and receipt pages with print-oriented views.
+- Added Stripe checkout session and webhook routes, plus shared Stripe helpers.
+- Added finance dashboard components, invoice managers, payment modals, expense manager, and purchase manager.
 
-**Workflow Visualization:**
-- **Horizontal scrolling workflow cards** showing process:
-  - START → DISCOVER → DESIGN → EXECUTE → OPTIMIZE → SUCCESS
-- Animated gradient text on workflow labels
-- Infinite scroll animation with pause on hover
-- Technical grid background
-- "System_Architecture" badge
+### Marketing, Blog, and Content
 
-**Interactive FAQ Section:**
-- 6 frequently asked questions with expand/collapse
-- Gradient accent on active question
-- Smooth transitions
-- Technical numbering (UID_001, etc.)
+- Added blog editor, blog admin pages, post forms, markdown rendering, seed scripts, and blog test/sample data.
+- Added marketing board and preview pages.
+- Added email/resend helper setup and marketing actions.
 
-**Social Proof Metrics:**
-- 3 stat cards with animated borders:
-  - **5+** Brands Automated
-  - **90%** Time Saved via AI
-  - **3x** Average ROI Boost
+### Database and Backend
 
----
+- Added Drizzle ORM configuration, database schema, migrations, migration metadata, and database helpers.
+- Added PostgreSQL and Docker Compose setup.
+- Added a baseline SQL dump and seed/update scripts for blog content and cover images.
+- Added server actions across activity, agency, auth, blog, booking, calendar, chat, client portal, contact, CRM, dashboard, direct messages, finance, marketing, notifications, PM, purchases, staff, team, tickets, time, training, and users.
 
-### 5. CTA Section (`CTA.tsx`)
+### MCP and Automation
 
-**Design:**
-- Full-width call-to-action banner
-- Gradient background (navy → gold)
-- Animated schematic grid overlay
-- Floating blur effects
-- Bold typography with gradient text
-- Dual CTA buttons:
-  - Primary: "Start Your Project"
-  - Secondary: "Schedule a Call"
+- Added MCP server files for agent resources, tools, database access, and server entrypoint.
+- Added context extraction helper scripts and saved context snapshots.
 
-**Features:**
-- Links to `/contact` page
-- Hover animations with shadow effects
-- Mobile-responsive button stacking
+### UI System and Styling
 
----
+- Added Tailwind, PostCSS, ESLint, TypeScript, and Next.js configuration.
+- Added shadcn/Radix-based UI primitives including buttons, cards, dialogs, dropdowns, tables, forms, sheets, tabs, charts, toasts, tooltips, calendars, accordions, and more.
+- Added global styles, theme utilities, toast hooks, shared loading/error components, and common utility helpers.
 
-### 6. Header (`Header.tsx`)
+### Tooling and Repository Hygiene
 
-**Navigation:**
-- Sticky header with blur effect on scroll
-- Logo with link to homepage
-- Navigation links: Home, About, Services, Projects, Contact, Blog
-- Hamburger menu for mobile devices
-- Active link highlighting
-- "Get Started" CTA button
+- Added `package.json`, `package-lock.json`, and full dependency setup for Next.js, React, Drizzle, Stripe, Better Auth, Radix UI, TipTap, Recharts, Resend, Zod, Zustand, and supporting packages.
+- Added Husky hooks and Commitlint conventional commit enforcement.
+- Added `.gitignore`, `.hintrc`, TypeScript config, Tailwind config, and project documentation notes.
 
-**Mobile Menu:**
-- Slide-in from right animation
-- Full-screen overlay
-- Close button
-- Smooth transitions
+## Files and Areas Touched
 
----
+- `src/app/(website)`: public website pages and layouts
+- `src/app/(auth)`: authentication screens and layout
+- `src/app/admin`: admin portal pages
+- `src/app/client`: client portal pages
+- `src/app/staff`: staff portal pages
+- `src/app/api`: auth and Stripe API routes
+- `src/actions`: server actions for application features
+- `src/components`: public, admin, auth, CRM, PM, blog, shared, staff, and UI components
+- `src/lib`: auth, database, Stripe, Resend, upload, ticket, and utility helpers
+- `src/data`: services, pricing, and location data
+- `drizzle`: database migrations and metadata
+- `mcp`: MCP server and tools
+- `scripts`: blog seed and cover image utilities
+- `public`: brand and website image assets
 
-### 7. Footer (`Footer.tsx`)
+## Testing and Validation
 
-**Structure:**
-- 6-column grid (responsive: 2 → 4 → 6)
-- Company information with contact details
-- Quick links: Services, Company pages
-- "Tools We Master" tech stack badges
-- Social media icons
-- Copyright notice
+- Build and runtime validation should be performed with:
 
-**Recent Updates:**
-- ✅ Logo color changed to white (CSS filters: `brightness-0 invert`)
-
----
-
-## 🎨 Design System
-
-### Typography Scale
-- **Headlines**: 5xl → 8xl responsive scaling
-- **Body text**: Base → lg with responsive adjustments
-- **Technical labels**: 9px → 10px monospace font
-- **Line heights**: Optimized for readability (1.05 → 1.6)
-
-### Color Palette
-- **brand-navy**: #002D5B (primary dark)
-- **brand-gold**: #FFB81C (accent/CTA)
-- **brand-light**: #F8FAFC (backgrounds)
-- **Slate gradients**: 300-700 for text hierarchy
-
-### Design Patterns
-- **Schematic grids**: Dotted/lined backgrounds
-- **Glass-morphism**: Frosted glass effects with backdrop blur
-- **Technical badges**: Monospace labels with tracking
-- **Corner accents**: Triangle borders on interactive elements
-- **Gradient overlays**: Subtle color blends for depth
-
----
-
-## 📱 Responsive Breakpoints
-
-- **Mobile**: < 640px (sm)
-- **Tablet**: 768px (md)
-- **Desktop**: 1024px (lg)
-- **Large Desktop**: 1280px (xl)
-
-**Key Adaptations:**
-- Grid columns collapse on mobile
-- Typography scales down smoothly
-- Buttons stack vertically
-- Navigation converts to hamburger menu
-- Workflow cards scroll horizontally on small screens
-
----
-
-## ⚡ Performance Optimizations
-
-- **Lazy loading** for off-screen components
-- **CSS animations** instead of JavaScript for better performance
-- **Optimized SVGs** with minimal paths
-- **Responsive images** with Next.js Image component
-- **Debounced scroll listeners** for header effects
-
----
-
-## 🧪 Browser Compatibility
-
-- ✅ Chrome/Edge 90+
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
-
----
-
-## 📋 Checklist
-
-- [x] Responsive design implemented (mobile-first)
-- [x] All interactive elements functional
-- [x] Animations smooth and performant
-- [x] Typography scales correctly
-- [x] Footer logo color updated to white
-- [x] No console errors
-- [x] Build passes successfully
-- [x] Accessibility considerations (semantic HTML, ARIA labels)
-
----
-
-## 🚀 Deployment Notes
-
-- No database migrations required
-- No environment variables needed
-- Static page - ready for SSG/SSR
-- Compatible with existing routing structure
-
----
-
-## 📸 Component Breakdown
-
-### Page Structure (`app/(website)/page.tsx`)
-```
-<Hero />
-<StorySection />
-<BentoGrid />
-<CommunityBlueprint />
-<CTA />
+```bash
+npm run build
+npm run lint
 ```
 
-All wrapped in fade-in animation container.
+- Database changes should be validated against the configured PostgreSQL database before deployment.
+- Stripe webhook behavior should be tested with the configured Stripe CLI or dashboard webhook tooling.
+- Role-based flows should be checked manually for admin, client, and staff users.
 
----
+## Deployment Notes
 
-## 🎯 Conversion Optimization
+- Requires environment variables for database, authentication, Stripe, email, and any AI/chat integrations used by the app.
+- Requires database migrations to be applied before using the admin, CRM, finance, ticketing, and portal features.
+- Stripe webhook endpoints must be configured for the deployed domain.
+- The branch includes commitlint and Husky hooks, so future commits must follow Conventional Commit format.
 
-1. **Multiple CTAs** throughout the page
-2. **Social proof** via metrics and testimonials
-3. **Clear value propositions** in each section
-4. **Visual hierarchy** guiding eye flow
-5. **Trust indicators** (tech stack, values)
-6. **FAQ section** addressing objections
+## Suggested PR Title
 
----
+```text
+feat: renew Bold Ideas platform
+```
 
-## 📝 Future Enhancements
+## Review Checklist
 
-- [ ] Add customer testimonials section
-- [ ] Integrate real-time chat widget
-- [ ] A/B testing framework for CTAs
-- [ ] Animation performance monitoring
-- [ ] SEO meta tags optimization
-
----
-
-## 👥 Related Files
-
-**Components:**
-- `src/components/Hero.tsx`
-- `src/components/StorySection.tsx`
-- `src/components/BentoGrid.tsx`
-- `src/components/CommunityBlueprint.tsx`
-- `src/components/CTA.tsx`
-- `src/components/Header.tsx`
-- `src/components/Footer.tsx`
-
-**Routes:**
-- `src/app/(website)/page.tsx`
-
-**Styles:**
-- Uses Tailwind CSS utility classes
-- Custom animations in `index.css`
+- [ ] Confirm required environment variables are present in the deployment environment.
+- [ ] Run database migrations successfully.
+- [ ] Verify public website pages render correctly on desktop and mobile.
+- [ ] Verify authentication and role redirects for admin, client, and staff users.
+- [ ] Verify CRM lead creation and follow-up fields.
+- [ ] Verify project, task, and ticket workflows.
+- [ ] Verify finance invoice, receipt, payment, and purchase flows.
+- [ ] Verify Stripe checkout and webhook handling.
+- [ ] Verify blog creation, rendering, and seeded content.
+- [ ] Run `npm run build`.
+- [ ] Run `npm run lint`.
