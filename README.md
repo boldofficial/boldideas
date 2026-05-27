@@ -1,76 +1,108 @@
-# Bold Ideas — Official Website
+# Bold Ideas Official Website and Platform
 
-> **Stop Working Harder. Start Working Smarter with AI.**
+The official Bold Ideas platform for the public website, admin operations, CRM, client portal, staff workflows, finance, support tickets, blog content, and service purchasing.
 
-The official marketing website for **Bold Ideas**, an AI-first consulting and digital growth company that helps small businesses and solopreneurs implement practical AI systems, automation, and productivity workflows.
-
-🌐 **Live site:** [getboldideas.com](https://getboldideas.com)
-
----
-
-## About Bold Ideas
-
-Bold Ideas helps ambitious founders, solopreneurs, and growing teams use AI practically — right where they are. The company offers:
-
-- **AI Productivity Training** — Hands-on training to automate daily tasks and boost output
-- **AI Workflow Automation** — Custom AI-powered workflows that eliminate repetitive work
-- **AI-Powered Marketing** — SEO, automated follow-ups, and sustainable lead generation systems
-- **Websites & Custom Tools** — Conversion-focused websites and tailored digital tools
-
-### Products
-- **Ezer** — Home Care Management System for care agencies and assisted living providers
-- **School Management System** — Smart administration platform for modern schools
-- **Classified Ads & Directory** — Scalable marketplace platform for communities and niche markets
-
----
+Live site: [getboldideas.com](https://getboldideas.com)
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | React / Next.js |
+| App | Next.js / React |
 | Styling | Tailwind CSS |
-| Backend | Django (Python) |
-| Deployment | Vercel / cloud hosting |
+| Database | PostgreSQL / Drizzle ORM |
+| Auth | Better Auth |
+| Payments | Stripe |
+| Email | Resend |
+| Deployment | VPS through Coolify |
 
----
-
-## Features
-
-- Fully responsive design across all devices
-- Animated hero section with service highlights
-- Services and products showcase
-- Client consultation booking integration (CRM)
-- "Who We Serve" section targeting solopreneurs, SMBs, and online businesses
-- Contact and demo request flows
-
----
-
-## Getting Started
+## Local Development
 
 ```bash
-# Clone the repository
-git clone https://github.com/boldofficial/boldideas.git
-cd boldideas
-
-# Install dependencies
 npm install
-
-# Run development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the site locally.
+Open [http://localhost:3000](http://localhost:3000) to view the app locally.
 
----
+For a local PostgreSQL database:
+
+```bash
+docker compose up -d
+```
+
+## Required Environment Variables
+
+Set these in `.env` locally and in the Coolify environment variable panel for production:
+
+```bash
+DATABASE_URL=
+DATABASE_SSL=
+BETTER_AUTH_SECRET=
+NEXT_PUBLIC_APP_URL=
+STRIPE_SECRET_KEY=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_THIN_WEBHOOK_SECRET=
+RESEND_API_KEY=
+FROM_EMAIL=
+ADMIN_EMAIL=
+GEMINI_API_KEY=
+```
+
+For Coolify, `NEXT_PUBLIC_APP_URL` should be the production URL, for example:
+
+```bash
+NEXT_PUBLIC_APP_URL=https://getboldideas.com
+```
+
+Set `DATABASE_SSL=true` only if the production database requires SSL.
+
+## Coolify Deployment
+
+This project is intended to deploy to a VPS through Coolify, not Vercel.
+
+Recommended Coolify setup:
+
+- Resource type: Git repository
+- Build pack: Dockerfile
+- Dockerfile path: `Dockerfile`
+- Port: `3000`
+- Start command: handled by Dockerfile
+- Environment variables: add the required values listed above
+
+The Dockerfile builds the Next.js app with `output: 'standalone'` and runs:
+
+```bash
+node server.js
+```
+
+## Production Checks
+
+Before deploying, run:
+
+```bash
+npm run build
+npm run lint
+```
+
+After deployment:
+
+- Apply Drizzle migrations to the production database.
+- Configure Stripe webhooks to point to the production Coolify domain.
+- Confirm admin, client, and staff login flows.
+- Confirm contact, booking, purchase, ticket, and invoice flows.
+
+## GitHub Deployment Note
+
+If GitHub still shows failed Vercel preview deployments, disconnect the Vercel GitHub integration from this repository. The repo should deploy from Coolify, so Vercel preview failures can be ignored until the Vercel integration is removed.
 
 ## Developer
 
 Built and developed by **@zieecodes**
+
 - GitHub: [github.com/zieeco](https://github.com/zieeco)
 - X: [@zieecodes](https://x.com/zieecodes)
-
----
 
 ## License
 

@@ -85,7 +85,15 @@ This PR renews the Bold Ideas codebase into a full Next.js platform for the publ
 
 - Added `package.json`, `package-lock.json`, and full dependency setup for Next.js, React, Drizzle, Stripe, Better Auth, Radix UI, TipTap, Recharts, Resend, Zod, Zustand, and supporting packages.
 - Added Husky hooks and Commitlint conventional commit enforcement.
-- Added `.gitignore`, `.hintrc`, TypeScript config, Tailwind config, and project documentation notes.
+- Added `.gitignore`, `.hintrc`, TypeScript config, Tailwind config, Dockerfile deployment support, and project documentation notes.
+
+### VPS and Coolify Deployment
+
+- Added a production `Dockerfile` for Coolify/VPS deployments.
+- Enabled Next.js standalone output in `next.config.ts`.
+- Added `.dockerignore` to keep local dependencies, build output, Git metadata, and local env files out of Docker builds.
+- Updated deployment documentation to target Coolify instead of Vercel.
+- Added `.env.example` with the required production environment variable names.
 
 ## Files and Areas Touched
 
@@ -103,25 +111,32 @@ This PR renews the Bold Ideas codebase into a full Next.js platform for the publ
 - `mcp`: MCP server and tools
 - `scripts`: blog seed and cover image utilities
 - `public`: brand and website image assets
+- `Dockerfile`: production container build for Coolify
+- `.dockerignore`: Docker build context exclusions
+- `.env.example`: environment variable reference
 
 ## Testing and Validation
 
-- Build and runtime validation should be performed with:
+- Build validation was performed with:
 
 ```bash
 npm run build
-npm run lint
 ```
 
+- Lint was also checked with `npm run lint`, but the current branch has existing project-wide lint errors unrelated to the Coolify deployment change.
 - Database changes should be validated against the configured PostgreSQL database before deployment.
 - Stripe webhook behavior should be tested with the configured Stripe CLI or dashboard webhook tooling.
 - Role-based flows should be checked manually for admin, client, and staff users.
 
 ## Deployment Notes
 
+- Deployment target is VPS through Coolify, not Vercel.
+- Coolify should use the repository Dockerfile and expose port `3000`.
 - Requires environment variables for database, authentication, Stripe, email, and any AI/chat integrations used by the app.
+- `NEXT_PUBLIC_APP_URL` should be set to the production domain, for example `https://getboldideas.com`.
 - Requires database migrations to be applied before using the admin, CRM, finance, ticketing, and portal features.
-- Stripe webhook endpoints must be configured for the deployed domain.
+- Stripe webhook endpoints must be configured for the Coolify production domain.
+- GitHub/Vercel preview deployment failures can be ignored or stopped by disconnecting the Vercel GitHub integration from this repository.
 - The branch includes commitlint and Husky hooks, so future commits must follow Conventional Commit format.
 
 ## Suggested PR Title
@@ -142,4 +157,4 @@ feat: renew Bold Ideas platform
 - [ ] Verify Stripe checkout and webhook handling.
 - [ ] Verify blog creation, rendering, and seeded content.
 - [ ] Run `npm run build`.
-- [ ] Run `npm run lint`.
+- [ ] Resolve existing lint errors or decide whether lint should block deployment.
