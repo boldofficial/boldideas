@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 
 /**
  * Thin Event Webhook Handler
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     let event: any;
     try {
       // constructEvent works for both snapshot and thin events
-      event = stripe.webhooks.constructEvent(
+      event = getStripe().webhooks.constructEvent(
         body,
         signature,
         process.env.STRIPE_THIN_WEBHOOK_SECRET!

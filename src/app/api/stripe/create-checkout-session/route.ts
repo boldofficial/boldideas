@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 import { createPurchase } from '@/actions/purchases';
 
 export async function POST(req: Request) {
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/purchase/cancel?purchase_id=${purchaseId}`,
     };
 
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    const session = await getStripe().checkout.sessions.create(sessionParams);
 
     return NextResponse.json({
       url: session.url,
