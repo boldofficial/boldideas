@@ -74,7 +74,6 @@ function buildJsonLd(city: LocationCity) {
       url: baseUrl,
       logo: `${baseUrl}/boldideas_logo.png`,
       description: "Websites, intake automation, and connected systems for small businesses.",
-      areaServed: { "@type": "City", name: city.name, containedInPlace: { "@type": "State", name: city.state } },
       email: "admin@getboldideas.com",
       contactPoint: { "@type": "ContactPoint", email: "admin@getboldideas.com", contactType: "sales" },
     },
@@ -90,6 +89,7 @@ function buildJsonLd(city: LocationCity) {
     {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
+      "@id": `${baseUrl}/locations/${city.slug}#breadcrumb`,
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Home", item: baseUrl },
         { "@type": "ListItem", position: 2, name: "Service Areas", item: `${baseUrl}/locations` },

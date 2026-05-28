@@ -225,7 +225,6 @@ const jsonLd = [
       "Local SEO",
     ],
     sameAs: [
-      baseUrl,
       "https://www.linkedin.com/company/boldideasinnovations",
     ],
     address: {

@@ -18,6 +18,48 @@ import {
 } from "lucide-react";
 import { getPosts } from "@/actions/blog";
 
+const baseUrl = "https://getboldideas.com";
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${baseUrl}/#organization`,
+    name: "Bold Ideas",
+    url: baseUrl,
+    logo: `${baseUrl}/boldideas_logo.png`,
+    description: "Websites and smart systems for small businesses in Illinois and Wisconsin.",
+    foundingDate: "2023",
+    email: "admin@getboldideas.com",
+    areaServed: [
+      { "@type": "State", name: "Illinois" },
+      { "@type": "State", name: "Wisconsin" },
+    ],
+    address: {
+      "@type": "PostalAddress",
+      addressRegion: "Illinois",
+      addressCountry: "US",
+    },
+    sameAs: ["https://www.linkedin.com/company/boldideasinnovations"],
+    contactPoint: {
+      "@type": "ContactPoint",
+      email: "admin@getboldideas.com",
+      contactType: "sales",
+      availableLanguage: ["English"],
+    },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${baseUrl}/#website`,
+    url: baseUrl,
+    name: "Bold Ideas",
+    description: "Websites and smart systems for small businesses in Illinois and Wisconsin.",
+    inLanguage: "en-US",
+    publisher: { "@id": `${baseUrl}/#organization` },
+  },
+];
+
 const servicePillars = [
   {
     icon: MonitorSmartphone,
@@ -146,6 +188,15 @@ export default async function Home() {
 
   return (
     <main className="bg-white text-brand-navy">
+      {/* JSON-LD Structured Data */}
+      {jsonLd.map((item, index) => (
+        <script
+          key={index}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(item) }}
+        />
+      ))}
+
       <section className="relative overflow-hidden bg-[#061b35] pt-28 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(249,186,81,0.20),transparent_28%),radial-gradient(circle_at_82%_22%,rgba(75,143,191,0.20),transparent_32%),linear-gradient(135deg,#061b35_0%,#082849_56%,#0b355f_100%)]" />
 

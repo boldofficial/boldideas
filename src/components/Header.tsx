@@ -25,8 +25,12 @@ const Header: React.FC = () => {
 
 	useEffect(() => {
 		checkAuth();
-		const handleScroll = () => setScrolled(window.scrollY > 20);
-		window.addEventListener('scroll', handleScroll);
+		const handleScroll = () => {
+			const scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+			setScrolled(scrollTop > 20);
+		};
+		handleScroll();
+		window.addEventListener('scroll', handleScroll, {passive: true});
 		
 		// Check for staff mode activation
 		const isStaffHidden = localStorage.getItem('bold_staff_hidden') === 'true';
@@ -116,9 +120,21 @@ const Header: React.FC = () => {
 
 	// Computation of dynamic theme-based classes
 	const getHeaderBgClass = () => {
-		if (scrolled) return 'py-3 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm';
-		if (pathname === '/') return 'py-6 bg-brand-navy border-transparent shadow-none';
+		if (scrolled) return 'py-3 backdrop-blur-md border-b border-gray-100 shadow-sm';
+		if (pathname === '/') return 'py-6 border-transparent shadow-none';
 		return 'py-6 bg-transparent border-transparent shadow-none';
+	};
+
+	const getHeaderStyle = (): React.CSSProperties => {
+		if (scrolled) {
+			return {backgroundColor: 'rgba(255, 255, 255, 0.95)'};
+		}
+
+		if (pathname === '/') {
+			return {backgroundColor: '#072a52'};
+		}
+
+		return {backgroundColor: 'transparent'};
 	};
 
 	const getNavLinkClass = (linkHref: string) => {
@@ -142,7 +158,8 @@ const Header: React.FC = () => {
 	return (
 		<header className="fixed top-0 left-0 z-50 w-full transition-all duration-300">
 			<nav
-				className={`px-4 md:px-8 flex items-center justify-between transition-all duration-500 fixed w-full top-0 left-0 z-50 ${getHeaderBgClass()}`}>
+				className={`px-4 md:px-8 flex items-center justify-between transition-all duration-500 fixed w-full top-0 left-0 z-50 ${getHeaderBgClass()}`}
+				style={getHeaderStyle()}>
 				<Link
 					href="/"
 					onClick={handleLogoClick}
