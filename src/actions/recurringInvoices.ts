@@ -36,7 +36,7 @@ function advanceDate(date: Date, frequency: RecurringFrequency): Date {
  * Calculate the next due date based on the invoice's due date and frequency.
  * e.g., if original due date was 15th and freq is monthly, next due date is 15th of next month.
  */
-export function calculateNextDueDate(originalDueDate: Date | null, frequency: RecurringFrequency): Date | null {
+export async function calculateNextDueDate(originalDueDate: Date | null, frequency: RecurringFrequency): Promise<Date | null> {
     if (!originalDueDate) return null;
     const next = advanceDate(originalDueDate, frequency);
     return next;
@@ -90,7 +90,7 @@ export async function generateRecurringInvoices() {
             }
 
             // Calculate the new due date based on the source's original due date + frequency
-            const newDueDate = calculateNextDueDate(sourceInvoice.dueDate, frequency);
+            const newDueDate = await calculateNextDueDate(sourceInvoice.dueDate, frequency);
 
             // Clone the invoice
             const [newInvoice] = await db.insert(invoices).values({

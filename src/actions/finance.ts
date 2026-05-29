@@ -75,7 +75,7 @@ export async function createInvoice(formData: FormData) {
             discountType,
             isRecurring,
             recurringFrequency,
-            recurringNextDate: isRecurring ? calculateNextDueDate(dueDate ? new Date(dueDate) : new Date(), (recurringFrequency || 'monthly') as any) : null,
+            recurringNextDate: isRecurring ? await calculateNextDueDate(dueDate ? new Date(dueDate) : new Date(), (recurringFrequency || 'monthly') as any) : null,
             recurringEndDate: recurringEndDateRaw ? new Date(recurringEndDateRaw) : null,
         }).returning({ id: invoices.id });
         console.log('[createInvoice] Successfully created invoice:', result.id);
