@@ -257,3 +257,144 @@ Payment:  ${paymentIntentId}
     return { success: false, error: 'Failed to complete purchase' };
   }
 }
+
+/**
+ * Called after Stripe payment succeeds for an admin-created invoice.
+ * Marks invoice as paid, creates receipt, sends notifications.
+ */
+export async function completeInvoicePayment(invoiceId: string, paymentIntentId: string) {
+  try {
+    // Get the invoice
+    const [invoice] = await db.select().from(invoices).where(eq(invoices.id, invoiceId)).limit(1);
+    if (!invoice) return { success: false, error: 'Invoice not found' };
+    if (invoice.status === 'paid') return { success: true, message: 'Already paid' };
+
+    const amount = parseFloat(invoice.totalAmount || '0');
+
+    // 1. Mark invoice as paid
+    await db.update(invoices).set({
+      status: 'paid',
+      amountPaid: invoice.totalAmount,
+      paidAt: new Date(),
+      stripePaymentIntentId: paymentIntentId,
+      updatedAt: new Date(),
+    }).where(eq(invoices.id, invoiceId));
+
+    // 2. Create receipt
+    const receiptCount = await db.select({ id: receipts.id }).from(receipts);
+    const receiptNumber = `RCP-${new Date().getFullYear()}-${(receiptCount.length + 1).toString().padStart(4, '0')}`;
+
+    const [receipt] = await db.insert(receipts).values({
+      invoiceId: invoice.id,
+      receiptNumber,
+      amountPaid: invoice.totalAmount || '0',
+      paymentMethod: 'card',
+      paymentReference: paymentIntentId,
+    }).returning({ id: receipts.id });
+
+    // 3. Notify admin staff
+    const admins = await db.select({ id: users.id, email: users.email })
+      .from(users)
+      .where(eq(users.role, 'admin'));
+
+    for (const admin of admins) {
+      await db.insert(notifications).values({
+        userId: admin.id,
+        type: 'payment_recorded',
+        title: `Payment Received — Invoice ${invoice.invoiceNumber || invoiceId.slice(0, 8)}`,
+        message: `Stripe payment of ${invoice.currency || 'USD'} ${amount.toLocaleString()} received via card.`,
+        link: `/admin/finance/invoice/${invoiceId}`,
+      });
+    }
+
+    // 4. Notify client if assigned
+    if (invoice.clientId) {
+      await db.insert(notifications).values({
+        userId: invoice.clientId,
+        type: 'payment_recorded',
+        title: 'Payment Received',
+        message: `Your payment of ${invoice.currency || 'USD'} ${amount.toLocaleString()} for invoice ${invoice.invoiceNumber || ''} has been received.`,
+        link: `/client`,
+      });
+    }
+
+    // 5. Send email receipt to client if we have contact info
+    if (invoice.clientId) {
+      const [client] = await db.select({ email: users.email, name: users.name })
+        .from(users)
+        .where(eq(users.id, invoice.clientId))
+        .limit(1);
+
+      if (client?.email) {
+        try {
+          const { resend } = await import('@/lib/resend');
+          await resend.emails.send({
+            from: process.env.FROM_EMAIL!,
+            to: client.email,
+            subject: `Receipt: Payment for Invoice ${invoice.invoiceNumber || ''} — Bold Ideas`,
+            html: `
+              <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: #0A1128; padding: 32px; text-align: center;">
+                  <h1 style="color: #D4AF37; margin: 0; font-size: 24px;">BOLD IDEAS <span style="color: #ffffff;">INNOVATIONS</span></h1>
+                </div>
+                <div style="padding: 32px; background: #ffffff;">
+                  <h2 style="color: #0A1128; margin-top: 0;">Payment Received!</h2>
+                  <p style="color: #64748b;">Hi ${client.name || 'Valued Client'},</p>
+                  <p style="color: #64748b;">Your payment has been processed successfully.</p>
+                  <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                      <tr>
+                        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Invoice</td>
+                        <td style="padding: 8px 0; text-align: right; font-weight: bold;">${invoice.invoiceNumber || ''}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Amount</td>
+                        <td style="padding: 8px 0; text-align: right; font-weight: bold;">${invoice.currency || 'USD'} ${amount.toLocaleString()}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Receipt #</td>
+                        <td style="padding: 8px 0; text-align: right; font-weight: bold;">${receiptNumber}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Date</td>
+                        <td style="padding: 8px 0; text-align: right; font-weight: bold;">${new Date().toLocaleDateString()}</td>
+                      </tr>
+                    </table>
+                  </div>
+                  <p style="color: #64748b;">Thank you for your business!</p>
+                  <p style="color: #64748b;">If you have any questions, contact us at <a href="mailto:support@getboldideas.com" style="color: #D4AF37;">support@getboldideas.com</a>.</p>
+                </div>
+                <div style="background: #f8fafc; padding: 24px; text-align: center; border-top: 1px solid #e2e8f0;">
+                  <p style="color: #94a3b8; font-size: 12px; margin: 0;">Bold Ideas — Illinois & Wisconsin</p>
+                </div>
+              </div>
+            `,
+          });
+        } catch (emailError) {
+          console.error('[completeInvoicePayment] Failed to send email:', emailError);
+        }
+      }
+    }
+
+    revalidatePath('/admin/finance');
+    revalidatePath(`/admin/finance/invoice/${invoiceId}`);
+
+    // Log activity
+    const { recordActivity } = await import('./activity');
+    await recordActivity({
+      userId: null,
+      action: 'invoice_paid_via_stripe',
+      details: {
+        invoiceId: invoiceId.slice(0, 8),
+        invoiceNumber: invoice.invoiceNumber,
+        amount: invoice.totalAmount,
+        paymentIntentId,
+      },
+    });
+
+    return { success: true, receiptId: receipt.id };
+  } catch (error) {
+    console.error('[completeInvoicePayment] Error:', error);
+    return { success: false, error: 'Failed to complete invoice payment' };
+  }
+}

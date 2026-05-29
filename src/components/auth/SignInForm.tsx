@@ -7,7 +7,11 @@ import { authClient } from '@/lib/auth-client';
 import { useAuthStore } from '@/store/authStore';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 
-const SignInForm: React.FC = () => {
+type SignInFormProps = {
+    setupSuccess?: boolean;
+};
+
+const SignInForm: React.FC<SignInFormProps> = ({ setupSuccess = false }) => {
     const router = useRouter();
     const { checkAuth } = useAuthStore();
     const [loading, setLoading] = useState(false);
@@ -79,6 +83,13 @@ const SignInForm: React.FC = () => {
                 </div>
 
                 {/* Error Message */}
+                {setupSuccess && (
+                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg mb-6 text-sm">
+                        <p className="font-medium">Admin account ready</p>
+                        <p className="text-xs mt-1">Sign in with the admin email and password you just created.</p>
+                    </div>
+                )}
+
                 {error && (
                     <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
                         <p className="font-medium">Authentication Failed</p>

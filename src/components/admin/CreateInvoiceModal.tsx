@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { createInvoice, addInvoiceItem } from '@/actions/finance';
 import { 
     Plus, X, Trash2, DollarSign, Calendar, User, CreditCard, 
-    FileText, Check, AlertCircle 
+    FileText, Check, AlertCircle, RefreshCw 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -32,6 +32,9 @@ export default function CreateInvoiceModal({ clients }: { clients: any[] }) {
     const [discountType, setDiscountType] = useState<'fixed' | 'percentage'>('fixed');
     const [currency, setCurrency] = useState<string>('USD');
     const [clientId, setClientId] = useState<string>('unassigned');
+    const [isRecurring, setIsRecurring] = useState(false);
+    const [recurringFrequency, setRecurringFrequency] = useState<string>('monthly');
+    const [recurringEndDate, setRecurringEndDate] = useState<string>('');
     const [items, setItems] = useState<InvoiceItem[]>([
         { title: '', description: '', quantity: 1, unitPrice: 0, amount: 0 }
     ]);
@@ -76,6 +79,13 @@ export default function CreateInvoiceModal({ clients }: { clients: any[] }) {
         formData.set('discountType', discountType);
         formData.set('clientId', clientId === 'unassigned' ? '' : clientId);
         formData.set('currency', currency);
+        formData.set('isRecurring', isRecurring ? 'true' : 'false');
+        if (isRecurring) {
+            formData.set('recurringFrequency', recurringFrequency);
+            if (recurringEndDate) {
+                formData.set('recurringEndDate', recurringEndDate);
+            }
+        }
 
         const result = await createInvoice(formData);
 
@@ -94,6 +104,9 @@ export default function CreateInvoiceModal({ clients }: { clients: any[] }) {
             setIsOpen(false);
             setItems([{ title: '', description: '', quantity: 1, unitPrice: 0, amount: 0 }]);
             setDiscountAmount(0);
+            setIsRecurring(false);
+            setRecurringFrequency('monthly');
+            setRecurringEndDate('');
             window.location.reload();
         } else {
             toast.error('Failed to create invoice');
@@ -187,6 +200,55 @@ export default function CreateInvoiceModal({ clients }: { clients: any[] }) {
                                             placeholder="Terms, bank info, or notes..."
                                             className="bg-slate-50 border-slate-200 text-xs font-medium resize-none min-h-[92px]"
                                         />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-1">Recurring Schedule</h4>
+                                    <div className="space-y-3">
+                                        <label className="flex items-center gap-3 cursor-pointer group">
+                                            <div
+                                                className={`w-10 h-6 rounded-full transition-colors relative ${isRecurring ? 'bg-brand-gold' : 'bg-slate-200'}`}
+                                                onClick={() => setIsRecurring(!isRecurring)}
+                                            >
+                                                <div className={`w-4 h-4 rounded-full bg-white absolute top-1 shadow-sm transition-all ${isRecurring ? 'left-5' : 'left-1'}`} />
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <RefreshCw className={`w-3.5 h-3.5 transition-colors ${isRecurring ? 'text-brand-gold' : 'text-slate-300'}`} />
+                                                <span className="text-xs font-bold text-slate-600 group-hover:text-brand-navy transition-colors">Auto-generate on schedule</span>
+                                            </div>
+                                        </label>
+
+                                        {isRecurring && (
+                                            <div className="grid grid-cols-2 gap-3 pl-1 animate-fade-in">
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Frequency</Label>
+                                                    <Select value={recurringFrequency} onValueChange={setRecurringFrequency}>
+                                                        <SelectTrigger className="bg-slate-50 border-slate-200 h-9 text-xs font-bold">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="monthly">Monthly</SelectItem>
+                                                            <SelectItem value="quarterly">Quarterly</SelectItem>
+                                                            <SelectItem value="yearly">Yearly</SelectItem>
+                                                            <SelectItem value="bi-weekly">Bi-Weekly</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[9px] font-black text-slate-400 uppercase tracking-wider">End Date (optional)</Label>
+                                                    <div className="relative">
+                                                        <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 z-10" />
+                                                        <Input
+                                                            type="date"
+                                                            value={recurringEndDate}
+                                                            onChange={(e) => setRecurringEndDate(e.target.value)}
+                                                            className="pl-9 bg-slate-50 border-slate-200 text-xs font-bold h-9"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

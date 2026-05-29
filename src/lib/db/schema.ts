@@ -239,6 +239,16 @@ export const invoices = pgTable('invoices', {
   discountType: text('discount_type').default('fixed'), // 'fixed' | 'percentage'
   currency: text('currency').default('USD'),
   notes: text('notes'),
+  // Stripe payment integration
+  stripePaymentLink: text('stripe_payment_link'),
+  stripeSessionId: text('stripe_session_id'),
+  stripePaymentIntentId: text('stripe_payment_intent_id'),
+  // Recurring invoice support
+  isRecurring: boolean('is_recurring').default(false),
+  recurringFrequency: text('recurring_frequency'), // 'monthly' | 'quarterly' | 'yearly' | 'bi-weekly'
+  recurringNextDate: timestamp('recurring_next_date'),
+  recurringEndDate: timestamp('recurring_end_date'),
+  recurringSourceInvoiceId: uuid('recurring_source_invoice_id'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });

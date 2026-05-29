@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db';
 import { tickets, ticketAttachments, ticketComments, cannedResponses, ticketActivity, users, internalProjects } from '@/lib/db/schema';
-import { eq, desc, and, or, isNull } from 'drizzle-orm';
+import { eq, desc, and, or, isNull, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { createNotification } from './notifications';
 import { savePublicUpload } from '@/lib/uploads';
@@ -674,6 +674,57 @@ export async function deleteCannedResponse(id: string) {
     console.error('deleteCannedResponse error:', error);
     return { success: false, error: 'Failed to delete canned response' };
   }
+}
+
+// ===== Count & Quick-List Queries =====
+
+/**
+ * Count all open/unresolved tickets (not resolved or closed)
+ */
+export async function getOpenTicketCount() {
+    try {
+        const rows = await db.select({ id: tickets.id })
+            .from(tickets)
+            .where(
+                and(
+                    sql`${tickets.status} IS NOT NULL`,
+                    sql`${tickets.status} NOT IN ('resolved', 'closed')`
+                )
+            );
+        return { success: true, count: rows.length };
+    } catch (error) {
+        console.error('getOpenTicketCount error:', error);
+        return { success: false, count: 0 };
+    }
+}
+
+/**
+ * Get recent open tickets with minimal details (for sidebar dropdown)
+ */
+export async function getRecentOpenTickets(limit = 10) {
+    try {
+        const rows = await db.select({
+            id: tickets.id,
+            ticketNumber: tickets.ticketNumber,
+            subject: tickets.subject,
+            status: tickets.status,
+            priority: tickets.priority,
+            updatedAt: tickets.updatedAt,
+        })
+            .from(tickets)
+            .where(
+                and(
+                    sql`${tickets.status} IS NOT NULL`,
+                    sql`${tickets.status} NOT IN ('resolved', 'closed')`
+                )
+            )
+            .orderBy(desc(tickets.updatedAt))
+            .limit(limit);
+        return { success: true, data: rows };
+    } catch (error) {
+        console.error('getRecentOpenTickets error:', error);
+        return { success: false, data: [] };
+    }
 }
 
 // ===== Customer Rating Functions =====

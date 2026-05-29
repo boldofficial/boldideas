@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DollarSign, FileText, Plus, Search, Filter, MoreVertical, CheckCircle2, Clock, AlertCircle, X, Download, Eye } from 'lucide-react';
+import { DollarSign, FileText, Plus, Search, Filter, MoreVertical, CheckCircle2, Clock, AlertCircle, X, Download, Eye, RefreshCw } from 'lucide-react';
 import { updateInvoiceStatus, deleteInvoice, getInvoiceDetails } from '@/actions/finance';
 import { recordActivity } from '@/actions/activity';
 import EditInvoiceModal from './EditInvoiceModal';
@@ -23,6 +23,9 @@ interface Invoice {
     amountPaid?: string | null;
     discountAmount?: string | null;
     discountType?: string | null;
+    isRecurring?: boolean | null;
+    recurringFrequency?: string | null;
+    recurringNextDate?: Date | null;
 }
 
 export default function InvoiceManager({ initialInvoices, clients }: { initialInvoices: Invoice[], clients: any[] }) {
@@ -224,6 +227,7 @@ export default function InvoiceManager({ initialInvoices, clients }: { initialIn
                                 <th className="p-4">Amount</th>
                                 <th className="p-4">Status</th>
                                 <th className="p-4">Due Date</th>
+                                <th className="p-4">Recurring</th>
                                 <th className="p-4">Updated</th>
                                 <th className="p-4 text-right">Actions</th>
                             </tr>
@@ -257,6 +261,19 @@ export default function InvoiceManager({ initialInvoices, clients }: { initialIn
                                                 <span className="text-xs text-emerald-600 font-medium">Paid: {new Date(inv.paidAt).toLocaleDateString()}</span>
                                             )}
                                         </div>
+                                    </td>
+                                    <td className="p-4">
+                                        {inv.isRecurring ? (
+                                            <div className="flex items-center gap-1.5">
+                                                <RefreshCw className="w-3 h-3 text-brand-gold" />
+                                                <span className="text-[10px] font-bold text-brand-gold uppercase tracking-wider capitalize">{(inv.recurringFrequency || 'monthly')}</span>
+                                                {inv.recurringNextDate && (
+                                                    <span className="text-[9px] text-slate-400 ml-1">Next: {new Date(inv.recurringNextDate).toLocaleDateString()}</span>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <span className="text-[10px] text-slate-300 font-medium">—</span>
+                                        )}
                                     </td>
                                     <td className="p-4 text-xs text-slate-400 font-mono">
                                         {inv.updatedAt ? new Date(inv.updatedAt).toLocaleDateString() : '-'}
@@ -303,7 +320,7 @@ export default function InvoiceManager({ initialInvoices, clients }: { initialIn
                             ))}
                             {filteredInvoices.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="p-12 text-center">
+                                    <td colSpan={7} className="p-12 text-center">
                                         <div className="flex flex-col items-center opacity-20">
                                             <FileText className="w-12 h-12 mb-2" />
                                             <p className="text-xs font-medium text-slate-400">No invoices found</p>

@@ -2,17 +2,18 @@
 
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { users } from '@/lib/db/schema';
-import { eq, count } from 'drizzle-orm';
+import { accounts, users } from '@/lib/db/schema';
+import { and, eq, count } from 'drizzle-orm';
+import { hashPassword } from 'better-auth/crypto';
 
 function getErrorMessage(error: unknown, fallback: string) {
     return error instanceof Error ? error.message : fallback;
 }
 
 export async function setupAdminAction(formData: FormData) {
-    const email = formData.get('email') as string;
+    const email = String(formData.get('email') || '').trim().toLowerCase();
     const password = formData.get('password') as string;
-    const name = formData.get('name') as string;
+    const name = String(formData.get('name') || '').trim();
 
     if (!email || !password || !name) {
         return { success: false, error: "Missing required fields." };
@@ -24,6 +25,42 @@ export async function setupAdminAction(formData: FormData) {
 
         if (adminCount > 0) {
             return { error: "System initialized. Redirecting to login...", redirect: '/signin' };
+        }
+
+        const existingUser = await db.query.users.findFirst({
+            where: (u, { eq }) => eq(u.email, email),
+        });
+
+        if (existingUser) {
+            const passwordHash = await hashPassword(password);
+            const existingCredential = await db.query.accounts.findFirst({
+                where: (a, { and, eq }) => and(
+                    eq(a.userId, existingUser.id),
+                    eq(a.providerId, 'credential')
+                ),
+            });
+
+            await db.update(users)
+                .set({ role: 'admin', name, isActive: true })
+                .where(eq(users.id, existingUser.id));
+
+            if (existingCredential) {
+                await db.update(accounts)
+                    .set({ password: passwordHash, updatedAt: new Date() })
+                    .where(and(
+                        eq(accounts.userId, existingUser.id),
+                        eq(accounts.providerId, 'credential')
+                    ));
+            } else {
+                await db.insert(accounts).values({
+                    userId: existingUser.id,
+                    providerId: 'credential',
+                    accountId: existingUser.id,
+                    password: passwordHash,
+                });
+            }
+
+            return { success: true };
         }
 
         const authData = await auth.api.signUpEmail({
@@ -40,10 +77,6 @@ export async function setupAdminAction(formData: FormData) {
     } catch (error: unknown) {
         console.error("Setup Admin Action Error:", error);
         const message = getErrorMessage(error, 'Failed to create admin.');
-
-        if (message.toLowerCase().includes('already')) {
-            return { error: "User exists. Redirecting to login...", redirect: '/signin' };
-        }
 
         return { success: false, error: message };
     }

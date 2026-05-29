@@ -1,14 +1,16 @@
 import { getInvoiceDetails, getClients } from '@/actions/finance';
 import { getReceiptByInvoice, getPaymentsByInvoice, getCompanySettings } from '@/actions/financeEnhancements';
-import { ChevronLeft, Download, Printer, CheckCircle2, AlertCircle, Clock, FileText, Globe, Mail, Phone, Landmark } from 'lucide-react';
+import { invoices } from '@/lib/db/schema';
+import { ChevronLeft, Download, Printer, CheckCircle2, AlertCircle, Clock, CreditCard, FileText, Globe, Mail, Phone, Landmark, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import InvoiceActionsClient from '@/components/admin/InvoiceActionsClient';
+import RecurringActionsClient from '@/components/admin/RecurringActionsClient';
 import Image from 'next/image';
 
 export default async function InvoiceDetailPage({ params }: { params: { id: string } }) {
     const { id } = await params;
-    const [{ data: invoice, success }, { data: receipt }, { data: payments }, { data: settings }, { data: clients }] = await Promise.all([
+    const [{ data: _invoice, success }, { data: receipt }, { data: payments }, { data: settings }, { data: clients }] = await Promise.all([
         getInvoiceDetails(id),
         getReceiptByInvoice(id),
         getPaymentsByInvoice(id),
@@ -16,9 +18,11 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
         getClients()
     ]);
 
-    if (!success || !invoice) {
+    if (!success || !_invoice) {
         notFound();
     }
+
+    const invoice = _invoice as typeof invoices.$inferSelect & { items: any[]; client: any | null };
 
     const getStatusStyles = (status: string) => {
         switch (status) {
@@ -118,11 +122,87 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
                         </div>
 
                         <div>
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 border-b pb-1">Payment Instructions</h4>
-                            <div className="space-y-2">
-                                <div className="p-3 bg-slate-50 rounded border border-slate-100 text-[10px] text-slate-500 font-medium leading-relaxed">
-                                    Please include invoice number {invoice.invoiceNumber || invoice.id.slice(0, 8)} in your payment reference.
-                                </div>
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 border-b pb-1">Payment</h4>
+                            <div className="space-y-3">
+                                {invoice.stripePaymentLink ? (
+                                    <>
+                                        <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg space-y-2">
+                                            <div className="flex items-center gap-2 text-blue-700">
+                                                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">Stripe Payment Available</span>
+                                            </div>
+                                            <a
+                                                href={invoice.stripePaymentLink}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="block text-[10px] text-blue-600 underline hover:text-blue-800 truncate"
+                                            >
+                                                {invoice.stripePaymentLink}
+                                            </a>
+                                            {invoice.stripePaymentIntentId && (
+                                                <p className="text-[9px] font-mono text-slate-400">
+                                                    Payment Intent: {invoice.stripePaymentIntentId.slice(0, 16)}...
+                                                </p>
+                                            )}
+                                        </div>
+                                        {invoice.status !== 'paid' && (
+                                            <Link
+                                                href={`/pay/${invoice.id}`}
+                                                target="_blank"
+                                                className="flex items-center justify-center gap-2 p-2 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-700 transition-all"
+                                            >
+                                                <CreditCard className="w-3 h-3" />
+                                                Open Payment Page
+                                            </Link>
+                                        )}
+                                    </>
+                                ) : invoice.status !== 'paid' ? (
+                                    <div className="p-3 bg-slate-50 rounded border border-slate-100 text-[10px] text-slate-500 font-medium leading-relaxed">
+                                        No Stripe payment link generated yet. Use the "Pay via Stripe" button above to generate one.
+                                    </div>
+                                ) : (
+                                    <div className="p-3 bg-emerald-50 rounded border border-emerald-100 text-[10px] text-emerald-600 font-medium leading-relaxed">
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle2 className="w-3 h-3" />
+                                            <span>Payment received{invoice.paidAt ? ` on ${new Date(invoice.paidAt).toLocaleDateString()}` : ''}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Recurring Status */}
+                        <div>
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 border-b pb-1">Recurring</h4>
+                            <div className="space-y-3">
+                                {invoice.isRecurring ? (
+                                    <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg space-y-2">
+                                        <div className="flex items-center gap-2 text-amber-700">
+                                            <RefreshCw className="w-3.5 h-3.5" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest capitalize">{invoice.recurringFrequency || 'Monthly'} Recurring</span>
+                                        </div>
+                                        {invoice.recurringNextDate && (
+                                            <div className="flex justify-between text-[9px]">
+                                                <span className="text-slate-500">Next Generation:</span>
+                                                <span className="font-bold text-amber-800">{new Date(invoice.recurringNextDate).toLocaleDateString()}</span>
+                                            </div>
+                                        )}
+                                        {invoice.recurringEndDate && (
+                                            <div className="flex justify-between text-[9px]">
+                                                <span className="text-slate-500">End Date:</span>
+                                                <span className="font-bold text-slate-600">{new Date(invoice.recurringEndDate).toLocaleDateString()}</span>
+                                            </div>
+                                        )}
+                                        <RecurringActionsClient invoiceId={invoice.id} isRecurring={true} />
+                                    </div>
+                                ) : (
+                                    <div className="p-3 bg-slate-50 rounded border border-slate-100 space-y-2">
+                                        <p className="text-[10px] text-slate-500 font-medium">
+                                            This invoice is a one-time bill.
+                                        </p>
+                                        <RecurringActionsClient invoiceId={invoice.id} isRecurring={false} />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

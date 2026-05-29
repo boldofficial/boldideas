@@ -8,7 +8,14 @@ export const metadata = {
     robots: "noindex, nofollow"
 };
 
-export default function SignInPage() {
+export default async function SignInPage({
+    searchParams,
+}: {
+    searchParams?: Promise<{ setup?: string }>;
+}) {
+    const params = await searchParams;
+    const setupSuccess = params?.setup === 'success';
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-brand-navy via-slate-900 to-brand-navy flex items-center justify-center p-4 relative overflow-hidden">
             {/* Decorative Background Elements */}
@@ -26,7 +33,7 @@ export default function SignInPage() {
 
             {/* Main Content - Centered Container */}
             <div className="relative z-10 w-full max-w-md flex flex-col items-center">
-                <SignInForm />
+                <SignInForm setupSuccess={setupSuccess} />
 
                 <div className="mt-6 text-center text-sm text-slate-300">
                     New to Bold Ideas?{' '}

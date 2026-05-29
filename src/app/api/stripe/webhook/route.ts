@@ -34,11 +34,42 @@ export async function POST(req: Request) {
           break;
         }
 
-        const purchaseId = session.metadata?.purchaseId;
+        const metadata = session.metadata || {};
         const paymentIntentId = session.payment_intent;
 
+        // ──────────────────────────────────────
+        // Invoice Payment Flow (admin-created invoices paid via Stripe)
+        // ──────────────────────────────────────
+        if (metadata.type === 'invoice_payment') {
+          const invoiceId = metadata.invoiceId;
+          if (!invoiceId) {
+            console.error('[stripe-webhook] No invoiceId in session metadata for invoice payment');
+            break;
+          }
+
+          console.log(`[stripe-webhook] Invoice payment received for invoice ${invoiceId}`);
+
+          try {
+            const { completeInvoicePayment } = await import('@/actions/purchases');
+            const result = await completeInvoicePayment(invoiceId, paymentIntentId);
+            if (!result.success) {
+              console.error('[stripe-webhook] Failed to complete invoice payment:', result.error);
+            } else {
+              console.log('[stripe-webhook] Invoice payment completed successfully');
+            }
+          } catch (err: any) {
+            console.error('[stripe-webhook] Error processing invoice payment:', err.message);
+          }
+          break;
+        }
+
+        // ──────────────────────────────────────
+        // Purchase Flow (public product checkout)
+        // ──────────────────────────────────────
+        const purchaseId = metadata.purchaseId;
+
         if (!purchaseId) {
-          console.error('[stripe-webhook] No purchaseId in session metadata');
+          console.error('[stripe-webhook] No purchaseId or invoiceId in session metadata');
           break;
         }
 

@@ -42,7 +42,7 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
                     <ChevronLeft className="w-4 h-4" />
                     Back to Invoice
                 </Link>
-                <ReceiptActions />
+                <ReceiptActions receiptNumber={data.receiptNumber} />
             </div>
 
             {/* Receipt Card */}

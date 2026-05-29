@@ -9,7 +9,8 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { FolderKanban, Clock, CheckCircle2, FileText, ArrowRight } from 'lucide-react';
+
+import { FolderKanban, Clock, CheckCircle2, FileText, ArrowRight, CreditCard, ExternalLink } from 'lucide-react';
 
 export default function ClientDashboard() {
   const { user } = useAuthStore();
@@ -189,7 +190,15 @@ export default function ClientDashboard() {
 
       {/* Recent Invoices */}
       <div>
-        <h2 className="text-xl font-bold text-brand-navy mb-4">Recent Invoices</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-brand-navy">Recent Invoices</h2>
+          <Link 
+            href="/client/invoices" 
+            className="text-sm text-brand-navy hover:text-brand-gold flex items-center gap-1 transition-colors"
+          >
+            View All <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
         <Card>
           <CardContent className="p-0">
             <table className="w-full text-left text-sm">
@@ -199,30 +208,56 @@ export default function ClientDashboard() {
                   <th className="p-4 font-semibold text-slate-600">Amount</th>
                   <th className="p-4 font-semibold text-slate-600">Status</th>
                   <th className="p-4 font-semibold text-slate-600">Due Date</th>
+                  <th className="p-4 font-semibold text-slate-600">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {invoices.slice(0, 5).map((inv) => (
-                  <tr key={inv.id} className="border-b last:border-0 hover:bg-slate-50">
-                    <td className="p-4 font-mono text-xs text-slate-500">#{inv.id.slice(0, 8)}</td>
-                    <td className="p-4 font-bold text-brand-navy">${inv.totalAmount}</td>
-                    <td className="p-4">
-                      <Badge className={
-                        inv.status === 'paid' ? 'bg-emerald-100 text-emerald-700' :
-                        inv.status === 'overdue' ? 'bg-red-100 text-red-700' :
-                        'bg-amber-100 text-amber-700'
-                      }>
-                        {inv.status}
-                      </Badge>
-                    </td>
-                    <td className="p-4 text-slate-500">
-                      {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '-'}
-                    </td>
-                  </tr>
-                ))}
+                {invoices.slice(0, 5).map((inv) => {
+                  const isPaid = inv.status === 'paid';
+                  const canPay = !isPaid && inv.status !== 'cancelled';
+                  const totalAmount = parseFloat(inv.totalAmount || '0');
+                  const amountPaid = parseFloat(inv.amountPaid || '0');
+                  const outstanding = totalAmount - amountPaid;
+
+                  return (
+                    <tr key={inv.id} className="border-b last:border-0 hover:bg-slate-50">
+                      <td className="p-4 font-mono text-xs text-slate-500">#{inv.invoiceNumber || inv.id.slice(0, 8)}</td>
+                      <td className="p-4 font-bold text-brand-navy">${totalAmount.toLocaleString()}</td>
+                      <td className="p-4">
+                        <Badge className={
+                          isPaid ? 'bg-emerald-100 text-emerald-700' :
+                          inv.status === 'overdue' ? 'bg-red-100 text-red-700' :
+                          'bg-amber-100 text-amber-700'
+                        }>
+                          {inv.status}
+                        </Badge>
+                      </td>
+                      <td className="p-4 text-slate-500">
+                        {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '-'}
+                      </td>
+                      <td className="p-4">
+                        {canPay ? (
+                          <a
+                            href={`/pay/${inv.id}`}
+                            target="_blank"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-gold text-brand-navy rounded-lg text-[10px] font-black uppercase tracking-wider hover:scale-105 transition-all"
+                          >
+                            <CreditCard className="w-3 h-3" />
+                            Pay
+                          </a>
+                        ) : isPaid ? (
+                          <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" />
+                            Paid
+                          </span>
+                        ) : null}
+                      </td>
+                    </tr>
+                  );
+                })}
                 {invoices.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="p-8 text-center text-slate-400">No invoices found</td>
+                    <td colSpan={5} className="p-8 text-center text-slate-400">No invoices found</td>
                   </tr>
                 )}
               </tbody>
