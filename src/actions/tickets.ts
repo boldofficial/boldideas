@@ -6,6 +6,7 @@ import { eq, desc, and, or, isNull, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { createNotification } from './notifications';
 import { savePublicUpload } from '@/lib/uploads';
+import { requireCurrentUser, requireStaffOrAdmin } from '@/lib/authz';
 
 // Types
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -36,13 +37,37 @@ export interface TicketWithDetails {
   updatedAt: Date | null;
 }
 
+async function requireTicketAccess(ticketId: string, includeInternal = false) {
+  const user = await requireCurrentUser();
+  if (user.role === 'admin' || user.role === 'staff') {
+    return { user, includeInternal };
+  }
+
+  const [ticket] = await db.select({ id: tickets.id })
+    .from(tickets)
+    .where(and(eq(tickets.id, ticketId), eq(tickets.clientId, user.id)))
+    .limit(1);
+
+  if (!ticket) {
+    throw new Error('Unauthorized');
+  }
+
+  return { user, includeInternal: false };
+}
+
 /**
  * Create a new ticket with optional file attachment
  */
 export async function createTicket(clientId: string, data: CreateTicketData, file?: File) {
   try {
+    const user = await requireCurrentUser();
+    if (user.id !== clientId && user.role !== 'admin' && user.role !== 'staff') {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const ticketClientId = user.role === 'admin' || user.role === 'staff' ? clientId : user.id;
+
     const [newTicket] = await db.insert(tickets).values({
-      clientId,
+      clientId: ticketClientId,
       subject: data.subject,
       description: data.description,
       priority: data.priority || 'medium',
@@ -60,7 +85,7 @@ export async function createTicket(clientId: string, data: CreateTicketData, fil
           name: file.name,
           url: publicUrl,
           sizeBytes: file.size,
-          uploadedBy: clientId,
+          uploadedBy: user.id,
         });
       } catch (uploadErr) {
         console.error('File processing error:', uploadErr);
@@ -97,7 +122,12 @@ export async function createTicket(clientId: string, data: CreateTicketData, fil
  */
 export async function getClientTickets(clientId: string, projectId?: string) {
   try {
-    const conditions = [eq(tickets.clientId, clientId)];
+    const user = await requireCurrentUser();
+    if (user.id !== clientId && user.role !== 'admin' && user.role !== 'staff') {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const ticketClientId = user.role === 'admin' || user.role === 'staff' ? clientId : user.id;
+    const conditions = [eq(tickets.clientId, ticketClientId)];
     
     if (projectId) {
       conditions.push(eq(tickets.projectId, projectId));
@@ -133,13 +163,14 @@ export async function getClientTickets(clientId: string, projectId?: string) {
 /**
  * Get a single ticket with access check
  */
-export async function getTicket(ticketId: string, userId: string, isAdmin = false) {
+export async function getTicket(ticketId: string, _userId: string, _isAdmin = false) {
   try {
+    const currentUser = await requireCurrentUser();
     const conditions = [eq(tickets.id, ticketId)];
     
     // Non-admins can only see their own tickets
-    if (!isAdmin) {
-      conditions.push(eq(tickets.clientId, userId));
+    if (currentUser.role !== 'admin' && currentUser.role !== 'staff') {
+      conditions.push(eq(tickets.clientId, currentUser.id));
     }
 
     const [ticket] = await db
@@ -205,6 +236,7 @@ export async function getTicket(ticketId: string, userId: string, isAdmin = fals
  */
 export async function getAllTickets(filters?: { status?: string; priority?: string; unassigned?: boolean }) {
   try {
+    await requireStaffOrAdmin();
     const conditions: any[] = [];
 
     if (filters?.status) {
@@ -308,6 +340,7 @@ export async function updateTicketStatus(ticketId: string, status: TicketStatus,
  */
 export async function assignTicket(ticketId: string, staffId: string | null) {
   try {
+    await requireStaffOrAdmin();
     await db.update(tickets)
       .set({ assignedTo: staffId, updatedAt: new Date() })
       .where(eq(tickets.id, ticketId));
@@ -341,6 +374,7 @@ export async function assignTicket(ticketId: string, staffId: string | null) {
  */
 export async function getTicketAttachments(ticketId: string) {
   try {
+    await requireTicketAccess(ticketId);
     const attachments = await db
       .select({
         id: ticketAttachments.id,
@@ -417,10 +451,11 @@ export async function getStaffForAssignment() {
  */
 export async function getTicketComments(ticketId: string, includeInternal = false) {
   try {
+    const access = await requireTicketAccess(ticketId, includeInternal);
     const conditions = [eq(ticketComments.ticketId, ticketId)];
     
     // Filter out internal comments for clients
-    if (!includeInternal) {
+    if (!access.includeInternal) {
       conditions.push(eq(ticketComments.isInternal, false));
     }
 
@@ -454,12 +489,16 @@ export async function getTicketComments(ticketId: string, includeInternal = fals
  */
 export async function postTicketComment(
   ticketId: string, 
-  userId: string, 
+  _userId: string, 
   content: string, 
   isInternal = false,
   file?: File
 ) {
   try {
+    const access = await requireTicketAccess(ticketId, isInternal);
+    const safeIsInternal = access.user.role === 'admin' || access.user.role === 'staff'
+      ? isInternal
+      : false;
     let attachmentUrl = null;
 
     // Handle file upload if present
@@ -473,9 +512,9 @@ export async function postTicketComment(
 
     await db.insert(ticketComments).values({
       ticketId,
-      userId,
+      userId: access.user.id,
       content,
-      isInternal,
+      isInternal: safeIsInternal,
       attachmentUrl,
     });
 
@@ -491,10 +530,10 @@ export async function postTicketComment(
 
     const [commenter] = await db.select({ role: users.role, name: users.name })
       .from(users)
-      .where(eq(users.id, userId));
+      .where(eq(users.id, access.user.id));
 
     // Auto-update ticket status based on who commented
-    if (!isInternal && ticket) {
+    if (!safeIsInternal && ticket) {
       const isStaff = commenter?.role === 'admin' || commenter?.role === 'staff';
       const newStatus = isStaff ? 'awaiting_reply' : 'open';
       
@@ -510,11 +549,11 @@ export async function postTicketComment(
         .where(eq(tickets.id, ticketId));
 
       // Log activity
-      await logTicketActivity(ticketId, userId, 'commented', null, content.substring(0, 50));
+      await logTicketActivity(ticketId, access.user.id, 'commented', null, content.substring(0, 50));
     }
 
     // Notify relevant parties (skip internal notes for clients)
-    if (!isInternal && ticket) {
+    if (!safeIsInternal && ticket) {
       if (commenter?.role === 'client' || commenter?.role === 'user') {
         // Client commented - notify assigned staff or all admins
         if (ticket.assignedTo) {
@@ -644,15 +683,16 @@ export async function getCannedResponses(department?: string) {
 export async function createCannedResponse(
   title: string,
   content: string,
-  createdBy: string,
+  _createdBy: string,
   department?: string
 ) {
   try {
+    const user = await requireStaffOrAdmin();
     await db.insert(cannedResponses).values({
       title,
       content,
       department: department || null,
-      createdBy,
+      createdBy: user.id,
     });
     revalidatePath('/admin/tickets');
     return { success: true };
@@ -667,6 +707,7 @@ export async function createCannedResponse(
  */
 export async function deleteCannedResponse(id: string) {
   try {
+    await requireStaffOrAdmin();
     await db.delete(cannedResponses).where(eq(cannedResponses.id, id));
     revalidatePath('/admin/tickets');
     return { success: true };
@@ -683,14 +724,18 @@ export async function deleteCannedResponse(id: string) {
  */
 export async function getOpenTicketCount() {
     try {
+        const user = await requireCurrentUser();
+        const baseConditions = [
+            sql`${tickets.status} IS NOT NULL`,
+            sql`${tickets.status} NOT IN ('resolved', 'closed')`,
+        ];
+        if (user.role !== 'admin' && user.role !== 'staff') {
+            baseConditions.push(eq(tickets.clientId, user.id));
+        }
+
         const rows = await db.select({ id: tickets.id })
             .from(tickets)
-            .where(
-                and(
-                    sql`${tickets.status} IS NOT NULL`,
-                    sql`${tickets.status} NOT IN ('resolved', 'closed')`
-                )
-            );
+            .where(and(...baseConditions));
         return { success: true, count: rows.length };
     } catch (error) {
         console.error('getOpenTicketCount error:', error);
@@ -703,6 +748,7 @@ export async function getOpenTicketCount() {
  */
 export async function getRecentOpenTickets(limit = 10) {
     try {
+        await requireStaffOrAdmin();
         const rows = await db.select({
             id: tickets.id,
             ticketNumber: tickets.ticketNumber,
@@ -739,6 +785,11 @@ export async function submitTicketRating(
   comment?: string
 ) {
   try {
+    const user = await requireCurrentUser();
+    if (user.id !== clientId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
     // Verify the ticket belongs to this client
     const [ticket] = await db.select({ clientId: tickets.clientId, status: tickets.status })
       .from(tickets)

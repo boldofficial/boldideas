@@ -4,11 +4,13 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq, desc, count } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { requireAdmin } from '@/lib/authz';
 
 const ITEMS_PER_PAGE = 20;
 
 export async function getUsers(page: number = 1) {
     try {
+        await requireAdmin();
         const offset = (page - 1) * ITEMS_PER_PAGE;
         const data = await db.select().from(users)
             .orderBy(desc(users.createdAt))
@@ -22,6 +24,7 @@ export async function getUsers(page: number = 1) {
 
 export async function getClientUsers() {
     try {
+        await requireAdmin();
         const data = await db.select().from(users)
             .where(eq(users.role, 'client'))
             .orderBy(desc(users.createdAt));
@@ -33,6 +36,7 @@ export async function getClientUsers() {
 
 export async function getUsersCount() {
     try {
+        await requireAdmin();
         const [result] = await db.select({ count: count() }).from(users);
         return { success: true, count: result.count };
     } catch (error) {
@@ -48,6 +52,11 @@ export async function updateUserRole(userId: string, role: string) {
     }
 
     try {
+        const admin = await requireAdmin();
+        if (admin.id === userId && role !== 'admin') {
+            return { success: false, error: 'Cannot remove your own admin role' };
+        }
+
         await db.update(users).set({ role }).where(eq(users.id, userId));
         revalidatePath('/admin/team');
         return { success: true };
@@ -58,6 +67,11 @@ export async function updateUserRole(userId: string, role: string) {
 
 export async function toggleUserStatus(userId: string, isActive: boolean) {
     try {
+        const admin = await requireAdmin();
+        if (admin.id === userId && !isActive) {
+            return { success: false, error: 'Cannot deactivate your own account' };
+        }
+
         await db.update(users).set({ isActive }).where(eq(users.id, userId));
         revalidatePath('/admin/team');
         return { success: true };
@@ -68,6 +82,7 @@ export async function toggleUserStatus(userId: string, isActive: boolean) {
 
 export async function getUserById(userId: string) {
     try {
+        await requireAdmin();
         const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
         if (!user) {
             return { success: false, error: 'User not found' };
@@ -87,6 +102,7 @@ export type UserUpdateData = {
 
 export async function updateUser(userId: string, data: UserUpdateData) {
     try {
+        await requireAdmin();
         await db.update(users).set(data).where(eq(users.id, userId));
         revalidatePath('/admin/team');
         return { success: true };
@@ -97,6 +113,11 @@ export async function updateUser(userId: string, data: UserUpdateData) {
 
 export async function deleteUser(userId: string) {
     try {
+        const admin = await requireAdmin();
+        if (admin.id === userId) {
+            return { success: false, error: 'Cannot delete your own account' };
+        }
+
         // Soft delete by setting isActive to false
         await db.update(users).set({ isActive: false }).where(eq(users.id, userId));
         revalidatePath('/admin/team');
@@ -108,6 +129,11 @@ export async function deleteUser(userId: string) {
 
 export async function hardDeleteUser(userId: string) {
     try {
+        const admin = await requireAdmin();
+        if (admin.id === userId) {
+            return { success: false, error: 'Cannot delete your own account' };
+        }
+
         // Permanently delete user from database
         await db.delete(users).where(eq(users.id, userId));
         revalidatePath('/admin/team');

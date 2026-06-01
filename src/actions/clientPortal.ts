@@ -2,7 +2,8 @@
 
 import { db } from '@/lib/db';
 import { internalProjects, tasks, projectFiles, users } from '@/lib/db/schema';
-import { eq, desc, and, sql } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
+import { requireCurrentUser } from '@/lib/authz';
 
 // Types
 export type ClientProject = {
@@ -29,12 +30,23 @@ export type ProjectFile = {
   uploadedByName: string | null;
 };
 
+async function getAuthorizedClientId(requestedClientId?: string) {
+  const user = await requireCurrentUser();
+  if (user.role === 'admin' || user.role === 'staff') {
+    return requestedClientId || user.id;
+  }
+  if (requestedClientId && requestedClientId !== user.id) {
+    throw new Error('Unauthorized');
+  }
+  return user.id;
+}
+
 /**
  * Get all projects assigned to a specific client
  */
 export async function getClientProjects(clientId: string) {
   try {
-    console.log('🔍 DEBUG getClientProjects: clientId =', clientId);
+    const authorizedClientId = await getAuthorizedClientId(clientId);
     
     const projects = await db
       .select({
@@ -49,11 +61,8 @@ export async function getClientProjects(clientId: string) {
       })
       .from(internalProjects)
       .leftJoin(users, eq(internalProjects.managerId, users.id))
-      .where(eq(internalProjects.clientId, clientId))
+      .where(eq(internalProjects.clientId, authorizedClientId))
       .orderBy(desc(internalProjects.createdAt));
-
-    console.log('🔍 DEBUG getClientProjects: Found', projects.length, 'projects');
-    console.log('🔍 DEBUG getClientProjects: Projects =', projects);
 
     // Calculate progress for each project
     const projectsWithProgress = await Promise.all(
@@ -88,6 +97,7 @@ export async function getClientProjects(clientId: string) {
  */
 export async function getClientProject(projectId: string, clientId: string) {
   try {
+    const authorizedClientId = await getAuthorizedClientId(clientId);
     const project = await db
       .select({
         id: internalProjects.id,
@@ -106,7 +116,7 @@ export async function getClientProject(projectId: string, clientId: string) {
       .where(
         and(
           eq(internalProjects.id, projectId),
-          eq(internalProjects.clientId, clientId)
+          eq(internalProjects.clientId, authorizedClientId)
         )
       )
       .limit(1);
@@ -145,6 +155,7 @@ export async function getClientProject(projectId: string, clientId: string) {
  */
 export async function getClientProjectTasks(projectId: string, clientId: string) {
   try {
+    const authorizedClientId = await getAuthorizedClientId(clientId);
     // First verify client has access to this project
     const project = await db
       .select({ id: internalProjects.id })
@@ -152,7 +163,7 @@ export async function getClientProjectTasks(projectId: string, clientId: string)
       .where(
         and(
           eq(internalProjects.id, projectId),
-          eq(internalProjects.clientId, clientId)
+          eq(internalProjects.clientId, authorizedClientId)
         )
       )
       .limit(1);
@@ -185,6 +196,7 @@ export async function getClientProjectTasks(projectId: string, clientId: string)
  */
 export async function getProjectFiles(projectId: string, clientId: string) {
   try {
+    const authorizedClientId = await getAuthorizedClientId(clientId);
     // First verify client has access to this project
     const project = await db
       .select({ id: internalProjects.id })
@@ -192,7 +204,7 @@ export async function getProjectFiles(projectId: string, clientId: string) {
       .where(
         and(
           eq(internalProjects.id, projectId),
-          eq(internalProjects.clientId, clientId)
+          eq(internalProjects.clientId, authorizedClientId)
         )
       )
       .limit(1);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { cache } from 'react';
 import { getProjects } from "@/actions/projects";
 import { getDashboardMetrics } from "@/actions/dashboard";
 import ProjectManager from "@/components/admin/ProjectManager";
@@ -9,8 +9,10 @@ import { getGlobalActivity } from "@/actions/activity";
 
 // ─── Metric Cards ─────────────────────────────────────────
 
+const getCachedDashboardMetrics = cache(getDashboardMetrics);
+
 export async function DashboardMetricsGrid() {
-    const { data: metrics } = await getDashboardMetrics();
+    const { data: metrics } = await getCachedDashboardMetrics();
 
     const dashboardMetrics = [
         {
@@ -86,7 +88,7 @@ export async function DashboardMetricsGrid() {
 // ─── Charts ───────────────────────────────────────────────
 
 export async function DashboardChartsSection() {
-    const { data: metrics } = await getDashboardMetrics();
+    const { data: metrics } = await getCachedDashboardMetrics();
 
     return (
         <DashboardCharts
@@ -101,7 +103,7 @@ export async function DashboardChartsSection() {
 
 export async function DashboardHealthSection() {
     const [{ data: metrics }, { data: activities }] = await Promise.all([
-        getDashboardMetrics(),
+        getCachedDashboardMetrics(),
         getGlobalActivity(10)
     ]);
 
@@ -148,5 +150,4 @@ export async function DashboardProjectsSection() {
     const { data: projects } = await getProjects();
     return <ProjectManager initialProjects={projects || []} />;
 }
-
 

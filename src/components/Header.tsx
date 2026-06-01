@@ -108,6 +108,7 @@ const Header: React.FC = () => {
 		{href: '/', label: 'Home'},
 		{href: '/about', label: 'About Us'},
 		{href: '/services', label: 'Services'},
+		{href: '/pricing', label: 'Pricing'},
 		{href: '/locations', label: 'Service Areas'},
 		{href: '/blog', label: 'Blog'},
 		{href: '/contact', label: 'Contact'},
@@ -115,7 +116,7 @@ const Header: React.FC = () => {
 
 	// Determine if the current page has a dark background by default for unscrolled state
 	// Pages that start with a dark/navy background section — need white nav text until scrolled
-	const darkBgPages = ['/', '/about', '/services', '/contact', '/blog', '/book'];
+	const darkBgPages = ['/', '/about', '/services', '/pricing', '/contact', '/blog', '/book'];
 	const isDarkPage = darkBgPages.includes(pathname) || pathname.startsWith('/services/') || pathname.startsWith('/locations');
 
 	// Computation of dynamic theme-based classes
@@ -288,41 +289,62 @@ const Header: React.FC = () => {
 
 				{/* Mobile Menu Overlay */}
 				<div
-					className={`fixed inset-0 bg-white z-40 transition-all duration-500 md:hidden flex flex-col ${
+					className={`fixed inset-0 z-[60] transition-all duration-500 md:hidden flex flex-col overflow-y-auto bg-brand-navy ${
 						mobileMenuOpen
 							? 'opacity-100 pointer-events-auto'
 							: 'opacity-0 pointer-events-none'
 					}`}>
-					<div className="flex-1 flex flex-col items-center justify-center space-y-8 p-8 bg-brand-navy/50">
+					<div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_12%,rgba(249,186,81,0.22),transparent_28%),radial-gradient(circle_at_86%_18%,rgba(75,143,191,0.18),transparent_32%),linear-gradient(145deg,#061b35_0%,#082849_54%,#04162b_100%)]" />
+					<div className="relative z-10 flex items-center justify-between px-6 pt-7">
+						<Link href="/" onClick={handleLogoClick} className="relative block h-12 w-44 rounded-md bg-white p-2 shadow-xl">
+							<Image
+								src="/boldideas_logo.png"
+								alt="Bold Ideas"
+								fill
+								priority
+								className="object-contain p-2"
+							/>
+						</Link>
+						<button
+							type="button"
+							onClick={closeMenus}
+							className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-lg backdrop-blur transition hover:border-brand-gold hover:text-brand-gold"
+							aria-label="Close menu"
+						>
+							<span className="relative block h-5 w-5">
+								<span className="absolute left-0 top-1/2 h-0.5 w-5 -translate-y-1/2 rotate-45 bg-current" />
+								<span className="absolute left-0 top-1/2 h-0.5 w-5 -translate-y-1/2 -rotate-45 bg-current" />
+							</span>
+						</button>
+					</div>
+
+					<div className="relative z-10 flex-1 flex flex-col items-center justify-center space-y-6 px-8 py-10">
 						{navLinks.map((link, idx) => (
-							<div key={link.href} className="flex flex-col items-center">
+							<div key={link.href} className="flex w-full max-w-sm flex-col items-center">
 								<Link
 									href={link.href}
 									onClick={closeMenus}
-									className={`text-2xl font-black tracking-tighter transition-all duration-500 transform ${
+									className={`w-full rounded-xl border px-5 py-3 text-center text-2xl font-black tracking-tight shadow-lg backdrop-blur transition-all duration-500 transform ${
 										mobileMenuOpen
 											? 'translate-y-0 opacity-100'
 											: 'translate-y-8 opacity-0'
+									} ${
+										pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href))
+											? 'border-brand-gold bg-brand-gold text-brand-navy'
+											: 'border-white/10 bg-white/8 text-white hover:border-brand-gold/70 hover:text-brand-gold'
 									}`}
 									style={{transitionDelay: `${idx * 100}ms`}}>
-									<span
-										className={
-											pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href))
-												? 'text-brand-gold'
-												: 'text-brand-navy'
-										}>
-										{link.label}
-									</span>
+									{link.label}
 								</Link>
 								{link.label === 'Services' && (
-									<div className="mt-3 flex flex-col items-center gap-3">
-										<Link href="/services/websites" onClick={closeMenus} className="text-sm font-bold text-brand-navy/60 hover:text-brand-gold transition-colors tracking-wider">
+									<div className="mt-3 grid w-full gap-2 rounded-xl border border-white/10 bg-white/8 p-3 backdrop-blur">
+										<Link href="/services/websites" onClick={closeMenus} className="rounded-lg px-4 py-2 text-center text-sm font-bold tracking-wider text-white/75 transition hover:bg-white/10 hover:text-brand-gold">
 											Website Development
 										</Link>
-										<Link href="/services/ai-agents" onClick={closeMenus} className="text-sm font-bold text-brand-navy/60 hover:text-brand-gold transition-colors tracking-wider">
+										<Link href="/services/ai-agents" onClick={closeMenus} className="rounded-lg px-4 py-2 text-center text-sm font-bold tracking-wider text-white/75 transition hover:bg-white/10 hover:text-brand-gold">
 											AI Agents
 										</Link>
-										<Link href="/services/workflow-automation" onClick={closeMenus} className="text-sm font-bold text-brand-navy/60 hover:text-brand-gold transition-colors tracking-wider">
+										<Link href="/services/workflow-automation" onClick={closeMenus} className="rounded-lg px-4 py-2 text-center text-sm font-bold tracking-wider text-white/75 transition hover:bg-white/10 hover:text-brand-gold">
 											Workflow Automation
 										</Link>
 									</div>
@@ -330,7 +352,7 @@ const Header: React.FC = () => {
 							</div>
 						))}
 
-						<div className="w-12 h-0.5 bg-gray-100 my-8"></div>
+						<div className="my-3 h-px w-full max-w-sm bg-white/10"></div>
 
 						<div className="flex flex-col items-center space-y-6">
 							{staffMode && isAdmin && (
@@ -338,7 +360,7 @@ const Header: React.FC = () => {
 									<Link
 										href="/admin"
 										onClick={closeMenus}
-										className="text-sm font-bold tracking-widest text-brand-navy hover:text-brand-gold">
+										className="text-sm font-bold tracking-widest text-white hover:text-brand-gold">
 										Admin Dashboard
 									</Link>
 									<button
@@ -351,15 +373,15 @@ const Header: React.FC = () => {
 							
 							<Link href="/book"
 							onClick={closeMenus}
-							className="bg-brand-navy text-white px-8 py-4 rounded-full text-sm font-black uppercase tracking-widest hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl mt-4">
+							className="bg-brand-gold text-brand-navy px-8 py-4 rounded-full text-sm font-black uppercase tracking-widest hover:bg-white transition-all shadow-xl shadow-brand-gold/20 mt-4">
 								Get Started
 							</Link>
 						</div>
 					</div>
 
 					{/* Mobile Footer Decor */}
-					<div className="p-8 text-center border-t border-gray-100">
-						<p className="text-[10px] text-gray-400 font-mono uppercase tracking-widest">
+					<div className="relative z-10 p-8 text-center border-t border-white/10">
+						<p className="text-[10px] text-white/45 font-mono uppercase tracking-widest">
 							System_Status: Online
 						</p>
 					</div>

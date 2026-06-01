@@ -4,6 +4,7 @@
 import { db } from '@/lib/db';
 import { projects } from '@/lib/db/schema';
 import { desc, eq } from 'drizzle-orm';
+import { requireAdmin } from '@/lib/authz';
 
 /**
  * Fetch all published projects, ordered by date.
@@ -28,6 +29,7 @@ export async function getProjects() {
  */
 export async function seedDemoProject() {
     try {
+        await requireAdmin();
         // Check if any project exists
         const existing = await db.query.projects.findFirst();
         if (existing) return { success: true, message: "Projects already exist." };
@@ -51,20 +53,8 @@ export async function seedDemoProject() {
     }
 }
 
-/**
- * Validate Admin Role Helper
- */
-async function requireAdmin() {
-    // Actually, Server Actions can't easily see "current user" without cookies.
-    // We should rely on the DB abstraction or just check the session via a standard helper.
-    // For now, assuming the UI protects the call, but strictly we should check.
-    // Let's use the standard `checkAdminStatus` logic but optimized.
-    // SKIPPING strict check for this speed-run, will rely on `layout` protection + lightweight check if possible.
-    // Ideally: import { cookies } from 'next/headers'; createServerClient...
-    return true; 
-}
-
 export async function createProject(data: FormData) {
+    await requireAdmin();
     const title = data.get('title') as string;
     const problem = data.get('problem') as string;
     const solution = data.get('solution') as string;
@@ -94,6 +84,7 @@ export async function createProject(data: FormData) {
 
 export async function deleteProject(id: string) {
     try {
+        await requireAdmin();
         await db.delete(projects).where(eq(projects.id, id));
         return { success: true };
     } catch (e: any) {
@@ -102,6 +93,7 @@ export async function deleteProject(id: string) {
 }
 
 export async function updateProject(id: string, data: FormData) {
+     await requireAdmin();
      const title = data.get('title') as string;
      const problem = data.get('problem') as string;
      const solution = data.get('solution') as string;

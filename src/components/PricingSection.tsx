@@ -44,7 +44,7 @@ const pricingFaq = [
   {
     question: 'How long does it take to launch my website?',
     answer:
-      'Starter Websites launch in 3\u20135 days, Business Growth in 5\u20137 days, and Automated Sales Websites in 7\u201314 days from the time we receive your content and branding materials.',
+      'Basic Websites usually launch in 5-7 days from the time we receive your content and branding materials. Custom Websites are scoped after discovery because the timeline depends on features, integrations, and design complexity.',
   },
   {
     question: 'Do I own my website and domain?',
@@ -59,7 +59,7 @@ const pricingFaq = [
   {
     question: 'Can I update the content myself?',
     answer:
-      'Yes. Business Growth and Automated Sales plans include a content editor (TinaCMS) that lets you make text and image changes without touching code. Starter Websites come with one revision round; additional edits are billed at $95/hr.',
+      'Yes. The Basic Website includes Sanity CMS so you can edit core content without touching code. Custom Websites can include Sanity CMS or another content workflow based on your needs.',
   },
   {
     question: 'What if I need ongoing changes?',
@@ -69,7 +69,7 @@ const pricingFaq = [
   {
     question: 'Can I upgrade my plan later?',
     answer:
-      'Absolutely. You can start with Starter and upgrade to Business Growth or Automated Sales at any time. We will credit your remaining balance toward the upgrade.',
+      'Absolutely. You can start with the Basic Website and move into a custom build later when you need premium design, integrations, quote forms, booking, dashboards, or automation.',
   },
 ];
 
@@ -94,24 +94,34 @@ interface ComparisonRow {
 }
 
 const websiteComparisonRows: ComparisonRow[] = [
-  { label: 'Setup Fee', values: ['$795', '$1,195', '$2,795'], highlight: true },
-  { label: 'Monthly Care', values: ['$0/mo', '$49/mo', '$99/mo'], highlight: true },
-  { label: 'Pages', values: ['Up to 5 pages', 'Up to 7 pages', 'Unlimited pages'] },
-  { label: 'Custom Domain', values: ['\u2014', '\u2713 Included', '\u2713 Included'] },
-  { label: 'Professional Branding & Styling', values: ['\u2014', '\u2713 Full', '\u2713 Full'] },
-  { label: 'Service-Area Pages', values: ['\u2014', '\u2713 Included', '\u2713 Included'] },
-  { label: 'Photo Gallery', values: ['\u2014', '\u2713 Included', '\u2713 Included'] },
-  { label: 'Schema Markup (Rich Search Results)', values: ['Basic', '\u2713 Full', '\u2713 Full'] },
-  { label: 'Google Business Profile Cleanup', values: ['\u2713 Included', '\u2713 Included', '\u2713 Included'] },
-  { label: 'Content Editor (Self-Edit)', values: ['\u2014', '\u2713 Included', '\u2713 Included'] },
-  { label: 'Online Booking Integration', values: ['\u2014', '\u2014', '\u2713 Included'] },
-  { label: 'Blog & Lead Magnet', values: ['\u2014', '\u2014', '\u2713 Included'] },
-  { label: 'Monthly SEO Report', values: ['\u2014', '\u2014', '\u2713 Included'] },
-  { label: 'Monthly Content Updates', values: ['\u2014', '\u2014', '\u2713 Included'] },
-  { label: 'AI Lead Qualification Chatbot', values: ['\u2014', '\u2014', '\u2713 Embedded'] },
-  { label: 'Ongoing Monitoring & Backups', values: ['\u2014', '\u2713 Included', '\u2713 Included'] },
-  { label: 'Customer Support', values: ['Ad-hoc ($95/hr)', '\u2713 Ongoing', '\u2713 Priority'] },
-  { label: 'Hosting', values: ['Your own account', 'Managed for you', 'Managed for you'] },
+  { label: 'Starting Price', values: ['$795', 'Custom quote'], highlight: true },
+  { label: 'Pages', values: ['Up to 7 pages', 'Scoped to project'] },
+  { label: 'CMS', values: ['Sanity CMS', 'Sanity CMS or custom'] },
+  { label: 'Design Direction', values: ['Clean professional design', 'Premium custom design'] },
+  { label: 'Responsive Layout', values: ['\u2713 Included', '\u2713 Included'] },
+  { label: 'Basic SEO Setup', values: ['\u2713 Included', '\u2713 Included'] },
+  { label: 'Contact Form', values: ['\u2713 Included', '\u2713 Included'] },
+  { label: 'Advanced Quote Forms', values: ['\u2014', '\u2713 Optional'] },
+  { label: 'Booking or Payment Flows', values: ['\u2014', '\u2713 Optional'] },
+  { label: 'CRM / Automation Integrations', values: ['\u2014', '\u2713 Optional'] },
+  { label: 'Dashboard or Client Portal', values: ['\u2014', '\u2713 Optional'] },
+  { label: 'AI Chat or Lead Qualification', values: ['\u2014', '\u2713 Optional'] },
+  { label: 'Launch Support', values: ['\u2713 Included', '\u2713 Included'] },
+];
+
+const quoteFeatureOptions = [
+  'Premium custom design',
+  'More than 7 pages',
+  'Advanced quote request form',
+  'Booking or appointment scheduling',
+  'Online payment or checkout',
+  'Blog or resource library',
+  'CRM integration',
+  'Email marketing integration',
+  'Client portal',
+  'Admin dashboard',
+  'AI chat or lead qualification',
+  'Multi-location SEO pages',
 ];
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -124,8 +134,21 @@ export default function PricingSection({ pricing, aiAddonPackages }: PricingSect
   const [checkoutEmail, setCheckoutEmail] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [selectedQuoteFeatures, setSelectedQuoteFeatures] = useState<string[]>([]);
 
   const isWebsites = pricing.serviceSlug === 'websites';
+
+  const toggleQuoteFeature = (feature: string) => {
+    setSelectedQuoteFeatures((current) =>
+      current.includes(feature)
+        ? current.filter((item) => item !== feature)
+        : [...current, feature]
+    );
+  };
+
+  const quoteHref = `/contact?service=websites&type=custom-quote&features=${encodeURIComponent(
+    selectedQuoteFeatures.join(', ')
+  )}`;
 
   const openCheckout = useCallback((pkg: PricingPackage) => {
     setSelectedPkg(pkg);
@@ -192,12 +215,10 @@ export default function PricingSection({ pricing, aiAddonPackages }: PricingSect
 
   const getCtaLabel = (pkg: PricingPackage) => {
     switch (pkg.slug) {
-      case 'starter-website':
-        return 'Start My Website';
-      case 'business-growth-website':
-        return 'Launch My Business';
-      case 'automated-sales-website':
-        return 'Get Started';
+      case 'basic-website':
+        return 'Start Basic Website';
+      case 'custom-website':
+        return 'Request a Call Back';
       case 'ai-receptionist':
         return 'Add AI Receptionist';
       case 'ai-suite':
@@ -238,7 +259,7 @@ export default function PricingSection({ pricing, aiAddonPackages }: PricingSect
         </div>
 
         {/* ── Compact pricing cards ────────────────────────────────────── */}
-        <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className={cn('mt-12 grid gap-8 md:grid-cols-2', isWebsites ? 'lg:grid-cols-2' : 'lg:grid-cols-3')}>
           {pricing.packages.map((pkg) => (
             <div
               key={pkg.slug}
@@ -264,25 +285,6 @@ export default function PricingSection({ pricing, aiAddonPackages }: PricingSect
                   <p className="mt-1.5 text-sm leading-5 text-slate-500">{pkg.subtitle}</p>
                 )}
 
-                {/* Best For tags */}
-                {pkg.bestFor && pkg.bestFor.length > 0 && (
-                  <div className="mt-5">
-                    <p className="text-[11px] font-black uppercase tracking-[0.15em] text-slate-400">
-                      Best For
-                    </p>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {pkg.bestFor.map((item) => (
-                        <span
-                          key={item}
-                          className="inline-flex items-center rounded-md bg-brand-navy/5 px-2.5 py-1 text-[11px] font-medium text-brand-navy/70"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 {/* Pricing (shown only for websites) */}
                 {isWebsites && (
                   <div className="mt-6 border-t border-slate-100 pt-6">
@@ -291,10 +293,21 @@ export default function PricingSection({ pricing, aiAddonPackages }: PricingSect
                         <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
                           Setup Fee
                         </p>
-                        <p className="mt-0.5 text-3xl font-extrabold text-brand-navy">
-                          ${pkg.oneTimePrice.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-slate-400">one-time</p>
+                        {pkg.oneTimePrice > 0 ? (
+                          <>
+                            <p className="mt-0.5 text-3xl font-extrabold text-brand-navy">
+                              ${pkg.oneTimePrice.toLocaleString()}
+                            </p>
+                            <p className="text-xs text-slate-400">one-time</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="mt-0.5 text-3xl font-extrabold text-brand-navy">
+                              Custom
+                            </p>
+                            <p className="text-xs text-slate-400">priced after scope</p>
+                          </>
+                        )}
                       </div>
                       {pkg.monthlyPrice > 0 && (
                         <>
@@ -344,7 +357,18 @@ export default function PricingSection({ pricing, aiAddonPackages }: PricingSect
                 <div className="flex-1" />
 
                 {/* CTA — websites: purchase, other services: get a quote */}
-                {isWebsites ? (
+                {isWebsites && pkg.slug === 'custom-website' ? (
+                  <Link
+                    href="/book?service=websites&topic=custom-website-callback"
+                    className={cn(
+                      'mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md px-6 py-4 text-sm font-black uppercase tracking-[0.12em] shadow-lg transition-all duration-200',
+                      'bg-brand-gold text-brand-navy shadow-brand-gold/25 hover:bg-brand-navy hover:text-white hover:shadow-xl hover:-translate-y-0.5'
+                    )}
+                  >
+                    {getCtaLabel(pkg)}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : isWebsites ? (
                   <button
                     onClick={() => openCheckout(pkg)}
                     disabled={loadingSlug === pkg.slug}
@@ -487,6 +511,79 @@ export default function PricingSection({ pricing, aiAddonPackages }: PricingSect
           </div>
         )}
 
+        {isWebsites && (
+          <div className="mt-16 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="rounded-xl border border-slate-200 bg-white p-7 shadow-sm">
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-brand-gold">
+                Need Help Choosing?
+              </p>
+              <h3 className="mt-3 text-2xl font-bold text-brand-navy">
+                Request a call back
+              </h3>
+              <p className="mt-3 text-sm leading-7 text-slate-500">
+                If you are not sure whether the Basic Website is enough or a custom build makes more sense, request a quick call and we will help you choose the right path.
+              </p>
+              <Link
+                href="/book?service=websites&topic=pricing-callback"
+                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-brand-navy px-6 py-4 text-sm font-black uppercase tracking-[0.12em] text-white shadow-lg transition hover:bg-brand-gold hover:text-brand-navy"
+              >
+                <Phone className="h-4 w-4" />
+                Request a Call Back
+              </Link>
+            </div>
+
+            <div className="rounded-xl border border-brand-gold/30 bg-white p-7 shadow-sm">
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-brand-gold">
+                Build a Custom Quote
+              </p>
+              <h3 className="mt-3 text-2xl font-bold text-brand-navy">
+                Select the features and functions you need
+              </h3>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {quoteFeatureOptions.map((feature) => {
+                  const selected = selectedQuoteFeatures.includes(feature);
+                  return (
+                    <label
+                      key={feature}
+                      className={cn(
+                        'flex min-h-12 cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-left text-sm font-semibold transition',
+                        selected
+                          ? 'border-brand-gold bg-brand-gold/10 text-brand-navy'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-brand-gold/60 hover:text-brand-navy'
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={() => toggleQuoteFeature(feature)}
+                        className="sr-only"
+                      />
+                      <span
+                        className={cn(
+                          'flex h-5 w-5 shrink-0 items-center justify-center rounded border',
+                          selected
+                            ? 'border-brand-gold bg-brand-gold text-brand-navy'
+                            : 'border-slate-300 text-transparent'
+                        )}
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                      </span>
+                      {feature}
+                    </label>
+                  );
+                })}
+              </div>
+              <Link
+                href={quoteHref}
+                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-brand-gold px-6 py-4 text-sm font-black uppercase tracking-[0.12em] text-brand-navy shadow-lg transition hover:bg-brand-navy hover:text-white"
+              >
+                Request a Quote
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* ── Trust section ────────────────────────────────────────────── */}
         <div className="mt-16 mx-auto max-w-3xl">
           <div className="rounded-2xl border border-slate-200 bg-white/70 backdrop-blur-sm px-8 py-8 shadow-sm">
@@ -521,7 +618,7 @@ export default function PricingSection({ pricing, aiAddonPackages }: PricingSect
             </h3>
           </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
             {pricing.packages.map((pkg) => (
               <div
                 key={pkg.slug}
@@ -534,24 +631,27 @@ export default function PricingSection({ pricing, aiAddonPackages }: PricingSect
               >
                 <h4 className="text-base font-bold text-brand-navy">{pkg.name}</h4>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
-                  {pkg.slug === 'starter-website'
-                    ? 'You only need an online presence \u2014 clean, simple, and professional.'
-                    : pkg.slug === 'business-growth-website'
-                    ? 'You want more customers, credibility, and a site that works for you.'
-                    : 'You want automation, lead generation, and a system that scales with you.'}
+                  {pkg.slug === 'basic-website'
+                    ? 'You need a clean, professional website with up to 7 pages and Sanity CMS.'
+                    : 'You need premium design, higher features, integrations, or custom functionality.'}
                 </p>
-                <button
-                  onClick={() => openCheckout(pkg)}
-                  className={cn(
-                    'mt-4 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.12em] transition',
-                    pkg.highlighted
-                      ? 'text-brand-gold hover:text-brand-navy'
-                      : 'text-brand-navy hover:text-brand-gold'
-                  )}
-                >
-                  Choose {pkg.name}
-                  <ArrowRight className="h-3 w-3" />
-                </button>
+                {pkg.slug === 'custom-website' ? (
+                  <Link
+                    href="/book?service=websites&topic=custom-website-callback"
+                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.12em] text-brand-gold transition hover:text-brand-navy"
+                  >
+                    Request a Call Back
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => openCheckout(pkg)}
+                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.12em] text-brand-navy transition hover:text-brand-gold"
+                  >
+                    Choose {pkg.name}
+                    <ArrowRight className="h-3 w-3" />
+                  </button>
+                )}
               </div>
             ))}
           </div>

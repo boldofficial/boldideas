@@ -9,10 +9,36 @@ import { createNotification } from './notifications';
 import { recordActivity } from './activity';
 import { resend } from '@/lib/resend';
 import { savePublicUpload } from '@/lib/uploads';
+import { requireCurrentUser, requireStaffOrAdmin } from '@/lib/authz';
+
+async function requireProjectAccess(projectId: string) {
+    const user = await requireCurrentUser();
+    if (user.role === 'admin' || user.role === 'staff') {
+        return user;
+    }
+
+    if (!projectId || projectId === 'null') {
+        throw new Error('Unauthorized');
+    }
+
+    const project = await db.query.internalProjects.findFirst({
+        where: and(
+            eq(internalProjects.id, projectId),
+            eq(internalProjects.clientId, user.id)
+        ),
+    });
+
+    if (!project) {
+        throw new Error('Unauthorized');
+    }
+
+    return user;
+}
 
 export async function deleteProject(formData: FormData) {
     const projectId = formData.get('projectId') as string;
     try {
+        await requireStaffOrAdmin();
         await db.delete(internalProjects).where(eq(internalProjects.id, projectId));
     } catch (error) {
         return { success: false, error: 'Failed to delete project' };
@@ -33,6 +59,7 @@ export async function updateProject(formData: FormData) {
     const clientId = formData.get('clientId') as string;
 
     try {
+        await requireStaffOrAdmin();
         // Get old clientId before updating
         const [oldProject] = await db.select({ clientId: internalProjects.clientId })
             .from(internalProjects)
@@ -123,6 +150,7 @@ export async function addProjectFile(formData: FormData) {
 
 export async function getProjectFiles(projectId: string) {
     try {
+        await requireProjectAccess(projectId);
         const data = await db.select().from(documents).where(eq(documents.projectId, projectId)).orderBy(desc(documents.createdAt));
         return { success: true, data };
     } catch (error) {
@@ -136,7 +164,6 @@ export async function postProjectComment(formData: FormData) {
     const file = formData.get('file') as File;
     const attachmentUrlManual = formData.get('attachmentUrl') as string;
     const taskId = formData.get('taskId') as string || null;
-    const userId = formData.get('userId') as string;
 
     let attachmentUrl = attachmentUrlManual || null;
 
@@ -151,10 +178,14 @@ export async function postProjectComment(formData: FormData) {
     if (!content && !attachmentUrl) return { success: false };
 
     try {
+        const user = projectId && projectId !== 'null'
+            ? await requireProjectAccess(projectId)
+            : await requireStaffOrAdmin();
+
         await db.insert(comments).values({
             projectId: (projectId && projectId !== 'null') ? projectId : null,
             content: content || 'Sent an attachment',
-            userId: userId || null,
+            userId: user.id,
             taskId: taskId || null,
             attachmentUrl: attachmentUrl
         });
@@ -164,7 +195,7 @@ export async function postProjectComment(formData: FormData) {
 
         // Log Activity
         await recordActivity({
-            userId: userId || 'system',
+            userId: user.id,
             projectId: projectId || undefined,
             taskId: taskId || undefined,
             action: taskId ? 'task_comment_posted' : 'project_comment_posted',
@@ -179,7 +210,7 @@ export async function postProjectComment(formData: FormData) {
                 .where(eq(internalProjects.id, projectId))
                 .limit(1);
             
-            if (project?.managerId && project.managerId !== userId) {
+            if (project?.managerId && project.managerId !== user.id) {
                 await createNotification(
                     project.managerId,
                     'comment_posted',
@@ -197,7 +228,7 @@ export async function postProjectComment(formData: FormData) {
                 .where(eq(tasks.id, taskId))
                 .limit(1);
             
-            if (task?.assigneeId && task.assigneeId !== userId) {
+            if (task?.assigneeId && task.assigneeId !== user.id) {
                 await createNotification(
                     task.assigneeId,
                     'task_comment_posted',
@@ -238,6 +269,7 @@ export async function getTaskComments(taskId: string) {
 
 export async function getProjectComments(projectId: string) {
     try {
+        await requireProjectAccess(projectId);
         const data = await db.select({
             id: comments.id,
             content: comments.content,
@@ -264,6 +296,7 @@ export async function getProjectComments(projectId: string) {
 
 export async function getProjectMilestones(projectId: string) {
     try {
+        await requireProjectAccess(projectId);
         const data = await db.select()
             .from(milestones)
             .where(eq(milestones.projectId, projectId))
@@ -280,6 +313,7 @@ export async function createMilestone(formData: FormData) {
     const dueDate = formData.get('dueDate') as string;
 
     try {
+        await requireStaffOrAdmin();
         await db.insert(milestones).values({
             projectId,
             title,
@@ -313,6 +347,7 @@ export async function createMilestone(formData: FormData) {
 
 export async function getProjectTasks(projectId: string) {
     try {
+        await requireProjectAccess(projectId);
         const data = await db.select({
             id: tasks.id,
             projectId: tasks.projectId,
@@ -579,6 +614,7 @@ export async function updateProjectTask(formData: FormData) {
 
 export async function getProjectMembers(projectId: string) {
     try {
+        await requireStaffOrAdmin();
         const data = await db.select({
             id: projectMembers.id,
             userId: projectMembers.userId,

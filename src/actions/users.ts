@@ -5,6 +5,7 @@ import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { savePublicUpload } from '@/lib/uploads';
+import { requireAdmin, requireCurrentUser } from '@/lib/authz';
 
 export async function updateUserProfile(userId: string, formData: FormData) {
     const name = formData.get('name') as string;
@@ -15,6 +16,11 @@ export async function updateUserProfile(userId: string, formData: FormData) {
     console.log("Updating profile for:", userId, { name, bio, address, avatarUrl });
 
     try {
+        const currentUser = await requireCurrentUser();
+        if (currentUser.id !== userId && currentUser.role !== 'admin') {
+            return { success: false, error: 'Unauthorized' };
+        }
+
         await db.update(users)
             .set({
                 name,
@@ -41,7 +47,12 @@ export async function uploadAvatar(formData: FormData) {
     if (!file || !userId) return { success: false, error: "Missing file or user ID" };
 
     try {
-        const url = await savePublicUpload(file, 'avatars', userId);
+        const currentUser = await requireCurrentUser();
+        if (currentUser.id !== userId && currentUser.role !== 'admin') {
+            return { success: false, error: 'Unauthorized' };
+        }
+
+        const url = await savePublicUpload(file, 'avatars', currentUser.id);
         return { success: true, url };
     } catch (error: unknown) {
         console.error("Upload Error:", error);
@@ -51,6 +62,11 @@ export async function uploadAvatar(formData: FormData) {
 
 export async function getUserProfile(userId: string) {
     try {
+        const currentUser = await requireCurrentUser();
+        if (currentUser.id !== userId && currentUser.role !== 'admin' && currentUser.role !== 'staff') {
+            return { success: false, error: 'Unauthorized' };
+        }
+
         const user = await db.query.users.findFirst({
             where: eq(users.id, userId)
         });
@@ -63,6 +79,7 @@ export async function getUserProfile(userId: string) {
 // Admin only: Get all users
 export async function getAllUsers() {
     try {
+        await requireAdmin();
         const allUsers = await db.select({
             id: users.id,
             email: users.email,
@@ -81,17 +98,10 @@ export async function getAllUsers() {
 // Admin only: Delete a user account
 export async function deleteUser(userId: string, adminId: string) {
     try {
-        // Verify admin is making the request
-        const [admin] = await db.select({ role: users.role })
-            .from(users)
-            .where(eq(users.id, adminId));
-        
-        if (!admin || admin.role !== 'admin') {
-            return { success: false, error: 'Unauthorized: Admin access required' };
-        }
+        const admin = await requireAdmin();
 
         // Don't allow deleting yourself
-        if (userId === adminId) {
+        if (userId === admin.id) {
             return { success: false, error: 'Cannot delete your own account' };
         }
 
@@ -109,13 +119,9 @@ export async function deleteUser(userId: string, adminId: string) {
 // Update user role (admin only)
 export async function updateUserRole(userId: string, newRole: string, adminId: string) {
     try {
-        // Verify admin
-        const [admin] = await db.select({ role: users.role })
-            .from(users)
-            .where(eq(users.id, adminId));
-        
-        if (!admin || admin.role !== 'admin') {
-            return { success: false, error: 'Unauthorized' };
+        const admin = await requireAdmin();
+        if (userId === admin.id && newRole !== 'admin') {
+            return { success: false, error: 'Cannot remove your own admin role' };
         }
 
         await db.update(users)

@@ -9,13 +9,22 @@ import { createNotification } from './notifications';
 import { resend } from '@/lib/resend';
 import { getCompanySettings } from './financeEnhancements';
 import { calculateNextDueDate } from './recurringInvoices';
+import { requireAdmin, requireCurrentUser } from '@/lib/authz';
 
 export async function getInvoices(clientId?: string) {
     try {
+        const user = await requireCurrentUser();
+        const role = user.role || 'user';
+        const scopedClientId = role === 'admin' ? clientId : user.id;
+
+        if (role !== 'admin' && clientId && clientId !== user.id) {
+            return { success: false, error: 'Unauthorized' };
+        }
+
         let query = db.select().from(invoices);
-        if (clientId) {
+        if (scopedClientId) {
             // @ts-ignore
-            query = query.where(eq(invoices.clientId, clientId));
+            query = query.where(eq(invoices.clientId, scopedClientId));
         }
         const data = await query.orderBy(desc(invoices.createdAt));
         console.log('[getInvoices] Fetched', data.length, 'invoices');
@@ -28,6 +37,7 @@ export async function getInvoices(clientId?: string) {
 
 export async function getClients() {
     try {
+        await requireAdmin();
         // Only fetch users with role 'user' (clients)
         const data = await db.select().from(users)
             .where(eq(users.role, 'user'))
@@ -40,6 +50,7 @@ export async function getClients() {
 }
 
 export async function createInvoice(formData: FormData) {
+    const admin = await requireAdmin();
     const totalAmount = formData.get('totalAmount') as string;
     const dueDate = formData.get('dueDate') as string;
     const clientId = formData.get('clientId') as string || null;
@@ -84,7 +95,7 @@ export async function createInvoice(formData: FormData) {
 
         // Log Activity
         await recordActivity({
-            userId: null,
+            userId: admin.id,
             action: 'invoice_created',
             details: { amount: totalAmount, id: result.id.slice(0, 8), invoiceNumber }
         });
@@ -109,6 +120,7 @@ export async function createInvoice(formData: FormData) {
 
 export async function updateInvoiceStatus(invoiceId: string, status: string) {
     try {
+        const admin = await requireAdmin();
         // Get invoice details before updating
         const [invoice] = await db.select()
             .from(invoices)
@@ -125,7 +137,7 @@ export async function updateInvoiceStatus(invoiceId: string, status: string) {
 
         // Log Activity
         await recordActivity({
-            userId: null,
+            userId: admin.id,
             action: 'invoice_status_updated',
             details: { invoiceId: invoiceId.slice(0, 8), newStatus: status }
         });
@@ -158,8 +170,12 @@ export async function updateInvoiceStatus(invoiceId: string, status: string) {
 
 export async function getInvoiceDetails(invoiceId: string) {
     try {
+        const user = await requireCurrentUser();
         const [invoice] = await db.select().from(invoices).where(eq(invoices.id, invoiceId)).limit(1);
         if (!invoice) return { success: false, error: 'Invoice not found' };
+        if (user.role !== 'admin' && invoice.clientId !== user.id) {
+            return { success: false, error: 'Unauthorized' };
+        }
 
         const items = await db.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
 
@@ -183,6 +199,7 @@ export async function addInvoiceItem(data: {
     amount: string;
 }) {
     try {
+        await requireAdmin();
         await db.insert(invoiceItems).values(data);
         revalidatePath('/admin/finance');
         return { success: true };
@@ -193,6 +210,7 @@ export async function addInvoiceItem(data: {
 
 export async function updateInvoice(invoiceId: string, data: any, items: any[]) {
     try {
+        const admin = await requireAdmin();
         // 1. Update main invoice
         await db.update(invoices)
             .set({
@@ -222,7 +240,7 @@ export async function updateInvoice(invoiceId: string, data: any, items: any[]) 
 
         // Log Activity
         await recordActivity({
-            userId: null,
+            userId: admin.id,
             action: 'invoice_updated',
             details: { id: invoiceId.slice(0, 8), invoiceNumber: data.invoiceNumber }
         });
@@ -240,6 +258,7 @@ export async function updateInvoice(invoiceId: string, data: any, items: any[]) 
  */
 export async function sendInvoiceEmail(invoiceId: string) {
     try {
+        const admin = await requireAdmin();
         const [invoice] = await db.select().from(invoices).where(eq(invoices.id, invoiceId)).limit(1);
         if (!invoice) return { success: false, error: 'Invoice not found' };
 
@@ -473,7 +492,7 @@ export async function sendInvoiceEmail(invoiceId: string) {
         revalidatePath(`/admin/finance/invoice/${invoiceId}`);
 
         await recordActivity({
-            userId: null,
+            userId: admin.id,
             action: 'invoice_emailed',
             details: { invoiceId: invoiceId.slice(0, 8), invoiceNumber: invoice.invoiceNumber, email: client.email }
         });
@@ -490,6 +509,7 @@ export async function sendInvoiceEmail(invoiceId: string) {
  */
 export async function getPendingInvoiceCount() {
     try {
+        await requireAdmin();
         const rows = await db.select({ id: invoices.id })
             .from(invoices)
             .where(
@@ -510,6 +530,7 @@ export async function getPendingInvoiceCount() {
  */
 export async function getRecentPendingInvoices(limit = 10) {
     try {
+        await requireAdmin();
         const rows = await db.select({
             id: invoices.id,
             invoiceNumber: invoices.invoiceNumber,
@@ -536,6 +557,7 @@ export async function getRecentPendingInvoices(limit = 10) {
 
 export async function deleteInvoice(invoiceId: string) {
     try {
+        const admin = await requireAdmin();
         // Get invoice number first for logging
         const [invoice] = await db.select().from(invoices).where(eq(invoices.id, invoiceId)).limit(1);
         
@@ -545,7 +567,7 @@ export async function deleteInvoice(invoiceId: string) {
 
         // Log Activity
         await recordActivity({
-            userId: null,
+            userId: admin.id,
             action: 'invoice_deleted',
             details: { id: invoiceId.slice(0, 8), invoiceNumber: invoice?.invoiceNumber }
         });

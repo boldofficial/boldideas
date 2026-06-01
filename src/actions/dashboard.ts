@@ -2,10 +2,12 @@
 
 import { db } from '@/lib/db';
 import { users, internalProjects, tasks, invoices, leads } from '@/lib/db/schema';
-import { eq, count, sql, and, gte, lte, desc } from 'drizzle-orm';
+import { eq, count, sql, and, gte, lte } from 'drizzle-orm';
+import { requireStaffOrAdmin } from '@/lib/authz';
 
 export async function getDashboardMetrics() {
     try {
+        await requireStaffOrAdmin();
         // Get current date info for time-based queries
         const now = new Date();
         const startOfWeek = new Date(now);

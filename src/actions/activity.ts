@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { activityLog, users } from '@/lib/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { requireStaffOrAdmin } from '@/lib/authz';
 
 export async function recordActivity({
     userId,
@@ -40,6 +41,7 @@ export async function recordActivity({
 
 export async function getGlobalActivity(limit = 20) {
     try {
+        await requireStaffOrAdmin();
         const data = await db.select({
             id: activityLog.id,
             action: activityLog.action,

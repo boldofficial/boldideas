@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createWebsiteLead } from '@/actions/crm';
 
 interface FormProps {
@@ -9,6 +9,11 @@ interface FormProps {
 }
 
 export const ContactForm: React.FC<FormProps> = ({ className = '', theme = 'light' }) => {
+  const [leadContext, setLeadContext] = useState({
+    service: '',
+    type: '',
+    features: '',
+  });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -23,6 +28,22 @@ export const ContactForm: React.FC<FormProps> = ({ className = '', theme = 'ligh
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const service = params.get('service') || '';
+    const type = params.get('type') || '';
+    const features = params.get('features') || '';
+
+    setLeadContext({ service, type, features });
+
+    if (type === 'custom-quote' && features) {
+      setFormData((current) => ({
+        ...current,
+        message: current.message || `I would like a custom website quote with these features: ${features}.`,
+      }));
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('sending');
@@ -32,7 +53,14 @@ export const ContactForm: React.FC<FormProps> = ({ className = '', theme = 'ligh
       const formBody = new FormData();
       Object.entries(formData).forEach(([key, value]) => formBody.append(key, value));
       formBody.set('source', 'website_contact_form');
-      formBody.set('serviceInterest', 'Website or AI agent inquiry');
+      formBody.set(
+        'serviceInterest',
+        leadContext.service === 'websites'
+          ? leadContext.type === 'custom-quote'
+            ? 'Custom website quote request'
+            : 'Website inquiry'
+          : 'Website or AI agent inquiry'
+      );
 
       const result = await createWebsiteLead(formBody);
 

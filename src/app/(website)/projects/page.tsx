@@ -3,7 +3,6 @@ import { getProjects } from "@/actions/projects";
 import Link from "next/link";
 import { Briefcase, MapPin, Sparkles } from "lucide-react";
 import ProjectsPage from "@/components/ProjectsPage";
-import DemoSeeder from "@/components/DemoSeeder";
 
 const baseUrl = "https://getboldideas.com";
 
@@ -63,7 +62,6 @@ export default async function Page() {
                 </div>
             </section>
 
-            <DemoSeeder />
             <ProjectsPage projects={projects || []} />
         </main>
     );
