@@ -8,8 +8,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --color-brand-navy: #072a52;
   --color-brand-gold: #f9ba51;
   --color-brand-light: #F8FAFC;
@@ -89,14 +89,14 @@
 }
 
 body {
-  font-family: var(--font-plus-jakarta-sans), sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   scroll-behavior: smooth;
   background-color: #F8FAFC;
 }
 
 /* Public-facing pages: Everything = Satoshi */
 .public-page {
-  font-family: 'Satoshi', var(--font-body-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Satoshi', Arial, Helvetica, sans-serif;
 }
 
 .mesh-gradient {
