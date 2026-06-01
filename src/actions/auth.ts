@@ -3,11 +3,22 @@
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { accounts, users } from '@/lib/db/schema';
-import { and, eq, count } from 'drizzle-orm';
+import { and, eq, count, sql } from 'drizzle-orm';
 import { hashPassword } from 'better-auth/crypto';
 
 function getErrorMessage(error: unknown, fallback: string) {
     return error instanceof Error ? error.message : fallback;
+}
+
+async function ensureUserAdminColumns() {
+    await db.execute(sql`
+        ALTER TABLE "users"
+        ADD COLUMN IF NOT EXISTS "role" text DEFAULT 'user',
+        ADD COLUMN IF NOT EXISTS "is_active" boolean DEFAULT true,
+        ADD COLUMN IF NOT EXISTS "avatar_url" text,
+        ADD COLUMN IF NOT EXISTS "bio" text,
+        ADD COLUMN IF NOT EXISTS "address" text
+    `);
 }
 
 export async function setupAdminAction(formData: FormData) {
@@ -20,6 +31,8 @@ export async function setupAdminAction(formData: FormData) {
     }
 
     try {
+        await ensureUserAdminColumns();
+
         const result = await db.select({ count: count() }).from(users).where(eq(users.role, 'admin'));
         const adminCount = result[0]?.count || 0;
 
