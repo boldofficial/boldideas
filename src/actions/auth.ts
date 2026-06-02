@@ -7,18 +7,35 @@ import { and, eq, count, sql } from 'drizzle-orm';
 import { hashPassword } from 'better-auth/crypto';
 
 function getErrorMessage(error: unknown, fallback: string) {
-    return error instanceof Error ? error.message : fallback;
+    if (!(error instanceof Error)) return fallback;
+
+    const cause = error.cause;
+    if (cause instanceof Error && cause.message) {
+        return `${error.message} Cause: ${cause.message}`;
+    }
+
+    return error.message;
 }
 
 async function ensureUserAdminColumns() {
-    await db.execute(sql`
-        ALTER TABLE "users"
-        ADD COLUMN IF NOT EXISTS "role" text DEFAULT 'user',
-        ADD COLUMN IF NOT EXISTS "is_active" boolean DEFAULT true,
-        ADD COLUMN IF NOT EXISTS "avatar_url" text,
-        ADD COLUMN IF NOT EXISTS "bio" text,
-        ADD COLUMN IF NOT EXISTS "address" text
-    `);
+    const columnStatements = [
+        sql`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "role" text DEFAULT 'user'`,
+        sql`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_active" boolean DEFAULT true`,
+        sql`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "avatar_url" text`,
+        sql`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "bio" text`,
+        sql`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "address" text`,
+    ];
+
+    try {
+        for (const statement of columnStatements) {
+            await db.execute(statement);
+        }
+    } catch (error) {
+        const message = getErrorMessage(error, 'Unable to repair the users table.');
+        throw new Error(
+            `The users table is missing admin columns and the app could not add them automatically. Run the latest database migration, then try setup again. ${message}`
+        );
+    }
 }
 
 export async function setupAdminAction(formData: FormData) {
