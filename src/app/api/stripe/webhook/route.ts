@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         }
 
         const metadata = session.metadata || {};
-        const paymentIntentId = session.payment_intent;
+        const paymentIntentId = String(session.payment_intent || session.subscription || session.id);
 
         // ──────────────────────────────────────
         // Invoice Payment Flow (admin-created invoices paid via Stripe)

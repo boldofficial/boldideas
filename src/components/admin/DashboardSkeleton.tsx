@@ -1,97 +1,79 @@
-// ─── Full-page skeleton (single Suspense boundary) ──────────
 export default function DashboardSkeleton() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <MetricsSkeleton />
-      <ChartsSkeleton />
       <HealthActivitySkeleton />
+      <ChartsSkeleton />
       <ProjectsSkeleton />
     </div>
   );
 }
 
-// ─── Section-level mini-skeletons (individual Suspense boundaries) ───
-
 export function MetricsSkeleton() {
   return (
-    <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-4 animate-pulse">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
-          <div className="w-10 h-10 bg-slate-200 rounded-lg mb-3" />
-          <div className="h-3 bg-slate-200 rounded w-20 mb-2" />
-          <div className="h-7 bg-slate-200 rounded w-16 mb-2" />
-          <div className="h-5 bg-slate-200 rounded w-14" />
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 animate-pulse">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex items-start justify-between">
+            <div className="space-y-3">
+              <div className="h-3 w-32 bg-slate-200" />
+              <div className="h-8 w-24 bg-slate-200" />
+              <div className="h-4 w-40 bg-slate-100" />
+            </div>
+            <div className="h-9 w-9 bg-slate-100" />
+          </div>
         </div>
       ))}
     </div>
   );
 }
 
-export function ChartsSkeleton() {
+export function HealthActivitySkeleton() {
   return (
-    <div className="animate-pulse space-y-6">
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-lg border border-slate-200 shadow-sm p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-slate-200 rounded-lg" />
-            <div>
-              <div className="h-4 bg-slate-200 rounded w-28 mb-1" />
-              <div className="h-3 bg-slate-200 rounded w-20" />
-            </div>
+    <div className="grid gap-6 xl:grid-cols-[1fr_380px] animate-pulse">
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        <div className="border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 px-5 py-4">
+            <div className="h-4 w-28 bg-slate-200" />
+            <div className="mt-2 h-3 w-64 bg-slate-100" />
           </div>
-          <div className="h-64 bg-slate-100 rounded-lg" />
+          <div className="p-5 space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="grid grid-cols-5 gap-4">
+                <div className="col-span-2 h-5 bg-slate-100" />
+                <div className="h-5 bg-slate-100" />
+                <div className="h-5 bg-slate-100" />
+                <div className="h-5 bg-slate-100" />
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-slate-200 rounded-lg" />
-            <div>
-              <div className="h-4 bg-slate-200 rounded w-24 mb-1" />
-              <div className="h-3 bg-slate-200 rounded w-16" />
-            </div>
+        <div className="border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 px-5 py-4">
+            <div className="h-4 w-32 bg-slate-200" />
+            <div className="mt-2 h-3 w-44 bg-slate-100" />
           </div>
-          <div className="h-48 bg-slate-100 rounded-full w-40 mx-auto mb-4" />
-          <div className="space-y-2">
+          <div className="divide-y divide-slate-100">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-slate-200 rounded-full" />
-                  <div className="h-3 bg-slate-200 rounded w-20" />
-                </div>
-                <div className="h-3 bg-slate-200 rounded w-6" />
+              <div key={i} className="flex items-center justify-between px-5 py-4">
+                <div className="h-4 w-36 bg-slate-100" />
+                <div className="h-5 w-8 bg-slate-200" />
               </div>
             ))}
           </div>
         </div>
       </div>
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 bg-slate-200 rounded-lg" />
-          <div>
-            <div className="h-4 bg-slate-200 rounded w-24 mb-1" />
-            <div className="h-3 bg-slate-200 rounded w-36" />
-          </div>
-        </div>
-        <div className="h-52 bg-slate-100 rounded-lg" />
-      </div>
-    </div>
-  );
-}
-
-export function HealthActivitySkeleton() {
-  return (
-    <div className="grid lg:grid-cols-3 gap-6 animate-pulse">
-      <div className="lg:col-span-2 bg-slate-200 rounded-lg p-6 h-40" />
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden h-[300px] lg:h-auto">
-        <div className="p-4 border-b border-slate-100 bg-slate-50">
-          <div className="h-4 bg-slate-200 rounded w-24" />
+      <div className="border border-slate-200 bg-white shadow-sm min-h-[420px]">
+        <div className="border-b border-slate-100 bg-slate-50 p-4">
+          <div className="h-4 w-28 bg-slate-200" />
         </div>
         <div className="p-4 space-y-4">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="flex gap-3">
-              <div className="w-6 h-6 bg-slate-200 rounded-full shrink-0" />
-              <div className="flex-1 space-y-1.5">
-                <div className="h-3 bg-slate-200 rounded w-3/4" />
-                <div className="h-3 bg-slate-200 rounded w-1/3" />
+              <div className="h-6 w-6 rounded-full bg-slate-200" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 w-3/4 bg-slate-100" />
+                <div className="h-3 w-1/3 bg-slate-100" />
               </div>
             </div>
           ))}
@@ -101,27 +83,48 @@ export function HealthActivitySkeleton() {
   );
 }
 
+export function ChartsSkeleton() {
+  return (
+    <div className="grid gap-6 xl:grid-cols-[1fr_380px] animate-pulse">
+      <div className="border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="mb-5 h-10 w-56 bg-slate-100" />
+        <div className="h-72 bg-slate-100" />
+      </div>
+      <div className="border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="mb-5 h-10 w-56 bg-slate-100" />
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i}>
+              <div className="mb-2 flex justify-between">
+                <div className="h-3 w-20 bg-slate-100" />
+                <div className="h-3 w-16 bg-slate-100" />
+              </div>
+              <div className="h-2 bg-slate-100" />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="border border-slate-200 bg-white p-5 shadow-sm xl:col-span-2">
+        <div className="mb-5 h-10 w-64 bg-slate-100" />
+        <div className="h-56 bg-slate-100" />
+      </div>
+    </div>
+  );
+}
+
 export function ProjectsSkeleton() {
   return (
-    <div className="bg-white rounded-sm shadow-sm border border-slate-200 p-6 animate-pulse">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <div className="h-5 bg-slate-200 rounded w-32 mb-1" />
-          <div className="h-3 bg-slate-200 rounded w-44" />
-        </div>
-        <div className="h-10 bg-slate-200 rounded w-36" />
+    <div className="grid gap-4 border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-4 animate-pulse">
+      <div>
+        <div className="h-3 w-32 bg-slate-200" />
+        <div className="mt-3 h-6 w-44 bg-slate-100" />
       </div>
-      <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="flex items-center justify-between p-6 bg-white border border-slate-200 rounded-sm">
-            <div className="space-y-2">
-              <div className="h-4 bg-slate-200 rounded w-48" />
-              <div className="h-3 bg-slate-200 rounded w-64" />
-            </div>
-            <div className="flex gap-2">
-              <div className="w-8 h-8 bg-slate-200 rounded" />
-              <div className="w-8 h-8 bg-slate-200 rounded" />
-            </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="border border-slate-200 bg-slate-50 px-4 py-3">
+            <div className="h-3 w-24 bg-slate-200" />
+            <div className="mt-3 h-7 w-14 bg-slate-200" />
+            <div className="mt-2 h-3 w-28 bg-slate-100" />
           </div>
         ))}
       </div>

@@ -81,6 +81,19 @@ export async function updatePurchaseStatus(
   }
 }
 
+export async function updatePurchaseStripeSession(purchaseId: string, stripeSessionId: string) {
+  try {
+    await db.update(purchases)
+      .set({ stripeSessionId, updatedAt: new Date() })
+      .where(eq(purchases.id, purchaseId));
+
+    return { success: true };
+  } catch (error) {
+    console.error('[updatePurchaseStripeSession] Error:', error);
+    return { success: false, error: 'Failed to update purchase Stripe session' };
+  }
+}
+
 /**
  * Called after Stripe payment succeeds.
  * Creates invoice + receipt, links them to the purchase, sends email notification.

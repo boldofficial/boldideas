@@ -1,8 +1,8 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { users, internalProjects, tasks, invoices, leads } from '@/lib/db/schema';
-import { eq, count, sql, and, gte, lte } from 'drizzle-orm';
+import { users, internalProjects, tasks, invoices, leads, tickets } from '@/lib/db/schema';
+import { eq, count, sql, and, gte, lte, desc, inArray } from 'drizzle-orm';
 import { requireStaffOrAdmin } from '@/lib/authz';
 
 export async function getDashboardMetrics() {
@@ -77,6 +77,20 @@ export async function getDashboardMetrics() {
                     sql`${tasks.dueDate} < NOW()`
                 )
             );
+
+        const [openTicketResult] = await db
+            .select({ count: count() })
+            .from(tickets)
+            .where(sql`${tickets.status} NOT IN ('resolved', 'closed')`);
+
+        const [staleLeadResult] = await db
+            .select({ count: count() })
+            .from(leads)
+            .where(and(
+                sql`${leads.status} NOT IN ('won', 'lost')`,
+                sql`${leads.nextFollowUpAt} IS NOT NULL`,
+                lte(leads.nextFollowUpAt, now)
+            ));
 
         // ── Chart Data: Monthly Revenue Trend (last 6 months) ──
         const revenueTrend: { month: string; revenue: number }[] = [];
@@ -155,6 +169,102 @@ export async function getDashboardMetrics() {
         const lostLeads = allLeads.filter(l => l.status === 'lost').length;
         const winRate = totalLeads > 0 ? Math.round((wonLeads / (wonLeads + lostLeads)) * 100) : 0;
 
+        const activeWorkProjects = await db
+            .select({
+                id: internalProjects.id,
+                title: internalProjects.title,
+                status: internalProjects.status,
+                type: internalProjects.type,
+                dueDate: internalProjects.dueDate,
+                managerId: internalProjects.managerId,
+                updatedAt: internalProjects.updatedAt,
+            })
+            .from(internalProjects)
+            .where(sql`${internalProjects.status} NOT IN ('completed', 'cancelled')`)
+            .orderBy(desc(internalProjects.updatedAt))
+            .limit(6);
+
+        const activeProjectIds = activeWorkProjects.map(project => project.id);
+        const openProjectTasks = activeProjectIds.length
+            ? await db
+                .select({
+                    id: tasks.id,
+                    title: tasks.title,
+                    status: tasks.status,
+                    priority: tasks.priority,
+                    projectId: tasks.projectId,
+                    dueDate: tasks.dueDate,
+                })
+                .from(tasks)
+                .where(and(
+                    inArray(tasks.projectId, activeProjectIds),
+                    sql`${tasks.status} != 'done'`
+                ))
+                .orderBy(sql`${tasks.dueDate} ASC NULLS LAST`)
+            : [];
+
+        const managerIds = activeWorkProjects
+            .map(project => project.managerId)
+            .filter((id): id is string => Boolean(id));
+
+        const projectManagers = managerIds.length
+            ? await db
+                .select({ id: users.id, name: users.name, email: users.email })
+                .from(users)
+                .where(inArray(users.id, managerIds))
+            : [];
+
+        const managerById = new Map(projectManagers.map(manager => [
+            manager.id,
+            manager.name || manager.email,
+        ]));
+
+        const activeWork = activeWorkProjects.map(project => {
+            const projectTasks = openProjectTasks.filter(task => task.projectId === project.id);
+            const nextTask = projectTasks[0];
+            const overdueCount = projectTasks.filter(task => task.dueDate && task.dueDate < now).length;
+
+            return {
+                id: project.id,
+                title: project.title,
+                status: project.status || 'active',
+                type: project.type || 'client',
+                owner: project.managerId ? managerById.get(project.managerId) || 'Assigned' : 'Unassigned',
+                openTasks: projectTasks.length,
+                overdueTasks: overdueCount,
+                nextDueAt: nextTask?.dueDate || project.dueDate || null,
+                nextAction: nextTask?.title || 'Review project plan',
+                priority: nextTask?.priority || (overdueCount > 0 ? 'high' : 'normal'),
+            };
+        });
+
+        const attentionQueue = [
+            {
+                label: 'Overdue delivery items',
+                value: overdueTasks?.count || 0,
+                href: '/admin/tasks',
+                tone: (overdueTasks?.count || 0) > 0 ? 'danger' : 'clear',
+            },
+            {
+                label: 'Open client tickets',
+                value: openTicketResult?.count || 0,
+                href: '/admin/tickets',
+                tone: (openTicketResult?.count || 0) > 0 ? 'warning' : 'clear',
+            },
+            {
+                label: 'Invoices awaiting action',
+                value: pendingInvoicesResult?.count || 0,
+                href: '/admin/finance',
+                tone: (pendingInvoicesResult?.count || 0) > 0 ? 'warning' : 'clear',
+            },
+            {
+                label: 'Lead follow-ups due',
+                value: staleLeadResult?.count || 0,
+                href: '/admin/crm',
+                tone: (staleLeadResult?.count || 0) > 0 ? 'warning' : 'clear',
+            },
+        ];
+
         return {
             success: true,
             data: {
@@ -167,6 +277,8 @@ export async function getDashboardMetrics() {
                 pendingInvoicesValue: Number(pendingInvoicesResult?.total) || 0,
                 pendingInvoicesCount: pendingInvoicesResult?.count || 0,
                 overdueTasks: overdueTasks?.count || 0,
+                openTickets: openTicketResult?.count || 0,
+                staleLeads: staleLeadResult?.count || 0,
                 // Chart data
                 revenueTrend,
                 pipeline,
@@ -176,6 +288,8 @@ export async function getDashboardMetrics() {
                 wonLeads,
                 lostLeads,
                 winRate,
+                activeWork,
+                attentionQueue,
             }
         };
     } catch (error) {

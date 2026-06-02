@@ -20,30 +20,38 @@ export const metadata = {
 
 export default function AdminDashboardPage() {
     return (
-        <div className="space-y-8 animate-fade-in">
-            <header className="flex items-start justify-between border-b border-slate-200 pb-6 gap-4">
-                <div className="space-y-4 min-w-0">
+        <div className="space-y-6 animate-fade-in">
+            <header className="flex flex-col gap-5 border-b border-slate-200 pb-6 xl:flex-row xl:items-end xl:justify-between">
+                <div className="min-w-0 space-y-4">
                     <DashboardGreeting />
-                    <p className="text-slate-500 text-sm">Real-time overview of your agency</p>
+                    <p className="max-w-2xl text-sm text-slate-500">
+                        Open work, client risk, cash, and follow-ups in one place.
+                    </p>
                     <QuickActions />
                 </div>
-                <div className="flex items-center space-x-2 bg-green-100 text-green-700 px-3 py-1.5 rounded-full border border-green-200 shrink-0 self-start">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    <span className="text-xs font-medium">Online</span>
+
+                <div className="grid grid-cols-2 gap-2 text-xs text-slate-500 sm:flex sm:items-center">
+                    <div className="border border-slate-200 bg-white px-3 py-2">
+                        <span className="block font-bold uppercase tracking-[0.12em] text-slate-400">View</span>
+                        <span className="font-semibold text-brand-navy">Operations</span>
+                    </div>
+                    <div className="border border-slate-200 bg-white px-3 py-2">
+                        <span className="block font-bold uppercase tracking-[0.12em] text-slate-400">Status</span>
+                        <span className="font-semibold text-brand-navy">Live data</span>
+                    </div>
                 </div>
             </header>
 
-            {/* Stream in progressively — each section loads independently */}
             <Suspense fallback={<MetricsSkeleton />}>
                 <DashboardMetricsGrid />
             </Suspense>
 
-            <Suspense fallback={<ChartsSkeleton />}>
-                <DashboardChartsSection />
-            </Suspense>
-
             <Suspense fallback={<HealthActivitySkeleton />}>
                 <DashboardHealthSection />
+            </Suspense>
+
+            <Suspense fallback={<ChartsSkeleton />}>
+                <DashboardChartsSection />
             </Suspense>
 
             <Suspense fallback={<ProjectsSkeleton />}>

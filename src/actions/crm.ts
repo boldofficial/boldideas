@@ -185,7 +185,7 @@ export async function createLead(formData: FormData) {
             );
         }
 
-        return { success: true };
+        return { success: true, id: newLead.id };
     } catch (error) {
         console.error('Error creating lead:', error);
         return { success: false, error: 'Failed to create lead' };
@@ -207,7 +207,30 @@ export async function createWebsiteLead(formData: FormData) {
     normalized.set('priority', getOptionalString(formData, 'priority') || 'high');
     normalized.set('notes', getOptionalString(formData, 'message') || getOptionalString(formData, 'notes') || '');
 
-    return createLead(normalized);
+    const result = await createLead(normalized);
+
+    if (result.success && result.id) {
+        try {
+            const admins = await db.select({ id: users.id })
+                .from(users)
+                .where(eq(users.role, 'admin'))
+                .limit(5);
+
+            for (const admin of admins) {
+                await createNotification(
+                    admin.id,
+                    'lead_created',
+                    'New Website Lead',
+                    `${firstName} ${lastName} submitted a website inquiry`,
+                    `/admin/crm/${result.id}`
+                );
+            }
+        } catch (error) {
+            console.error('Failed to notify admins for website lead:', error);
+        }
+    }
+
+    return result;
 }
 
 export async function getLead(id: string) {

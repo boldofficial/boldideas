@@ -69,6 +69,13 @@ export async function POST(req: Request) {
         invoiceId: invoice.id,
         invoiceNumber: invoice.invoiceNumber || '',
       },
+      payment_intent_data: {
+        metadata: {
+          type: 'invoice_payment',
+          invoiceId: invoice.id,
+          invoiceNumber: invoice.invoiceNumber || '',
+        },
+      },
       invoice_creation: {
         enabled: true,
         invoice_data: {

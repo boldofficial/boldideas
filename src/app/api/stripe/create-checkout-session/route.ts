@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
-import { createPurchase } from '@/actions/purchases';
+import { createPurchase, updatePurchaseStripeSession } from '@/actions/purchases';
 
 export async function POST(req: Request) {
   try {
@@ -17,22 +17,73 @@ export async function POST(req: Request) {
       userId,
     } = body;
 
-    // Validate required fields
-    if (!serviceSlug || !packageName || !packageSlug || !amount || !customerName || !customerEmail) {
+    const setupAmount = Number(amount || 0);
+    const recurringAmount = Number(monthlyPrice || 0);
+
+    if (!serviceSlug || !packageName || !packageSlug || (!setupAmount && !recurringAmount) || !customerName || !customerEmail) {
       return NextResponse.json(
         { error: 'Missing required fields: serviceSlug, packageName, packageSlug, amount, customerName, customerEmail' },
         { status: 400 }
       );
     }
 
-    // Determine if this is a one-time or recurring payment
-    const isRecurring = monthlyPrice > 0;
+    const isRecurring = recurringAmount > 0;
+    const initialChargeAmount = isRecurring ? setupAmount + recurringAmount : setupAmount;
+    const metadata = {
+      type: 'website_purchase',
+      serviceSlug,
+      packageName,
+      packageSlug,
+    };
 
-    // 1. Create a pending purchase record
+    const lineItems: any[] = isRecurring
+      ? [
+          ...(setupAmount > 0
+            ? [{
+                price_data: {
+                  currency: 'usd',
+                  product_data: {
+                    name: `${packageName} setup - ${serviceSlug.replace(/-/g, ' ')}`,
+                    description: 'One-time Bold Ideas setup fee',
+                  },
+                  unit_amount: Math.round(setupAmount * 100),
+                },
+                quantity: 1,
+              }]
+            : []),
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: `${packageName} monthly care - ${serviceSlug.replace(/-/g, ' ')}`,
+                description: 'Bold Ideas recurring monthly service',
+              },
+              unit_amount: Math.round(recurringAmount * 100),
+              recurring: {
+                interval: 'month',
+              },
+            },
+            quantity: 1,
+          },
+        ]
+      : [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: `${packageName} - ${serviceSlug.replace(/-/g, ' ')}`,
+                description: 'Bold Ideas productized package',
+              },
+              unit_amount: Math.round(setupAmount * 100),
+            },
+            quantity: 1,
+          },
+        ];
+
     const { success, id: purchaseId } = await createPurchase({
       serviceSlug,
       packageName,
-      amount: String(amount),
+      amount: String(initialChargeAmount),
       customerName,
       customerEmail,
       customerPhone: customerPhone || undefined,
@@ -43,40 +94,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Failed to create purchase record' }, { status: 500 });
     }
 
-    // 2. Create Stripe Checkout Session
-    const sessionParams: any = {
-      payment_method_types: ['card'],
-      mode: isRecurring ? 'subscription' : 'payment',
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `${packageName} — ${serviceSlug.replace(/-/g, ' ')}`,
-              description: `Bold Ideas productized package`,
-            },
-            unit_amount: Math.round(amount * 100), // Stripe uses cents
-            ...(isRecurring && {
-              recurring: {
-                interval: 'month',
-              },
-            }),
-          },
-          quantity: 1,
-        },
-      ],
-      customer_email: customerEmail,
-      metadata: {
-        purchaseId,
-        serviceSlug,
-        packageName,
-        packageSlug,
-      },
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/purchase/success?session_id={CHECKOUT_SESSION_ID}&purchase_id=${purchaseId}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/purchase/cancel?purchase_id=${purchaseId}`,
+    const fullMetadata = {
+      ...metadata,
+      purchaseId,
     };
 
-    const session = await getStripe().checkout.sessions.create(sessionParams);
+    const session = await getStripe().checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: isRecurring ? 'subscription' : 'payment',
+      line_items: lineItems,
+      customer_email: customerEmail,
+      metadata: fullMetadata,
+      ...(isRecurring
+        ? { subscription_data: { metadata: fullMetadata } }
+        : { payment_intent_data: { metadata: fullMetadata } }),
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/purchase/success?session_id={CHECKOUT_SESSION_ID}&purchase_id=${purchaseId}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/purchase/cancel?purchase_id=${purchaseId}`,
+    });
+
+    await updatePurchaseStripeSession(purchaseId, session.id);
 
     return NextResponse.json({
       url: session.url,

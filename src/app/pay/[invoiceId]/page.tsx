@@ -1,4 +1,4 @@
-import { getInvoiceDetails } from '@/actions/finance';
+import { getPublicInvoiceDetails } from '@/actions/finance';
 import { getCompanySettings } from '@/actions/financeEnhancements';
 import { notFound } from 'next/navigation';
 import PayInvoiceButton from '@/components/pay/PayInvoiceButton';
@@ -18,7 +18,7 @@ export default async function PayInvoicePage({
 }) {
   const { invoiceId } = await params;
   const searchParamsResolved = await searchParams;
-  const { data: _invoice, success } = await getInvoiceDetails(invoiceId);
+  const { data: _invoice, success } = await getPublicInvoiceDetails(invoiceId);
   const { data: settings } = await getCompanySettings();
 
   if (!success || !_invoice) {

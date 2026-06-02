@@ -190,6 +190,33 @@ export async function getInvoiceDetails(invoiceId: string) {
         return { success: false, error: 'Failed to fetch invoice details' };
     }
 }
+
+export async function getPublicInvoiceDetails(invoiceId: string) {
+    try {
+        const [invoice] = await db.select().from(invoices).where(eq(invoices.id, invoiceId)).limit(1);
+        if (!invoice) return { success: false, error: 'Invoice not found' };
+
+        const items = await db.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
+
+        let client = null;
+        if (invoice.clientId) {
+            [client] = await db
+                .select({
+                    name: users.name,
+                    email: users.email,
+                })
+                .from(users)
+                .where(eq(users.id, invoice.clientId))
+                .limit(1);
+        }
+
+        return { success: true, data: { ...invoice, items, client } };
+    } catch (error) {
+        console.error('getPublicInvoiceDetails error:', error);
+        return { success: false, error: 'Failed to fetch invoice details' };
+    }
+}
+
 export async function addInvoiceItem(data: {
     invoiceId: string;
     title?: string | null;
@@ -316,11 +343,14 @@ export async function sendInvoiceEmail(invoiceId: string) {
 
         const hasDiscount = Number(invoice.discountAmount || 0) > 0;
 
-        const paymentLinkHtml = invoice.stripePaymentLink
+        const publicPaymentUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/pay/${invoiceId}`;
+        const paymentUrl = invoice.stripePaymentLink || publicPaymentUrl;
+
+        const paymentLinkHtml = invoice.status !== 'paid'
             ? `
                 <tr>
                     <td colspan="2" style="padding: 24px 40px; text-align: center;">
-                        <a href="${invoice.stripePaymentLink}" style="display: inline-block; background: #D4AF37; color: #0A1128; padding: 14px 32px; text-decoration: none; font-weight: 800; font-size: 14px; border-radius: 8px; letter-spacing: 1px;">
+                        <a href="${paymentUrl}" style="display: inline-block; background: #D4AF37; color: #0A1128; padding: 14px 32px; text-decoration: none; font-weight: 800; font-size: 14px; border-radius: 8px; letter-spacing: 1px;">
                             PAY NOW &mdash; ${currencySymbol}${formattedAmount}
                         </a>
                         <p style="color: #94a3b8; font-size: 12px; margin-top: 12px;">Secure payment powered by Stripe</p>
