@@ -80,7 +80,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
     const followUpState = getFollowUpState(lead.nextFollowUpAt);
 
     return (
-        <div className="min-h-screen bg-slate-100/70 p-4 md:p-6 xl:p-8">
+        <div className="perfex-crm min-h-screen bg-[#f4f6f8] p-4 md:p-6 xl:p-8">
             <div className="mb-5 flex flex-col gap-4 rounded-sm border border-slate-200 bg-white px-5 py-5 shadow-sm lg:flex-row lg:items-end lg:justify-between">
                 <div>
                     <Link href="/admin/crm" className="mb-3 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-slate-400 transition hover:text-brand-navy">

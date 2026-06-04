@@ -19,6 +19,69 @@ function getFollowUpDate(formData: FormData) {
     return value ? new Date(value) : undefined;
 }
 
+function getCsvCell(row: Record<string, string>, keys: string[]) {
+    for (const key of keys) {
+        const value = row[key];
+        if (value?.trim()) return value.trim();
+    }
+    return undefined;
+}
+
+function normalizeCsvHeader(value: string) {
+    return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+}
+
+function parseCsvLine(line: string) {
+    const values: string[] = [];
+    let current = '';
+    let quoted = false;
+
+    for (let index = 0; index < line.length; index += 1) {
+        const char = line[index];
+        const next = line[index + 1];
+
+        if (char === '"' && quoted && next === '"') {
+            current += '"';
+            index += 1;
+            continue;
+        }
+
+        if (char === '"') {
+            quoted = !quoted;
+            continue;
+        }
+
+        if (char === ',' && !quoted) {
+            values.push(current.trim());
+            current = '';
+            continue;
+        }
+
+        current += char;
+    }
+
+    values.push(current.trim());
+    return values;
+}
+
+function parseCsv(text: string) {
+    const lines = text
+        .replace(/^\uFEFF/, '')
+        .split(/\r?\n/)
+        .filter((line) => line.trim().length > 0);
+
+    if (lines.length < 2) return [];
+
+    const headers = parseCsvLine(lines[0]).map(normalizeCsvHeader);
+    return lines.slice(1).map((line) => {
+        const values = parseCsvLine(line);
+        return headers.reduce<Record<string, string>>((row, header, index) => {
+            row[header] = values[index] || '';
+            return row;
+        }, {});
+    });
+}
+
 function splitFullName(name: string) {
     const parts = name.trim().split(/\s+/);
     return {
@@ -387,6 +450,115 @@ export async function createLead(formData: FormData) {
     }
 }
 
+export async function importLeadsFromCsv(formData: FormData) {
+    let currentUser;
+    try {
+        currentUser = await requireStaffOrAdmin();
+    } catch {
+        return authzError('Only team members can import leads');
+    }
+
+    const csv = getOptionalString(formData, 'csv');
+    const defaultSource = getOptionalString(formData, 'source') || 'csv_import';
+    const defaultAssignedTo = getOptionalString(formData, 'assignedTo') || currentUser.id;
+
+    if (!csv) return { success: false, error: 'CSV content is required' };
+
+    const rows = parseCsv(csv);
+    if (rows.length === 0) return { success: false, error: 'CSV must include a header row and at least one lead' };
+    if (rows.length > 500) return { success: false, error: 'Import up to 500 leads at a time' };
+
+    let created = 0;
+    let updated = 0;
+    let skipped = 0;
+    const errors: string[] = [];
+
+    for (const [index, row] of rows.entries()) {
+        const email = getCsvCell(row, ['email', 'email_address', 'work_email']);
+        const fullName = getCsvCell(row, ['name', 'full_name', 'contact_name']);
+        const firstName = getCsvCell(row, ['first_name', 'firstname']) || (fullName ? splitFullName(fullName).firstName : undefined);
+        const lastName = getCsvCell(row, ['last_name', 'lastname']) || (fullName ? splitFullName(fullName).lastName : '');
+
+        if (!email || !firstName) {
+            skipped += 1;
+            errors.push(`Row ${index + 2}: missing email or name`);
+            continue;
+        }
+
+        const company = getCsvCell(row, ['company', 'company_name', 'organization']);
+        const phone = getCsvCell(row, ['phone', 'phone_number', 'mobile']);
+        const status = getCsvCell(row, ['status', 'stage']) || 'new';
+        const source = getCsvCell(row, ['source', 'lead_source']) || defaultSource;
+        const priority = getCsvCell(row, ['priority']) || 'medium';
+        const value = getCsvCell(row, ['value', 'deal_value', 'estimated_value', 'budget']);
+        const serviceInterest = getCsvCell(row, ['service_interest', 'service', 'interest', 'package']);
+        const notes = getCsvCell(row, ['notes', 'note', 'message']);
+        const nextFollowUpRaw = getCsvCell(row, ['next_follow_up', 'next_follow_up_at', 'follow_up', 'followup']);
+        const nextFollowUpAt = nextFollowUpRaw ? new Date(nextFollowUpRaw) : undefined;
+
+        try {
+            const existingLead = await findLeadByEmail(email);
+            if (existingLead) {
+                await db.update(leads)
+                    .set({
+                        firstName,
+                        lastName,
+                        phone: phone || existingLead.phone,
+                        company: company || existingLead.company,
+                        status: status || existingLead.status,
+                        source,
+                        priority,
+                        value: value || existingLead.value,
+                        serviceInterest: serviceInterest || existingLead.serviceInterest,
+                        nextFollowUpAt: nextFollowUpAt && !Number.isNaN(nextFollowUpAt.getTime()) ? nextFollowUpAt : existingLead.nextFollowUpAt,
+                        assignedTo: defaultAssignedTo || existingLead.assignedTo,
+                        updatedAt: new Date(),
+                    })
+                    .where(eq(leads.id, existingLead.id));
+
+                await db.insert(interactions).values({
+                    leadId: existingLead.id,
+                    type: 'note',
+                    notes: `Lead updated from CSV import.${notes ? `\n\n${notes}` : ''}`,
+                    createdBy: currentUser.id,
+                });
+                updated += 1;
+                continue;
+            }
+
+            await db.insert(leads).values({
+                firstName,
+                lastName,
+                email,
+                company,
+                phone,
+                status,
+                source,
+                notes,
+                value,
+                priority,
+                serviceInterest,
+                nextFollowUpAt: nextFollowUpAt && !Number.isNaN(nextFollowUpAt.getTime()) ? nextFollowUpAt : undefined,
+                assignedTo: defaultAssignedTo,
+            });
+            created += 1;
+        } catch (error) {
+            console.error('CSV lead import row error:', error);
+            skipped += 1;
+            errors.push(`Row ${index + 2}: failed to import`);
+        }
+    }
+
+    revalidatePath('/admin/crm');
+    return {
+        success: true,
+        created,
+        updated,
+        skipped,
+        errors: errors.slice(0, 10),
+    };
+}
+
 export async function createWebsiteLead(formData: FormData) {
     const fullName = getOptionalString(formData, 'name') || '';
     const { firstName, lastName } = splitFullName(fullName);
@@ -657,13 +829,10 @@ export async function convertLeadToClient(formData: FormData) {
     if (!leadId) return { success: false, error: 'Lead id is required' };
 
     try {
-        const result = await ensureClientFromLead(leadId);
-        if (!result.success) return result;
-        if (result.lead.projectId) {
-            return { success: true, projectId: result.lead.projectId, clientId: result.clientId, existing: true };
-        }
+         const result = await ensureClientFromLead(leadId);
+         if (!result.success) return result;
 
-        await db.update(leads)
+          await db.update(leads)
             .set({
                 clientId: result.clientId,
                 status: result.lead.status === 'new' ? 'qualified' : result.lead.status,
@@ -699,11 +868,11 @@ export async function createProjectFromLead(formData: FormData) {
     if (!leadId) return { success: false, error: 'Lead id is required' };
 
     try {
-        const result = await ensureClientFromLead(leadId);
-        if (!result.success) return result;
-        if (result.lead.invoiceId) {
-            return { success: true, invoiceId: result.lead.invoiceId, clientId: result.clientId, existing: true };
-        }
+         const result = await ensureClientFromLead(leadId);
+         if (!result.success) return result;
+          if (result.lead.projectId) {
+              return { success: true, projectId: result.lead.projectId, clientId: result.clientId, existing: true };
+          }
 
         const title = getOptionalString(formData, 'title')
             || `${result.lead.company || `${result.lead.firstName} ${result.lead.lastName}`.trim()} - ${result.lead.serviceInterest || 'Client Project'}`;
@@ -783,10 +952,13 @@ export async function createInvoiceFromLead(formData: FormData) {
     if (!leadId) return { success: false, error: 'Lead id is required' };
 
     try {
-        const result = await ensureClientFromLead(leadId);
-        if (!result.success) return result;
+         const result = await ensureClientFromLead(leadId);
+         if (!result.success) return result;
+         if (result.lead.invoiceId) {
+             return { success: true, invoiceId: result.lead.invoiceId, clientId: result.clientId, existing: true };
+         }
 
-        const amount = getOptionalString(formData, 'amount') || result.lead.value || '0';
+          const amount = getOptionalString(formData, 'amount') || result.lead.value || '0';
         const currency = getOptionalString(formData, 'currency') || 'USD';
         const dueDateValue = getOptionalString(formData, 'dueDate');
         const dueDate = dueDateValue ? new Date(dueDateValue) : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
