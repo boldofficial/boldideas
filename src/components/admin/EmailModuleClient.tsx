@@ -1,11 +1,12 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useMemo, useRef, useState, useTransition } from 'react';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Inbox, Mail, RefreshCw, Send, Settings, UserRound, X } from 'lucide-react';
+import { Bold, Inbox, Italic, Link as LinkIcon, List, Mail, Paperclip, RefreshCw, Send, Settings, Trash2, Underline, UserRound, X } from 'lucide-react';
 import { sendPortalEmail, syncZohoInbox } from '@/actions/email';
+import { applyEmailTemplate, emailTemplates } from '@/lib/emailTemplates';
 
 export type EmailMessage = {
     id: string;
@@ -51,9 +52,16 @@ export default function EmailModuleClient({
     const searchParams = useSearchParams();
     const initialTo = searchParams.get('to') || '';
     const initialSubject = searchParams.get('subject') || '';
+    const leadName = searchParams.get('leadName') || 'there';
+    const serviceInterest = searchParams.get('serviceInterest') || 'your project';
+    const editorRef = useRef<HTMLDivElement>(null);
     const [mailbox, setMailbox] = useState<'INBOX' | 'Sent'>('INBOX');
     const [selectedId, setSelectedId] = useState(inbox[0]?.id || sent[0]?.id || '');
     const [showCompose, setShowCompose] = useState(Boolean(initialTo));
+    const [composeSubject, setComposeSubject] = useState(initialSubject);
+    const [composerHtml, setComposerHtml] = useState('');
+    const [composerText, setComposerText] = useState('');
+    const [attachments, setAttachments] = useState<File[]>([]);
     const [isPending, startTransition] = useTransition();
     const [result, setResult] = useState<ActionResult | null>(null);
 
@@ -73,13 +81,49 @@ export default function EmailModuleClient({
 
     function handleSend(formData: FormData) {
         setResult(null);
+        formData.set('bodyHtml', composerHtml);
+        formData.set('body', composerText);
+        attachments.forEach((file) => formData.append('attachments', file));
         startTransition(async () => {
             const response = await sendPortalEmail(formData);
             setResult(response);
             if (response.success) {
                 setShowCompose(false);
+                setComposerHtml('');
+                setComposerText('');
+                setAttachments([]);
                 window.location.reload();
             }
+        });
+    }
+
+    function updateComposer(element: HTMLElement | null) {
+        if (!element) return;
+        setComposerHtml(element.innerHTML);
+        setComposerText(element.innerText.trim());
+    }
+
+    function applyTemplate(templateId: string) {
+        const template = emailTemplates.find((item) => item.id === templateId);
+        if (!template || !editorRef.current) return;
+        const applied = applyEmailTemplate(template, { leadName, serviceInterest });
+        setComposeSubject(applied.subject);
+        editorRef.current.innerHTML = applied.body
+            .split('\n')
+            .map((line) => line.trim() ? `<p>${escapeHtml(line)}</p>` : '<br>')
+            .join('');
+        updateComposer(editorRef.current);
+    }
+
+    function runFormat(command: string, value?: string) {
+        document.execCommand(command, false, value);
+    }
+
+    function addAttachments(fileList: FileList | null) {
+        if (!fileList) return;
+        setAttachments((current) => {
+            const next = [...current, ...Array.from(fileList)];
+            return next.slice(0, 8);
         });
     }
 
@@ -214,33 +258,99 @@ export default function EmailModuleClient({
             </div>
 
             {showCompose && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0f172a]/55 p-4 backdrop-blur-sm">
-                    <form action={handleSend} className="w-full max-w-2xl overflow-hidden rounded-[6px] border border-[#dce3ea] bg-white shadow-2xl">
-                        <div className="flex h-12 items-center justify-between border-b border-[#e5eaf0] bg-[#f7f9fb] px-4">
-                            <p className="font-semibold text-[#334155]">Compose Email</p>
+                <div className="fixed inset-0 z-[100] flex items-end justify-center bg-[#0f172a]/55 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+                    <form action={handleSend} className="flex h-[92vh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-h-[92vh] sm:max-w-3xl sm:rounded-[6px] sm:border sm:border-[#dce3ea]">
+                        <div className="flex h-12 shrink-0 items-center justify-between border-b border-[#e5eaf0] bg-[#f7f9fb] px-4">
+                            <div>
+                                <p className="font-semibold text-[#334155]">Compose Email</p>
+                                <p className="hidden text-[11px] text-[#94a3b8] sm:block">Rich text, attachments, cc and bcc supported</p>
+                            </div>
                             <button type="button" onClick={() => setShowCompose(false)} className="text-[#94a3b8] hover:text-[#334155]">
                                 <X className="h-4 w-4" />
                             </button>
                         </div>
-                        <div className="grid gap-3 p-4">
+                        <div className="grid min-h-0 flex-1 gap-3 overflow-y-auto p-4">
                             <EmailInput label="To" name="to" defaultValue={selected?.direction === 'inbound' ? selected.fromEmail || initialTo : initialTo} required />
-                            <EmailInput label="Cc" name="cc" />
-                            <EmailInput label="Bcc" name="bcc" />
-                            <EmailInput label="Subject" name="subject" defaultValue={initialSubject || (selected ? `Re: ${selected.subject || ''}` : '')} required />
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <EmailInput label="Cc" name="cc" />
+                                <EmailInput label="Bcc" name="bcc" />
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-[190px_minmax(0,1fr)]">
+                                <label>
+                                    <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.12em] text-[#64748b]">Template</span>
+                                    <select onChange={(event) => applyTemplate(event.target.value)} defaultValue="" className="h-9 w-full rounded-[4px] border border-[#d4dde6] bg-white px-3 text-[13px] text-[#334155] outline-none focus:border-[#94a3b8]">
+                                        <option value="">Choose template</option>
+                                        {emailTemplates.map((template) => <option key={template.id} value={template.id}>{template.label}</option>)}
+                                    </select>
+                                </label>
+                                <label>
+                                    <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.12em] text-[#64748b]">Subject</span>
+                                    <input name="subject" value={composeSubject || (selected ? `Re: ${selected.subject || ''}` : '')} onChange={(event) => setComposeSubject(event.target.value)} required className="h-9 w-full rounded-[4px] border border-[#d4dde6] px-3 text-[13px] text-[#334155] outline-none focus:border-[#94a3b8]" />
+                                </label>
+                            </div>
                             {selected?.leadId && <input type="hidden" name="leadId" value={selected.leadId} />}
                             {selected?.clientId && <input type="hidden" name="clientId" value={selected.clientId} />}
                             <div>
                                 <label className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.12em] text-[#64748b]">Message</label>
-                                <textarea
-                                    name="body"
-                                    rows={10}
-                                    required
-                                    className="w-full rounded-[4px] border border-[#d4dde6] p-3 text-[14px] leading-6 text-[#334155] outline-none focus:border-[#94a3b8]"
-                                    placeholder="Write your message..."
-                                />
+                                <input type="hidden" name="body" value={composerText} />
+                                <input type="hidden" name="bodyHtml" value={composerHtml} />
+                                <div className="overflow-hidden rounded-[4px] border border-[#d4dde6] bg-white">
+                                    <div className="flex flex-wrap items-center gap-1 border-b border-[#e5eaf0] bg-[#f8fafc] p-2">
+                                        <FormatButton title="Bold" onClick={() => runFormat('bold')} icon={<Bold className="h-4 w-4" />} />
+                                        <FormatButton title="Italic" onClick={() => runFormat('italic')} icon={<Italic className="h-4 w-4" />} />
+                                        <FormatButton title="Underline" onClick={() => runFormat('underline')} icon={<Underline className="h-4 w-4" />} />
+                                        <span className="mx-1 h-5 w-px bg-[#dce3ea]" />
+                                        <FormatButton title="Bulleted list" onClick={() => runFormat('insertUnorderedList')} icon={<List className="h-4 w-4" />} />
+                                        <FormatButton
+                                            title="Insert link"
+                                            onClick={() => {
+                                                const url = window.prompt('Paste link URL');
+                                                if (url) runFormat('createLink', url);
+                                            }}
+                                            icon={<LinkIcon className="h-4 w-4" />}
+                                        />
+                                    </div>
+                                    <div
+                                        ref={editorRef}
+                                        contentEditable
+                                        role="textbox"
+                                        aria-label="Email message"
+                                        onInput={(event) => updateComposer(event.currentTarget)}
+                                        onBlur={(event) => updateComposer(event.currentTarget)}
+                                        className="min-h-[240px] max-h-[42vh] overflow-y-auto p-4 text-[14px] leading-7 text-[#334155] outline-none empty:before:text-[#94a3b8] empty:before:content-[attr(data-placeholder)] sm:min-h-[300px]"
+                                        data-placeholder="Write your message..."
+                                    />
+                                </div>
+                            </div>
+                            <div className="rounded-[4px] border border-[#dce3ea] bg-[#f8fafc] p-3">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <p className="text-[12px] font-semibold text-[#334155]">Attachments</p>
+                                        <p className="mt-1 text-[11px] text-[#64748b]">Up to 8 files, 10MB each. Documents, images and PDFs are supported.</p>
+                                    </div>
+                                    <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-[4px] border border-[#d4dde6] bg-white px-3 text-[12px] font-semibold text-[#475569] hover:bg-[#f8fafc]">
+                                        <Paperclip className="h-4 w-4" />
+                                        Attach files
+                                        <input type="file" multiple className="hidden" onChange={(event) => addAttachments(event.target.files)} />
+                                    </label>
+                                </div>
+                                {attachments.length > 0 && (
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {attachments.map((file, index) => (
+                                            <span key={`${file.name}-${index}`} className="inline-flex max-w-full items-center gap-2 rounded-[4px] border border-[#dce3ea] bg-white px-2.5 py-1.5 text-[12px] text-[#475569]">
+                                                <Paperclip className="h-3.5 w-3.5 shrink-0 text-[#94a3b8]" />
+                                                <span className="truncate">{file.name}</span>
+                                                <span className="shrink-0 text-[#94a3b8]">{formatFileSize(file.size)}</span>
+                                                <button type="button" onClick={() => setAttachments((current) => current.filter((_, fileIndex) => fileIndex !== index))} className="shrink-0 text-[#94a3b8] hover:text-rose-600">
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                </button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
-                        <div className="flex items-center justify-end gap-2 border-t border-[#e5eaf0] bg-[#f7f9fb] px-4 py-3">
+                        <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-[#e5eaf0] bg-[#f7f9fb] px-4 py-3 sm:flex-row sm:items-center sm:justify-end">
                             <button type="button" onClick={() => setShowCompose(false)} className="h-9 rounded-[4px] border border-[#d4dde6] bg-white px-3 text-[13px] font-semibold text-[#475569]">Cancel</button>
                             <button disabled={isPending || !config.smtpReady} className="inline-flex h-9 items-center gap-1.5 rounded-[4px] bg-[#0f172a] px-3 text-[13px] font-semibold text-white disabled:opacity-50">
                                 <Send className="h-4 w-4" />
@@ -251,6 +361,14 @@ export default function EmailModuleClient({
                 </div>
             )}
         </div>
+    );
+}
+
+function FormatButton({ title, icon, onClick }: { title: string; icon: ReactNode; onClick: () => void }) {
+    return (
+        <button type="button" title={title} onMouseDown={(event) => event.preventDefault()} onClick={onClick} className="inline-flex h-8 w-8 items-center justify-center rounded-[4px] text-[#64748b] hover:bg-white hover:text-[#334155]">
+            {icon}
+        </button>
     );
 }
 
@@ -292,4 +410,14 @@ function formatDate(value: Date | string | null) {
 
 function stripHtml(value: string) {
     return value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function formatFileSize(size: number) {
+    if (size < 1024) return `${size}B`;
+    if (size < 1024 * 1024) return `${Math.round(size / 1024)}KB`;
+    return `${(size / (1024 * 1024)).toFixed(1)}MB`;
+}
+
+function escapeHtml(value: string) {
+    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }

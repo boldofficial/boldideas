@@ -53,6 +53,7 @@ export const resend = {
       bcc,
       subject,
       html,
+      attachments,
     }: {
       from: string;
       to: string | string[];
@@ -60,6 +61,7 @@ export const resend = {
       bcc?: string | string[];
       subject: string;
       html: string;
+      attachments?: nodemailer.SendMailOptions["attachments"];
     }) => {
       try {
         const info = await getTransporter().sendMail({
@@ -69,6 +71,7 @@ export const resend = {
           bcc: Array.isArray(bcc) ? bcc.join(", ") : bcc,
           subject,
           html,
+          attachments,
         });
         return { data: { id: info.messageId }, error: null };
       } catch (err: unknown) {

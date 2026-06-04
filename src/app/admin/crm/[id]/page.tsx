@@ -9,7 +9,9 @@ import {
     createProjectFromLead,
     createInvoiceFromLead,
 } from '@/actions/crm';
+import { getLeadEmailThreads } from '@/actions/email';
 import ActivityTimeline from '@/components/crm/ActivityTimeline';
+import LeadEmailThreads from '@/components/crm/LeadEmailThreads';
 import {
     ArrowLeft,
     Banknote,
@@ -55,15 +57,17 @@ function toDateTimeLocal(value: Date | string | null) {
 
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const [leadResult, interactionsResult, staffResult] = await Promise.all([
+    const [leadResult, interactionsResult, staffResult, emailsResult] = await Promise.all([
         getLead(id),
         getInteractions(id),
         getCrmStaff(),
+        getLeadEmailThreads(id),
     ]);
 
     const lead = leadResult.data;
     const interactions = interactionsResult.data || [];
     const staff = staffResult.data || [];
+    const emailMessages = emailsResult.data || [];
 
     if (!lead) {
         return (
@@ -79,6 +83,9 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
     const quoteDetails = parseStructuredNotes(lead.notes || '');
     const followUpState = getFollowUpState(lead.nextFollowUpAt);
     const displayName = getLeadDisplayName(lead);
+    const emailHref = lead.email
+        ? `/admin/email?to=${encodeURIComponent(lead.email)}&subject=${encodeURIComponent(`Following up with ${displayName}`)}&leadName=${encodeURIComponent(displayName)}&serviceInterest=${encodeURIComponent(lead.serviceInterest || 'your project')}`
+        : '';
 
     return (
         <div className="perfex-crm min-h-screen bg-[#f4f6f8] p-4 md:p-6 xl:p-8">
@@ -97,7 +104,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                 </div>
                 <div className="flex flex-wrap gap-2">
                     {lead.email && (
-                        <Link href={`/admin/email?to=${encodeURIComponent(lead.email)}&subject=${encodeURIComponent(`Following up with ${displayName}`)}`} className="inline-flex h-10 items-center gap-2 rounded-sm border border-slate-200 bg-white px-3 text-xs font-black uppercase tracking-[0.14em] text-slate-600 transition hover:border-brand-gold hover:text-brand-navy">
+                        <Link href={emailHref} className="inline-flex h-10 items-center gap-2 rounded-sm border border-slate-200 bg-white px-3 text-xs font-black uppercase tracking-[0.14em] text-slate-600 transition hover:border-brand-gold hover:text-brand-navy">
                             <Mail className="h-4 w-4" />
                             Email
                         </Link>
@@ -200,6 +207,8 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                         </form>
                     </section>
 
+                    <LeadEmailThreads leadId={lead.id} leadEmail={lead.email || null} displayName={displayName} serviceInterest={lead.serviceInterest} messages={emailMessages} />
+
                     <ActivityTimeline leadId={id} interactions={interactions} />
                 </main>
 
@@ -208,7 +217,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                         <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Next Actions</p>
                         <div className="mt-4 space-y-2">
                             {lead.email ? (
-                                <ActionLink href={`/admin/email?to=${encodeURIComponent(lead.email)}&subject=${encodeURIComponent(`Following up with ${displayName}`)}`} icon={<Mail className="h-4 w-4" />} title="Send email" body="Continue the conversation from this lead record." />
+                                <ActionLink href={emailHref} icon={<Mail className="h-4 w-4" />} title="Send email" body="Continue the conversation from this lead record." />
                             ) : (
                                 <ActionNotice icon={<Mail className="h-4 w-4" />} title="Email unavailable" body="Add an email address before sending from this lead." />
                             )}
@@ -254,7 +263,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
 
                         <form action={handleCreateProject} className="mt-4 space-y-3 border-t border-slate-100 pt-4">
                             <input type="hidden" name="leadId" value={lead.id} />
-                            <MiniField label="Project title" name="title" defaultValue={`${lead.company || `${lead.firstName} ${lead.lastName}`.trim()} - ${lead.serviceInterest || 'Client Project'}`} />
+                            <MiniField label="Project title" name="title" defaultValue={`${displayName} - ${lead.serviceInterest || 'Client Project'}`} />
                             <div className="grid grid-cols-2 gap-3">
                                 <MiniField label="Budget" name="budget" defaultValue={lead.value || ''} />
                                 <MiniField label="Due date" name="dueDate" type="date" defaultValue="" />

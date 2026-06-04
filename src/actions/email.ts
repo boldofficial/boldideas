@@ -105,6 +105,16 @@ function getString(formData: FormData, key: string) {
     return value.trim();
 }
 
+function getEmailAttachments(formData: FormData) {
+    return formData.getAll('attachments')
+        .filter((item): item is File => item instanceof File && item.size > 0)
+        .slice(0, 8);
+}
+
+function stripHtml(value: string) {
+    return value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 function getDefaultEmailAddress() {
     return process.env.MAIL_FROM || process.env.FROM_EMAIL || process.env.SMTP_USER || process.env.IMAP_USER || '';
 }
@@ -255,6 +265,38 @@ export async function getEmailMessages(mailbox = 'INBOX') {
     return { success: true, data };
 }
 
+export async function getLeadEmailThreads(leadId: string) {
+    await requireStaffOrAdmin();
+    await ensureEmailSchema();
+
+    const data = await db.select({
+        id: emailMessages.id,
+        direction: emailMessages.direction,
+        status: emailMessages.status,
+        mailbox: emailMessages.mailbox,
+        fromEmail: emailMessages.fromEmail,
+        fromName: emailMessages.fromName,
+        toEmails: emailMessages.toEmails,
+        ccEmails: emailMessages.ccEmails,
+        bccEmails: emailMessages.bccEmails,
+        subject: emailMessages.subject,
+        textBody: emailMessages.textBody,
+        htmlBody: emailMessages.htmlBody,
+        threadKey: emailMessages.threadKey,
+        sentAt: emailMessages.sentAt,
+        receivedAt: emailMessages.receivedAt,
+        readAt: emailMessages.readAt,
+        metadata: emailMessages.metadata,
+        createdAt: emailMessages.createdAt,
+    })
+        .from(emailMessages)
+        .where(eq(emailMessages.leadId, leadId))
+        .orderBy(desc(emailMessages.receivedAt), desc(emailMessages.sentAt), desc(emailMessages.createdAt))
+        .limit(150);
+
+    return { success: true, data };
+}
+
 async function syncZohoInboxInternal(limit = 30) {
     const config = getEmailConfig();
     if (!config.imapReady) {
@@ -386,16 +428,25 @@ export async function sendPortalEmail(formData: FormData) {
     const bcc = getMailAddressList(formData.get('bcc'));
     const subject = getString(formData, 'subject') || '(No subject)';
     const body = getString(formData, 'body');
+    const bodyHtml = getString(formData, 'bodyHtml');
     const leadId = getString(formData, 'leadId') || null;
     const clientId = getString(formData, 'clientId') || null;
+    const files = getEmailAttachments(formData);
 
     if (!to) return { success: false, error: 'Add at least one recipient.' };
-    if (!body) return { success: false, error: 'Write a message before sending.' };
+    if (!body && !bodyHtml) return { success: false, error: 'Write a message before sending.' };
+    const oversized = files.find((file) => file.size > 10 * 1024 * 1024);
+    if (oversized) return { success: false, error: `${oversized.name} is larger than 10MB.` };
 
-    const html = body
+    const html = bodyHtml || body
         .split('\n')
         .map((line) => line.trim() ? `<p>${line.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : '<br/>')
         .join('');
+    const attachments = await Promise.all(files.map(async (file) => ({
+        filename: file.name,
+        content: Buffer.from(await file.arrayBuffer()),
+        contentType: file.type || undefined,
+    })));
 
     const { data, error } = await resend.emails.send({
         from: config.email,
@@ -404,6 +455,7 @@ export async function sendPortalEmail(formData: FormData) {
         bcc: bcc || undefined,
         subject,
         html,
+        attachments,
     });
 
     const firstRecipient = to.split(',')[0]?.trim() || '';
@@ -422,13 +474,16 @@ export async function sendPortalEmail(formData: FormData) {
         ccEmails: cc || null,
         bccEmails: bcc || null,
         subject,
-        textBody: body,
+        textBody: body || stripHtml(html),
         htmlBody: html,
         sentAt: new Date(),
         leadId: linked.leadId || null,
         clientId: linked.clientId || null,
         createdBy: currentUser.id,
-        metadata: error ? { error: error.message } : null,
+        metadata: {
+            ...(error ? { error: error.message } : {}),
+            attachments: files.map((file) => ({ name: file.name, size: file.size, type: file.type })),
+        },
     }).returning({ id: emailMessages.id, leadId: emailMessages.leadId });
 
     if (message.leadId) {
