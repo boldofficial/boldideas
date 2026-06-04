@@ -30,6 +30,7 @@ import {
     X,
     LogOut,
     Plus,
+    Mail,
 } from 'lucide-react';
 
 const SIDEBAR_STORAGE_KEY = 'admin_sidebar_collapsed';
@@ -51,6 +52,7 @@ interface NavItem {
 const mainLinks: NavItem[] = [
     { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { label: 'Messages', href: '/admin/messages', icon: MessageSquare, badgeKey: 'messages' },
+    { label: 'Email', href: '/admin/email', icon: Mail, fuzzy: true },
     { label: 'Blog', href: '/admin/blog', icon: FileText, fuzzy: true },
 ];
 

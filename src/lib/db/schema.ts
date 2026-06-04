@@ -127,6 +127,46 @@ export const interactions = pgTable('interactions', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+export const emailAccounts = pgTable('email_accounts', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  label: text('label').notNull().default('Shared Inbox'),
+  email: text('email').notNull(),
+  provider: text('provider').notNull().default('zoho'),
+  fromName: text('from_name'),
+  signature: text('signature'),
+  isDefault: boolean('is_default').default(true),
+  lastSyncedAt: timestamp('last_synced_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const emailMessages = pgTable('email_messages', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  accountId: uuid('account_id').references(() => emailAccounts.id, { onDelete: 'cascade' }),
+  messageId: text('message_id'),
+  threadKey: text('thread_key'),
+  mailbox: text('mailbox').notNull().default('INBOX'),
+  direction: text('direction').notNull().default('inbound'), // 'inbound' | 'outbound'
+  status: text('status').notNull().default('received'), // 'received' | 'sent' | 'failed' | 'draft'
+  fromEmail: text('from_email'),
+  fromName: text('from_name'),
+  toEmails: text('to_emails'),
+  ccEmails: text('cc_emails'),
+  bccEmails: text('bcc_emails'),
+  subject: text('subject'),
+  textBody: text('text_body'),
+  htmlBody: text('html_body'),
+  sentAt: timestamp('sent_at'),
+  receivedAt: timestamp('received_at'),
+  readAt: timestamp('read_at'),
+  leadId: uuid('lead_id').references(() => leads.id, { onDelete: 'set null' }),
+  clientId: uuid('client_id').references(() => users.id, { onDelete: 'set null' }),
+  createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
 export const internalProjects = pgTable('internal_projects', {
   id: uuid('id').defaultRandom().primaryKey(),
   title: text('title').notNull(),

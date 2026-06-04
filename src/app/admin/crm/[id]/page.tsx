@@ -97,10 +97,10 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                 </div>
                 <div className="flex flex-wrap gap-2">
                     {lead.email && (
-                        <a href={`mailto:${lead.email}`} className="inline-flex h-10 items-center gap-2 rounded-sm border border-slate-200 bg-white px-3 text-xs font-black uppercase tracking-[0.14em] text-slate-600 transition hover:border-brand-gold hover:text-brand-navy">
+                        <Link href={`/admin/email?to=${encodeURIComponent(lead.email)}&subject=${encodeURIComponent(`Following up with ${displayName}`)}`} className="inline-flex h-10 items-center gap-2 rounded-sm border border-slate-200 bg-white px-3 text-xs font-black uppercase tracking-[0.14em] text-slate-600 transition hover:border-brand-gold hover:text-brand-navy">
                             <Mail className="h-4 w-4" />
                             Email
-                        </a>
+                        </Link>
                     )}
                     {lead.phone && (
                         <a href={`tel:${lead.phone}`} className="inline-flex h-10 items-center gap-2 rounded-sm border border-slate-200 bg-white px-3 text-xs font-black uppercase tracking-[0.14em] text-slate-600 transition hover:border-brand-gold hover:text-brand-navy">
@@ -208,7 +208,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                         <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Next Actions</p>
                         <div className="mt-4 space-y-2">
                             {lead.email ? (
-                                <ActionLink href={`mailto:${lead.email}`} icon={<Mail className="h-4 w-4" />} title="Send email" body="Continue the conversation from this lead record." />
+                                <ActionLink href={`/admin/email?to=${encodeURIComponent(lead.email)}&subject=${encodeURIComponent(`Following up with ${displayName}`)}`} icon={<Mail className="h-4 w-4" />} title="Send email" body="Continue the conversation from this lead record." />
                             ) : (
                                 <ActionNotice icon={<Mail className="h-4 w-4" />} title="Email unavailable" body="Add an email address before sending from this lead." />
                             )}

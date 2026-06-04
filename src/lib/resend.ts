@@ -49,11 +49,15 @@ export const resend = {
     send: async ({
       from,
       to,
+      cc,
+      bcc,
       subject,
       html,
     }: {
       from: string;
       to: string | string[];
+      cc?: string | string[];
+      bcc?: string | string[];
       subject: string;
       html: string;
     }) => {
@@ -61,6 +65,8 @@ export const resend = {
         const info = await getTransporter().sendMail({
           from,
           to: Array.isArray(to) ? to.join(", ") : to,
+          cc: Array.isArray(cc) ? cc.join(", ") : cc,
+          bcc: Array.isArray(bcc) ? bcc.join(", ") : bcc,
           subject,
           html,
         });
