@@ -4,8 +4,12 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
-import { savePublicUpload } from '@/lib/uploads';
 import { requireAdmin, requireCurrentUser } from '@/lib/authz';
+
+async function fileToDataUrl(file: File) {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    return `data:${file.type};base64,${buffer.toString('base64')}`;
+}
 
 export async function updateUserProfile(userId: string, formData: FormData) {
     const name = formData.get('name') as string;
@@ -45,6 +49,8 @@ export async function uploadAvatar(formData: FormData) {
     const userId = formData.get('userId') as string;
 
     if (!file || !userId) return { success: false, error: "Missing file or user ID" };
+    if (!file.type.startsWith('image/')) return { success: false, error: 'Upload an image file' };
+    if (file.size > 2 * 1024 * 1024) return { success: false, error: 'Image must be 2MB or smaller' };
 
     try {
         const currentUser = await requireCurrentUser();
@@ -52,7 +58,7 @@ export async function uploadAvatar(formData: FormData) {
             return { success: false, error: 'Unauthorized' };
         }
 
-        const url = await savePublicUpload(file, 'avatars', currentUser.id);
+        const url = await fileToDataUrl(file);
         return { success: true, url };
     } catch (error: unknown) {
         console.error("Upload Error:", error);

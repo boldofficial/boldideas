@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Inbox, Mail, RefreshCw, Send, Settings, UserRound, X } from 'lucide-react';
 import { sendPortalEmail, syncZohoInbox } from '@/actions/email';
 
-type EmailMessage = {
+export type EmailMessage = {
     id: string;
     direction: string;
     status: string;
@@ -24,7 +24,7 @@ type EmailMessage = {
     clientId: string | null;
 };
 
-type ConfigStatus = {
+export type ConfigStatus = {
     email: string;
     smtpReady: boolean;
     imapReady: boolean;

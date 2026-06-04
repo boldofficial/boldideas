@@ -23,6 +23,7 @@ export default function ProfileSettings({ user, onUpdate }: { user: User; onUpda
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [uploading, setUploading] = useState(false);
     const [currentAvatar, setCurrentAvatar] = useState(user.avatarUrl);
+    const [avatarBroken, setAvatarBroken] = useState(false);
     const router = useRouter();
 
     async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -38,6 +39,7 @@ export default function ProfileSettings({ user, onUpdate }: { user: User; onUpda
 
         if (res.success && res.url) {
             setCurrentAvatar(res.url); // Show preview
+            setAvatarBroken(false);
         } else {
             alert('Upload failed: ' + res.error);
         }
@@ -88,8 +90,8 @@ export default function ProfileSettings({ user, onUpdate }: { user: User; onUpda
                                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                     </div>
                                 )}
-                                {currentAvatar ? (
-                                    <img src={currentAvatar} alt="Avatar" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                                {currentAvatar && !avatarBroken ? (
+                                    <img src={currentAvatar} alt="Avatar" onError={() => setAvatarBroken(true)} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                                 ) : (
                                     <div className="w-full h-full bg-brand-navy/5 flex items-center justify-center">
                                         <User className="w-10 h-10 text-brand-navy/20" />
