@@ -29,6 +29,27 @@
       "when": 1780519278000,
       "tag": "0003_repair_user_admin_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780520200000,
+      "tag": "0004_link_leads_to_delivery",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1780520300000,
+      "tag": "0005_make_lead_identity_optional",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1780520400000,
+      "tag": "0006_add_email_module",
+      "breakpoints": true
     }
   ]
 }
