@@ -305,6 +305,17 @@ export async function sendInvoiceEmail(invoiceId: string) {
         const companyName = settings?.companyName || 'Bold Ideas';
         const companyWebsite = settings?.companyWebsite || 'boldideas.agency';
         const companyEmail = settings?.companyEmail || 'HQ@boldideas.agency';
+        const companyPhone = settings?.companyPhone || '';
+        const companyAddress = settings?.companyAddress || '';
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        const toPublicAssetUrl = (url?: string | null) => {
+            if (!url) return '';
+            if (url.startsWith('http') || url.startsWith('data:')) return url;
+            return `${appUrl.replace(/\/$/, '')}${url.startsWith('/') ? url : `/${url}`}`;
+        };
+        const logoUrl = toPublicAssetUrl(settings?.logoUrl);
+        const signatureUrl = toPublicAssetUrl(settings?.signatureUrl);
+        const companyMeta = [companyWebsite, companyEmail, companyPhone].filter(Boolean).join(' &bull; ');
 
         const getCurrencySymbol = (currency: string | null) => {
             switch (currency) {
@@ -343,7 +354,7 @@ export async function sendInvoiceEmail(invoiceId: string) {
 
         const hasDiscount = Number(invoice.discountAmount || 0) > 0;
 
-        const publicPaymentUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/pay/${invoiceId}`;
+        const publicPaymentUrl = `${appUrl}/pay/${invoiceId}`;
         const paymentUrl = invoice.stripePaymentLink || publicPaymentUrl;
 
         const paymentLinkHtml = invoice.status !== 'paid'
@@ -386,8 +397,10 @@ export async function sendInvoiceEmail(invoiceId: string) {
                             <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
                                     <td style="text-align: left; vertical-align: top;">
+                                        ${logoUrl ? `<img src="${logoUrl}" alt="${companyName}" style="display:block; max-width: 150px; max-height: 54px; object-fit: contain; margin-bottom: 10px;" />` : ''}
                                         <h1 style="margin: 0; font-size: 20px; font-weight: 900; color: #0A1128; letter-spacing: -1px;">${companyName.toUpperCase()}</h1>
-                                        <p style="margin: 4px 0 0 0; font-size: 11px; color: #94a3b8; font-weight: 600;">${companyWebsite} &bull; ${companyEmail}</p>
+                                        <p style="margin: 4px 0 0 0; font-size: 11px; color: #94a3b8; font-weight: 600;">${companyMeta}</p>
+                                        ${companyAddress ? `<p style="margin: 4px 0 0 0; font-size: 11px; color: #94a3b8;">${companyAddress}</p>` : ''}
                                     </td>
                                     <td style="text-align: right; vertical-align: top;">
                                         <h1 style="margin: 0; font-size: 32px; font-weight: 900; color: #0A1128; letter-spacing: -2px; line-height: 1;">INVOICE</h1>
@@ -451,6 +464,12 @@ export async function sendInvoiceEmail(invoiceId: string) {
                                         ${invoice.notes ? `
                                             <p style="margin: 0 0 6px 0; font-size: 10px; font-weight: 900; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase;">Notes</p>
                                             <p style="margin: 0; font-size: 12px; color: #64748b; font-style: italic;">${invoice.notes}</p>
+                                        ` : ''}
+                                        ${signatureUrl ? `
+                                            <div style="margin-top: 24px;">
+                                                <img src="${signatureUrl}" alt="Authorized signature" style="display:block; max-width: 150px; max-height: 64px; object-fit: contain;" />
+                                                <p style="margin: 6px 0 0 0; font-size: 10px; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase;">Authorized Signature</p>
+                                            </div>
                                         ` : ''}
                                     </td>
                                     <td style="vertical-align: top; width: 50%;">

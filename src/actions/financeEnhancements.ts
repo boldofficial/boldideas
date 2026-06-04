@@ -6,6 +6,8 @@ import { eq, desc, sql, and, gte, lte } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { recordActivity } from './activity';
 import { createNotification } from './notifications';
+import { savePublicUpload } from '@/lib/uploads';
+import { requireAdmin } from '@/lib/authz';
 
 // ============= PAYMENTS =============
 
@@ -408,20 +410,50 @@ export async function getCompanySettings() {
 
 export async function updateCompanySettings(data: Partial<typeof companySettings.$inferSelect>) {
     try {
+        await requireAdmin();
         const [settings] = await db.select().from(companySettings).limit(1);
+        const allowedData = {
+            companyName: data.companyName,
+            companyAddress: data.companyAddress,
+            companyEmail: data.companyEmail,
+            companyPhone: data.companyPhone,
+            companyWebsite: data.companyWebsite,
+            logoUrl: data.logoUrl,
+            signatureUrl: data.signatureUrl,
+        };
 
         if (settings) {
             await db.update(companySettings)
-                .set({ ...data, updatedAt: new Date() })
+                .set({ ...allowedData, updatedAt: new Date() })
                 .where(eq(companySettings.id, settings.id));
         } else {
-            await db.insert(companySettings).values(data as any);
+            await db.insert(companySettings).values(allowedData);
         }
 
         revalidatePath('/admin/finance');
+        revalidatePath('/admin/settings');
         return { success: true };
     } catch (error) {
         console.error('updateCompanySettings error:', error);
         return { success: false, error: 'Failed to update settings' };
+    }
+}
+
+export async function uploadCompanyAsset(formData: FormData) {
+    try {
+        await requireAdmin();
+        const file = formData.get('file');
+        const type = formData.get('type');
+
+        if (!(file instanceof File)) return { success: false, error: 'No file selected' };
+        if (type !== 'logo' && type !== 'signature') return { success: false, error: 'Invalid upload type' };
+        if (!file.type.startsWith('image/')) return { success: false, error: 'Upload an image file' };
+        if (file.size > 2 * 1024 * 1024) return { success: false, error: 'Image must be 2MB or smaller' };
+
+        const url = await savePublicUpload(file, `branding/${type}`, type);
+        return { success: true, url };
+    } catch (error) {
+        console.error('uploadCompanyAsset error:', error);
+        return { success: false, error: 'Failed to upload image' };
     }
 }

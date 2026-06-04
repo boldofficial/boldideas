@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { getUserProfile } from '@/actions/users';
 import ProfileSettings from '@/components/common/ProfileSettings';
+import BrandingManager from '@/components/admin/BrandingManager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings, Shield, ChevronRight, Activity, Terminal } from 'lucide-react';
 import Link from 'next/link';
@@ -141,6 +142,10 @@ export default function AdminSettingsPage() {
                     </Card>
                 </div>
             </div>
+
+            <section className="border-t border-slate-200 pt-8">
+                <BrandingManager />
+            </section>
         </div>
     );
 }

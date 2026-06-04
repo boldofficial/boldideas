@@ -179,8 +179,7 @@ export async function getEmailMessages(mailbox = 'INBOX') {
     return { success: true, data };
 }
 
-export async function syncZohoInbox(limit = 30) {
-    await requireStaffOrAdmin();
+async function syncZohoInboxInternal(limit = 30) {
     const config = getEmailConfig();
     if (!config.imapReady) {
         return { success: false, error: 'IMAP is not configured. Add IMAP_HOST, IMAP_PORT, IMAP_USER, and IMAP_PASS in Coolify.' };
@@ -286,6 +285,15 @@ export async function syncZohoInbox(limit = 30) {
     } finally {
         await client.logout().catch(() => undefined);
     }
+}
+
+export async function syncZohoInbox(limit = 30) {
+    await requireStaffOrAdmin();
+    return syncZohoInboxInternal(limit);
+}
+
+export async function syncZohoInboxForSystem(limit = 30) {
+    return syncZohoInboxInternal(limit);
 }
 
 export async function sendPortalEmail(formData: FormData) {
