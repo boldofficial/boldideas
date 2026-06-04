@@ -85,9 +85,14 @@ function parseCsv(text: string) {
 function splitFullName(name: string) {
     const parts = name.trim().split(/\s+/);
     return {
-        firstName: parts[0] || 'New',
-        lastName: parts.slice(1).join(' ') || 'Lead',
+        firstName: parts[0] || '',
+        lastName: parts.slice(1).join(' '),
     };
+}
+
+function formatLeadName(lead: { firstName?: string | null; lastName?: string | null; company?: string | null; email?: string | null }) {
+    const name = [lead.firstName, lead.lastName].filter(Boolean).join(' ').trim();
+    return name || lead.company || lead.email || 'Unnamed lead';
 }
 
 function formatQuoteNotes(formData: FormData) {
@@ -111,6 +116,7 @@ function formatQuoteNotes(formData: FormData) {
 }
 
 async function findLeadByEmail(email: string) {
+    if (!email.trim()) return undefined;
     const normalizedEmail = email.toLowerCase();
     const [existingLead] = await db.select()
         .from(leads)
@@ -136,6 +142,7 @@ async function getLeadForConversion(leadId: string) {
 }
 
 async function findUserByEmail(email: string) {
+    if (!email.trim()) return undefined;
     const normalizedEmail = email.toLowerCase();
     const [user] = await db.select()
         .from(users)
@@ -147,6 +154,7 @@ async function findUserByEmail(email: string) {
 async function ensureClientFromLead(leadId: string) {
     const lead = await getLeadForConversion(leadId);
     if (!lead) return { success: false as const, error: 'Lead not found' };
+    if (!lead.email) return { success: false as const, error: 'Add an email address before converting this lead to a client, project, or invoice.' };
 
     if (lead.clientId) {
         return { success: true as const, lead, clientId: lead.clientId, created: false };
@@ -157,7 +165,7 @@ async function ensureClientFromLead(leadId: string) {
         if ((existingUser.role || 'user') === 'user' || existingUser.role === 'client') {
             await db.update(users)
                 .set({
-                    name: existingUser.name || `${lead.firstName} ${lead.lastName}`.trim(),
+                    name: existingUser.name || formatLeadName(lead),
                     isActive: true,
                     updatedAt: new Date(),
                 })
@@ -173,7 +181,7 @@ async function ensureClientFromLead(leadId: string) {
 
     const [client] = await db.insert(users).values({
         email: lead.email,
-        name: `${lead.firstName} ${lead.lastName}`.trim(),
+        name: formatLeadName(lead),
         role: 'user',
         isActive: true,
         emailVerified: false,
@@ -384,14 +392,13 @@ export async function createLead(formData: FormData) {
     const nextFollowUpAt = getFollowUpDate(formData);
     const assignedTo = getOptionalString(formData, 'assignedTo') || currentUser.id;
 
-    if (!email) return { success: false, error: 'Email is required' };
-    if (!firstName) return { success: false, error: 'First name is required' };
-
     try {
-        const existingLead = await findLeadByEmail(email);
+        const existingLead = email ? await findLeadByEmail(email) : undefined;
         if (existingLead) {
             await db.update(leads)
                 .set({
+                    firstName: firstName || existingLead.firstName,
+                    lastName: lastName || existingLead.lastName,
                     phone: phone || existingLead.phone,
                     company: company || existingLead.company,
                     serviceInterest: serviceInterest || existingLead.serviceInterest,
@@ -415,9 +422,9 @@ export async function createLead(formData: FormData) {
         }
 
         const [newLead] = await db.insert(leads).values({
-            firstName,
-            lastName: lastName || '',
-            email,
+            firstName: firstName || null,
+            lastName: lastName || null,
+            email: email || null,
             company,
             phone,
             status,
@@ -438,7 +445,7 @@ export async function createLead(formData: FormData) {
                 newLead.assignedTo,
                 'lead_assigned',
                 'New Lead Assigned',
-                `${firstName} ${lastName} from ${company || 'Unknown Company'}`,
+                `${formatLeadName({ firstName, lastName, company, email })} from ${company || 'Unknown Company'}`,
                 `/admin/crm/${newLead.id}`
             );
         }
@@ -479,12 +486,6 @@ export async function importLeadsFromCsv(formData: FormData) {
         const firstName = getCsvCell(row, ['first_name', 'firstname']) || (fullName ? splitFullName(fullName).firstName : undefined);
         const lastName = getCsvCell(row, ['last_name', 'lastname']) || (fullName ? splitFullName(fullName).lastName : '');
 
-        if (!email || !firstName) {
-            skipped += 1;
-            errors.push(`Row ${index + 2}: missing email or name`);
-            continue;
-        }
-
         const company = getCsvCell(row, ['company', 'company_name', 'organization']);
         const phone = getCsvCell(row, ['phone', 'phone_number', 'mobile']);
         const status = getCsvCell(row, ['status', 'stage']) || 'new';
@@ -497,12 +498,12 @@ export async function importLeadsFromCsv(formData: FormData) {
         const nextFollowUpAt = nextFollowUpRaw ? new Date(nextFollowUpRaw) : undefined;
 
         try {
-            const existingLead = await findLeadByEmail(email);
+            const existingLead = email ? await findLeadByEmail(email) : undefined;
             if (existingLead) {
                 await db.update(leads)
                     .set({
-                        firstName,
-                        lastName,
+                        firstName: firstName || existingLead.firstName,
+                        lastName: lastName || existingLead.lastName,
                         phone: phone || existingLead.phone,
                         company: company || existingLead.company,
                         status: status || existingLead.status,
@@ -527,9 +528,9 @@ export async function importLeadsFromCsv(formData: FormData) {
             }
 
             await db.insert(leads).values({
-                firstName,
-                lastName,
-                email,
+                firstName: firstName || null,
+                lastName: lastName || null,
+                email: email || null,
                 company,
                 phone,
                 status,
@@ -575,16 +576,15 @@ export async function createWebsiteLead(formData: FormData) {
     normalized.set('notes', formatQuoteNotes(formData));
 
     const email = getOptionalString(normalized, 'email');
-    if (!email) return { success: false, error: 'Email is required' };
 
     try {
-        const existingLead = await findLeadByEmail(email);
+        const existingLead = email ? await findLeadByEmail(email) : undefined;
 
         if (existingLead) {
             await db.update(leads)
                 .set({
-                    firstName,
-                    lastName,
+                    firstName: firstName || existingLead.firstName,
+                    lastName: lastName || existingLead.lastName,
                     phone: getOptionalString(normalized, 'phone') || existingLead.phone,
                     company: getOptionalString(normalized, 'company') || existingLead.company,
                     source: getOptionalString(normalized, 'source') || existingLead.source,
@@ -605,16 +605,16 @@ export async function createWebsiteLead(formData: FormData) {
             revalidatePath(`/admin/crm/${existingLead.id}`);
             await notifyAdmins(
                 'Website Lead Updated',
-                `${firstName} ${lastName} submitted another website inquiry`,
+                `${formatLeadName({ firstName, lastName, email })} submitted another website inquiry`,
                 `/admin/crm/${existingLead.id}`
             );
             return { success: true, id: existingLead.id, duplicate: true };
         }
 
         const [newLead] = await db.insert(leads).values({
-            firstName,
-            lastName,
-            email,
+            firstName: firstName || null,
+            lastName: lastName || null,
+            email: email || null,
             phone: getOptionalString(normalized, 'phone'),
             company: getOptionalString(normalized, 'company'),
             source: getOptionalString(normalized, 'source') || 'website',
@@ -627,7 +627,7 @@ export async function createWebsiteLead(formData: FormData) {
         revalidatePath('/admin/crm');
         await notifyAdmins(
             'New Website Lead',
-            `${firstName} ${lastName} submitted a website inquiry`,
+            `${formatLeadName({ firstName, lastName, email })} submitted a website inquiry`,
             `/admin/crm/${newLead.id}`
         );
         return { success: true, id: newLead.id };
@@ -702,7 +702,7 @@ export async function updateLeadStatus(id: string, newStatus: string) {
                 lead.assignedTo,
                 'lead_status_changed',
                 'Lead Status Updated',
-                `${lead.firstName} ${lead.lastName} is now ${newStatus}`,
+                `${formatLeadName(lead)} is now ${newStatus}`,
                 `/admin/crm/${id}`
             );
         }
@@ -728,8 +728,8 @@ export async function updateLead(formData: FormData) {
         await db.update(leads)
             .set({
                 firstName: getOptionalString(formData, 'firstName'),
-                lastName: getOptionalString(formData, 'lastName') || '',
-                email: getOptionalString(formData, 'email'),
+                lastName: getOptionalString(formData, 'lastName') || null,
+                email: getOptionalString(formData, 'email') || null,
                 phone: getOptionalString(formData, 'phone'),
                 company: getOptionalString(formData, 'company'),
                 status: getOptionalString(formData, 'status') || 'new',
@@ -843,7 +843,7 @@ export async function convertLeadToClient(formData: FormData) {
         await addConversionActivity(
             leadId,
             currentUser.id,
-            `${result.created ? 'Created' : 'Linked'} client profile for ${result.lead.email}.`
+            `${result.created ? 'Created' : 'Linked'} client profile for ${formatLeadName(result.lead)}.`
         );
 
         revalidatePath('/admin/crm');
@@ -875,7 +875,7 @@ export async function createProjectFromLead(formData: FormData) {
           }
 
         const title = getOptionalString(formData, 'title')
-            || `${result.lead.company || `${result.lead.firstName} ${result.lead.lastName}`.trim()} - ${result.lead.serviceInterest || 'Client Project'}`;
+            || `${formatLeadName(result.lead)} - ${result.lead.serviceInterest || 'Client Project'}`;
         const budget = getOptionalString(formData, 'budget') || result.lead.value || undefined;
         const dueDate = getOptionalString(formData, 'dueDate');
         const managerId = getOptionalString(formData, 'managerId') || result.lead.assignedTo || currentUser.id;
@@ -889,7 +889,7 @@ export async function createProjectFromLead(formData: FormData) {
             budget,
             dueDate: dueDate ? new Date(dueDate) : null,
             description: [
-                `Created from CRM lead: ${result.lead.firstName} ${result.lead.lastName}`,
+                `Created from CRM lead: ${formatLeadName(result.lead)}`,
                 result.lead.serviceInterest ? `Service interest: ${result.lead.serviceInterest}` : null,
                 result.lead.notes ? `Lead notes:\n${result.lead.notes}` : null,
             ].filter(Boolean).join('\n\n'),
@@ -973,7 +973,7 @@ export async function createInvoiceFromLead(formData: FormData) {
             currency,
             dueDate,
             notes: [
-                `Created from CRM lead: ${result.lead.firstName} ${result.lead.lastName}`,
+                `Created from CRM lead: ${formatLeadName(result.lead)}`,
                 result.lead.company ? `Company: ${result.lead.company}` : null,
                 result.lead.notes || null,
             ].filter(Boolean).join('\n\n'),
@@ -982,7 +982,7 @@ export async function createInvoiceFromLead(formData: FormData) {
         await db.insert(invoiceItems).values({
             invoiceId: invoice.id,
             title: itemTitle,
-            description: `Converted from CRM lead ${result.lead.email}`,
+            description: `Converted from CRM lead ${formatLeadName(result.lead)}`,
             quantity: '1',
             unitPrice: amount,
             amount,

@@ -61,11 +61,13 @@ export async function sendCampaign(campaignId: string) {
         if (campaign.status === 'sent') return { success: false, error: 'Campaign already sent' };
 
         // 2. Get recipients based on audience
-        let recipients: { email: string; name: string }[] = [];
+        const recipients: { email: string; name: string }[] = [];
         
         if (campaign.audience === 'leads' || campaign.audience === 'all') {
             const leadList = await db.select({ email: leads.email, name: leads.firstName }).from(leads);
-            recipients.push(...leadList.map(l => ({ email: l.email, name: l.name })));
+            recipients.push(...leadList
+                .filter((lead): lead is { email: string; name: string | null } => Boolean(lead.email))
+                .map(l => ({ email: l.email, name: l.name || 'Valued Lead' })));
         }
         
         if (campaign.audience === 'clients' || campaign.audience === 'all') {

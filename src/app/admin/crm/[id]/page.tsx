@@ -78,6 +78,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
 
     const quoteDetails = parseStructuredNotes(lead.notes || '');
     const followUpState = getFollowUpState(lead.nextFollowUpAt);
+    const displayName = getLeadDisplayName(lead);
 
     return (
         <div className="perfex-crm min-h-screen bg-[#f4f6f8] p-4 md:p-6 xl:p-8">
@@ -88,17 +89,19 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                         CRM
                     </Link>
                     <div className="flex flex-wrap items-center gap-3">
-                        <h1 className="text-2xl font-black tracking-tight text-brand-navy md:text-3xl">{lead.firstName} {lead.lastName}</h1>
+                        <h1 className="text-2xl font-black tracking-tight text-brand-navy md:text-3xl">{displayName}</h1>
                         <StatusPill status={lead.status || 'new'} />
                         <PriorityPill priority={lead.priority || 'medium'} />
                     </div>
-                    <p className="mt-2 text-sm text-slate-500">{lead.company || 'No company'} / {lead.email}</p>
+                    <p className="mt-2 text-sm text-slate-500">{lead.company || 'No company'} / {lead.email || 'No email yet'}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    <a href={`mailto:${lead.email}`} className="inline-flex h-10 items-center gap-2 rounded-sm border border-slate-200 bg-white px-3 text-xs font-black uppercase tracking-[0.14em] text-slate-600 transition hover:border-brand-gold hover:text-brand-navy">
-                        <Mail className="h-4 w-4" />
-                        Email
-                    </a>
+                    {lead.email && (
+                        <a href={`mailto:${lead.email}`} className="inline-flex h-10 items-center gap-2 rounded-sm border border-slate-200 bg-white px-3 text-xs font-black uppercase tracking-[0.14em] text-slate-600 transition hover:border-brand-gold hover:text-brand-navy">
+                            <Mail className="h-4 w-4" />
+                            Email
+                        </a>
+                    )}
                     {lead.phone && (
                         <a href={`tel:${lead.phone}`} className="inline-flex h-10 items-center gap-2 rounded-sm border border-slate-200 bg-white px-3 text-xs font-black uppercase tracking-[0.14em] text-slate-600 transition hover:border-brand-gold hover:text-brand-navy">
                             <Phone className="h-4 w-4" />
@@ -117,7 +120,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                     <section className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm">
                         <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Contact</p>
                         <div className="mt-4 space-y-3">
-                            <InfoRow icon={<Mail className="h-4 w-4" />} label="Email" value={lead.email} />
+                            <InfoRow icon={<Mail className="h-4 w-4" />} label="Email" value={lead.email || 'Not provided'} />
                             <InfoRow icon={<Phone className="h-4 w-4" />} label="Phone" value={lead.phone || 'Not provided'} />
                             <InfoRow icon={<Building2 className="h-4 w-4" />} label="Company" value={lead.company || 'Not provided'} />
                             <InfoRow icon={<UserRound className="h-4 w-4" />} label="Owner" value={lead.assignedToName || lead.assignedToEmail || 'Unassigned'} />
@@ -150,9 +153,9 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
 
                         <form action={handleUpdateLead} className="mt-5 grid gap-4 md:grid-cols-2">
                             <input type="hidden" name="id" value={id} />
-                            <Field label="First name" name="firstName" defaultValue={lead.firstName} required />
+                            <Field label="First name" name="firstName" defaultValue={lead.firstName || ''} />
                             <Field label="Last name" name="lastName" defaultValue={lead.lastName || ''} />
-                            <Field label="Email" name="email" type="email" defaultValue={lead.email} required />
+                            <Field label="Email" name="email" type="email" defaultValue={lead.email || ''} />
                             <Field label="Phone" name="phone" defaultValue={lead.phone || ''} />
                             <Field label="Company" name="company" defaultValue={lead.company || ''} />
                             <Field label="Estimated value" name="value" defaultValue={lead.value || ''} />
@@ -204,7 +207,11 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                     <section id="conversion" className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm">
                         <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Next Actions</p>
                         <div className="mt-4 space-y-2">
-                            <ActionLink href={`mailto:${lead.email}`} icon={<Mail className="h-4 w-4" />} title="Send email" body="Continue the conversation from this lead record." />
+                            {lead.email ? (
+                                <ActionLink href={`mailto:${lead.email}`} icon={<Mail className="h-4 w-4" />} title="Send email" body="Continue the conversation from this lead record." />
+                            ) : (
+                                <ActionNotice icon={<Mail className="h-4 w-4" />} title="Email unavailable" body="Add an email address before sending from this lead." />
+                            )}
                             {lead.phone && <ActionLink href={`tel:${lead.phone}`} icon={<Phone className="h-4 w-4" />} title="Call lead" body="Use the timeline to log the outcome after the call." />}
                         </div>
                     </section>
@@ -213,7 +220,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                         <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand-gold">Conversion</p>
                         <h2 className="mt-1 text-base font-black text-brand-navy">Move this lead into delivery</h2>
                         <p className="mt-2 text-xs leading-5 text-slate-500">
-                            These actions reuse the lead email as the client identity and log the result in the activity timeline.
+                            These actions need an email address because the client profile is matched by email and logged in the activity timeline.
                         </p>
 
                         <div className="mt-4 space-y-2 border border-slate-200 bg-slate-50 p-3">
@@ -409,6 +416,18 @@ function ActionLink({ href, icon, title, body }: { href: string; icon: ReactNode
     );
 }
 
+function ActionNotice({ icon, title, body }: { icon: ReactNode; title: string; body: string }) {
+    return (
+        <div className="flex items-start gap-3 border border-slate-200 bg-slate-50 p-3 opacity-80">
+            <span className="text-slate-400">{icon}</span>
+            <span>
+                <span className="block text-sm font-black text-slate-600">{title}</span>
+                <span className="mt-1 block text-xs leading-5 text-slate-500">{body}</span>
+            </span>
+        </div>
+    );
+}
+
 function LinkedRecord({
     icon,
     label,
@@ -481,4 +500,9 @@ function followUpLabel(value: Date | string | null) {
 
 function formatLabel(value: string) {
     return value.replace(/_/g, ' ');
+}
+
+function getLeadDisplayName(lead: { firstName?: string | null; lastName?: string | null; company?: string | null; email?: string | null }) {
+    const name = [lead.firstName, lead.lastName].filter(Boolean).join(' ').trim();
+    return name || lead.company || lead.email || 'Unnamed lead';
 }

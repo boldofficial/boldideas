@@ -28,9 +28,9 @@ import {
 
 type Lead = {
     id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
     company: string | null;
     status: string | null;
     value: string | null;
@@ -438,9 +438,9 @@ export default function CRMClient({ leads, analyticsData, staff, createLeadActio
                             </button>
                         </div>
                         <form action={createLeadAction} className="grid gap-4 p-6 md:grid-cols-2">
-                            <Field label="First name" name="firstName" required />
+                            <Field label="First name" name="firstName" />
                             <Field label="Last name" name="lastName" />
-                            <Field label="Email" name="email" type="email" required />
+                            <Field label="Email" name="email" type="email" />
                             <Field label="Phone" name="phone" />
                             <Field label="Company" name="company" />
                             <Field label="Estimated value" name="value" />
@@ -493,8 +493,8 @@ export default function CRMClient({ leads, analyticsData, staff, createLeadActio
                             <div className="border border-slate-200 bg-slate-50 p-4">
                                 <p className="text-xs font-black uppercase tracking-[0.16em] text-brand-navy">Accepted columns</p>
                                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                                    Required: <strong>email</strong> and either <strong>first_name</strong> or <strong>name</strong>.
-                                    Optional: last_name, phone, company, status, source, priority, value, service_interest,
+                                    No required columns. Add whichever details you have now and enrich the lead later.
+                                    Supported: name, first_name, last_name, email, phone, company, status, source, priority, value, service_interest,
                                     notes, next_follow_up.
                                 </p>
                             </div>
@@ -530,7 +530,7 @@ export default function CRMClient({ leads, analyticsData, staff, createLeadActio
                                     value={csvText}
                                     onChange={(event) => setCsvText(event.target.value)}
                                     rows={12}
-                                    placeholder={'name,email,phone,company,source,service_interest,value,notes\nJane Doe,jane@example.com,+1 555 0000,Acme,referral,Website redesign,2500,Needs callback'}
+                                    placeholder={'name,email,phone,company,source,service_interest,value,notes\nJane Doe,jane@example.com,+1 555 0000,Acme,referral,Website redesign,2500,Needs callback\n,,+1 555 1111,,manual,,,'}
                                     className="mt-1.5 w-full rounded-sm border border-slate-200 p-3 font-mono text-xs leading-5 text-slate-700 outline-none focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10"
                                 />
                             </div>
@@ -643,6 +643,7 @@ function LeadCard({ lead, selected, onToggleSelect, onDragStart, onDragEnd }: {
     onDragEnd: () => void;
 }) {
     const followUpState = getFollowUpState(lead);
+    const displayName = getLeadDisplayName(lead);
 
     return (
         <div className="group relative">
@@ -658,8 +659,8 @@ function LeadCard({ lead, selected, onToggleSelect, onDragStart, onDragEnd }: {
                 <div className={`border bg-white p-4 shadow-sm transition hover:border-brand-navy/25 hover:shadow-md ${selected ? 'border-brand-navy ring-2 ring-brand-navy/15' : 'border-slate-200'}`}>
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                            <h3 className="truncate text-sm font-black text-brand-navy">{lead.firstName} {lead.lastName}</h3>
-                            <p className="mt-1 truncate text-xs font-medium text-slate-500">{lead.company || lead.email}</p>
+                            <h3 className="truncate text-sm font-black text-brand-navy">{displayName}</h3>
+                            <p className="mt-1 truncate text-xs font-medium text-slate-500">{lead.company || lead.email || 'Details pending'}</p>
                         </div>
                         <p className="shrink-0 font-mono text-xs font-black text-slate-700">${Number(lead.value || 0).toLocaleString()}</p>
                     </div>
@@ -721,11 +722,11 @@ function LeadTable({ leads, view, selectedIds, onToggleSelect, onToggleSelectAll
                             </td>
                             <td className="border-r border-[#edf1f5] px-3 py-3 align-top font-medium text-[#475569]">{index + 1}</td>
                             <td className="border-r border-[#edf1f5] px-3 py-3 align-top">
-                                <Link href={`/admin/crm/${lead.id}`} className="font-medium text-[#334155] hover:text-[#0f172a] hover:underline">{lead.firstName} {lead.lastName}</Link>
+                                <Link href={`/admin/crm/${lead.id}`} className="font-medium text-[#334155] hover:text-[#0f172a] hover:underline">{getLeadDisplayName(lead)}</Link>
                                 {view === 'quotes' && <p className="mt-1 max-w-48 truncate text-[12px] text-[#64748b]">{lead.serviceInterest || 'Quote request'}</p>}
                             </td>
                             <td className="border-r border-[#edf1f5] px-3 py-3 align-top text-[#475569]">{lead.company || '-'}</td>
-                            <td className="border-r border-[#edf1f5] px-3 py-3 align-top text-[#475569]">{lead.email}</td>
+                            <td className="border-r border-[#edf1f5] px-3 py-3 align-top text-[#475569]">{lead.email || '-'}</td>
                             <td className="border-r border-[#edf1f5] px-3 py-3 align-top text-[#475569]">{lead.phone || '-'}</td>
                             <td className="border-r border-[#edf1f5] px-3 py-3 align-top font-medium text-[#475569]">${Number(lead.value || 0).toLocaleString()}</td>
                             <td className="border-r border-[#edf1f5] px-3 py-3 align-top">
@@ -866,6 +867,11 @@ function EmptyState({ title, body }: { title: string; body: string }) {
 function isQuoteLead(lead: Lead) {
     const text = `${lead.serviceInterest || ''} ${lead.notes || ''}`.toLowerCase();
     return text.includes('quote') || text.includes('requested features') || text.includes('custom website');
+}
+
+function getLeadDisplayName(lead: Lead) {
+    const name = [lead.firstName, lead.lastName].filter(Boolean).join(' ').trim();
+    return name || lead.company || lead.email || 'Unnamed lead';
 }
 
 function getFollowUpState(lead: Lead) {

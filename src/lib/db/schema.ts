@@ -96,9 +96,9 @@ export const posts = pgTable('posts', {
 
 export const leads = pgTable('leads', {
   id: uuid('id').defaultRandom().primaryKey(),
-  firstName: text('first_name').notNull(),
-  lastName: text('last_name').notNull(),
-  email: text('email').notNull(),
+  firstName: text('first_name'),
+  lastName: text('last_name'),
+  email: text('email'),
   phone: text('phone'),
   company: text('company'),
   status: text('status').default('new'), // 'new' | 'contacted' | 'qualified' | 'proposal' | 'won' | 'lost'
