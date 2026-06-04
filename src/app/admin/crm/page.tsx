@@ -1,4 +1,4 @@
-import { getLeads, createLead, getAnalyticsData } from '@/actions/crm';
+import { getLeads, createLead, getAnalyticsData, getCrmStaff } from '@/actions/crm';
 import CRMClient from '@/components/crm/CRMClient';
 
 // Wrapper for form action type compatibility
@@ -8,53 +8,50 @@ async function handleCreateLead(formData: FormData) {
 }
 
 export default async function CRMPage() {
-    const [leadsResult, analyticsResult] = await Promise.all([
+    const [leadsResult, analyticsResult, staffResult] = await Promise.all([
         getLeads(),
         getAnalyticsData(),
+        getCrmStaff(),
     ]);
 
     const leads = leadsResult.data || [];
     const analyticsData = analyticsResult.success ? analyticsResult.data : null;
+    const staff = staffResult.data || [];
 
     return (
-        <div className="p-8 min-h-screen flex flex-col">
-            <div className="mb-8 shrink-0">
-                <div className="mb-5 flex items-end justify-between gap-4">
+        <div className="min-h-screen bg-slate-100/70 p-4 md:p-6 xl:p-8">
+            <div className="mb-6 rounded-sm border border-slate-200 bg-white px-5 py-5 shadow-sm md:px-6">
+                <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
                     <div>
-                        <p className="text-xs font-black uppercase tracking-widest text-brand-gold">CRM</p>
-                        <h1 className="text-3xl font-bold text-slate-800">Pipeline</h1>
+                        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-brand-gold">Sales Desk</p>
+                        <h1 className="mt-1 text-2xl font-black tracking-tight text-brand-navy md:text-3xl">CRM Pipeline</h1>
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                            Manage website inquiries, quote requests, callbacks, and deal follow-up from one operational view.
+                        </p>
                     </div>
-                    <p className="max-w-md text-sm leading-6 text-slate-500">
-                        Track every website inquiry, booking request, and manual opportunity from first touch to won work.
-                    </p>
+                    <div className="grid grid-cols-3 divide-x divide-slate-200 rounded-sm border border-slate-200 bg-slate-50 text-center">
+                        <HeaderStat label="Open" value={String(leads.filter((lead) => !['won', 'lost'].includes(lead.status || '')).length)} />
+                        <HeaderStat label="Quote Requests" value={String(leads.filter((lead) => (lead.serviceInterest || '').toLowerCase().includes('quote')).length)} />
+                        <HeaderStat label="Team" value={String(staff.length)} />
+                    </div>
                 </div>
-
-                <form action={handleCreateLead} className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:grid-cols-12">
-                    <input name="firstName" placeholder="First name" className="rounded border border-slate-200 p-2 text-sm lg:col-span-2" required />
-                    <input name="lastName" placeholder="Last name" className="rounded border border-slate-200 p-2 text-sm lg:col-span-2" />
-                    <input name="email" placeholder="Email" className="rounded border border-slate-200 p-2 text-sm lg:col-span-3" required />
-                    <input name="phone" placeholder="Phone" className="rounded border border-slate-200 p-2 text-sm lg:col-span-2" />
-                    <input name="value" placeholder="Value ($)" className="rounded border border-slate-200 p-2 text-sm lg:col-span-1" />
-                    <select name="priority" defaultValue="medium" className="rounded border border-slate-200 bg-white p-2 text-sm lg:col-span-2">
-                        <option value="low">Low priority</option>
-                        <option value="medium">Medium priority</option>
-                        <option value="high">High priority</option>
-                    </select>
-                    <input name="company" placeholder="Company" className="rounded border border-slate-200 p-2 text-sm lg:col-span-3" />
-                    <input name="serviceInterest" placeholder="Service interest" className="rounded border border-slate-200 p-2 text-sm lg:col-span-3" />
-                    <select name="source" defaultValue="manual" className="rounded border border-slate-200 bg-white p-2 text-sm lg:col-span-2">
-                        <option value="manual">Manual</option>
-                        <option value="website">Website</option>
-                        <option value="referral">Referral</option>
-                        <option value="ads">Ads</option>
-                        <option value="campaign">Campaign</option>
-                    </select>
-                    <input name="nextFollowUpAt" type="datetime-local" className="rounded border border-slate-200 p-2 text-sm lg:col-span-2" />
-                    <button className="rounded bg-brand-navy px-4 py-2 text-sm font-bold text-white lg:col-span-2">Add Deal</button>
-                </form>
             </div>
 
-            <CRMClient leads={leads} analyticsData={analyticsData} />
+            <CRMClient
+                leads={leads}
+                analyticsData={analyticsData}
+                staff={staff}
+                createLeadAction={handleCreateLead}
+            />
+        </div>
+    );
+}
+
+function HeaderStat({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="min-w-24 px-4 py-3">
+            <p className="text-lg font-black text-brand-navy">{value}</p>
+            <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</p>
         </div>
     );
 }

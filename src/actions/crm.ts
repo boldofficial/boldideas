@@ -1,10 +1,11 @@
 'use server'
 
 import { db } from '@/lib/db';
-import { leads, interactions, users } from '@/lib/db/schema';
-import { eq, desc, and, gte, lte, or, sql, inArray } from 'drizzle-orm';
+import { leads, interactions, users, internalProjects, invoices, invoiceItems } from '@/lib/db/schema';
+import { eq, desc, or, sql, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { createNotification } from './notifications';
+import { authzError, requireAdmin, requireStaffOrAdmin } from '@/lib/authz';
 
 function getOptionalString(formData: FormData, key: string) {
     const value = formData.get(key);
@@ -26,9 +27,129 @@ function splitFullName(name: string) {
     };
 }
 
+function formatQuoteNotes(formData: FormData) {
+    const message = getOptionalString(formData, 'message') || getOptionalString(formData, 'notes') || '';
+    const features = getOptionalString(formData, 'features');
+    const packageInterest = getOptionalString(formData, 'package') || getOptionalString(formData, 'type');
+    const budget = getOptionalString(formData, 'budget');
+    const timeline = getOptionalString(formData, 'timeline');
+    const callback = getOptionalString(formData, 'callback') || getOptionalString(formData, 'callbackRequest');
+
+    const lines = [
+        packageInterest ? `Package / request type: ${packageInterest}` : null,
+        features ? `Requested features: ${features}` : null,
+        budget ? `Budget: ${budget}` : null,
+        timeline ? `Timeline: ${timeline}` : null,
+        callback ? `Callback preference: ${callback}` : null,
+        message ? `Message: ${message}` : null,
+    ].filter(Boolean);
+
+    return lines.join('\n');
+}
+
+async function findLeadByEmail(email: string) {
+    const normalizedEmail = email.toLowerCase();
+    const [existingLead] = await db.select()
+        .from(leads)
+        .where(sql`lower(${leads.email}) = ${normalizedEmail}`)
+        .limit(1);
+    return existingLead;
+}
+
+async function notifyAdmins(title: string, message: string, link: string) {
+    const admins = await db.select({ id: users.id })
+        .from(users)
+        .where(eq(users.role, 'admin'))
+        .limit(8);
+
+    for (const admin of admins) {
+        await createNotification(admin.id, 'lead_created', title, message, link);
+    }
+}
+
+async function getLeadForConversion(leadId: string) {
+    const [lead] = await db.select().from(leads).where(eq(leads.id, leadId)).limit(1);
+    return lead;
+}
+
+async function findUserByEmail(email: string) {
+    const normalizedEmail = email.toLowerCase();
+    const [user] = await db.select()
+        .from(users)
+        .where(sql`lower(${users.email}) = ${normalizedEmail}`)
+        .limit(1);
+    return user;
+}
+
+async function ensureClientFromLead(leadId: string) {
+    const lead = await getLeadForConversion(leadId);
+    if (!lead) return { success: false as const, error: 'Lead not found' };
+
+    if (lead.clientId) {
+        return { success: true as const, lead, clientId: lead.clientId, created: false };
+    }
+
+    const existingUser = await findUserByEmail(lead.email);
+    if (existingUser) {
+        if ((existingUser.role || 'user') === 'user' || existingUser.role === 'client') {
+            await db.update(users)
+                .set({
+                    name: existingUser.name || `${lead.firstName} ${lead.lastName}`.trim(),
+                    isActive: true,
+                    updatedAt: new Date(),
+                })
+                .where(eq(users.id, existingUser.id));
+        }
+
+        await db.update(leads)
+            .set({ clientId: existingUser.id, updatedAt: new Date() })
+            .where(eq(leads.id, leadId));
+
+        return { success: true as const, lead: { ...lead, clientId: existingUser.id }, clientId: existingUser.id, created: false };
+    }
+
+    const [client] = await db.insert(users).values({
+        email: lead.email,
+        name: `${lead.firstName} ${lead.lastName}`.trim(),
+        role: 'user',
+        isActive: true,
+        emailVerified: false,
+    }).returning({ id: users.id });
+
+    await db.update(leads)
+        .set({ clientId: client.id, updatedAt: new Date() })
+        .where(eq(leads.id, leadId));
+
+    return { success: true as const, lead: { ...lead, clientId: client.id }, clientId: client.id, created: true };
+}
+
+async function addConversionActivity(leadId: string, userId: string, notes: string) {
+    await db.insert(interactions).values({
+        leadId,
+        type: 'note',
+        notes,
+        createdBy: userId,
+    });
+}
+
+async function nextInvoiceNumber() {
+    try {
+        const count = await db.select({ id: invoices.id }).from(invoices);
+        return `INV-${new Date().getFullYear()}-${(count.length + 1).toString().padStart(3, '0')}`;
+    } catch {
+        return `INV-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
+    }
+}
+
 export async function bulkUpdateLeads(ids: string[], updates: { status?: string; assignedTo?: string | null; priority?: string }) {
     try {
-        const updateData: Record<string, any> = { updatedAt: new Date() };
+        await requireStaffOrAdmin();
+        const updateData: {
+            updatedAt: Date;
+            status?: string;
+            priority?: string;
+            assignedTo?: string | null;
+        } = { updatedAt: new Date() };
         if (updates.status) updateData.status = updates.status;
         if (updates.priority) updateData.priority = updates.priority;
         if (updates.assignedTo !== undefined) updateData.assignedTo = updates.assignedTo || null;
@@ -39,23 +160,25 @@ export async function bulkUpdateLeads(ids: string[], updates: { status?: string;
 
         revalidatePath('/admin/crm');
         return { success: true, count: ids.length };
-    } catch (error) {
+    } catch {
         return { success: false, error: 'Failed to bulk update leads' };
     }
 }
 
 export async function bulkDeleteLeads(ids: string[]) {
     try {
+        await requireStaffOrAdmin();
         await db.delete(leads).where(inArray(leads.id, ids));
         revalidatePath('/admin/crm');
         return { success: true, count: ids.length };
-    } catch (error) {
+    } catch {
         return { success: false, error: 'Failed to delete leads' };
     }
 }
 
 export async function getAnalyticsData() {
     try {
+        await requireStaffOrAdmin();
         const allLeads = await db.select().from(leads);
 
         const total = allLeads.length;
@@ -124,14 +247,51 @@ export async function getAnalyticsData() {
                 bySource,
             }
         };
-    } catch (error) {
+    } catch {
         return { success: false, error: 'Failed to fetch analytics' };
     }
 }
 
 export async function getLeads() {
     try {
-        const allLeads = await db.select().from(leads).orderBy(desc(leads.createdAt));
+        await requireStaffOrAdmin();
+        const assignedUser = db.select({
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            avatarUrl: users.avatarUrl,
+        }).from(users).as('assignedUser');
+
+        const allLeads = await db
+            .select({
+                id: leads.id,
+                firstName: leads.firstName,
+                lastName: leads.lastName,
+                email: leads.email,
+                phone: leads.phone,
+                company: leads.company,
+                status: leads.status,
+                source: leads.source,
+                serviceInterest: leads.serviceInterest,
+                priority: leads.priority,
+                nextFollowUpAt: leads.nextFollowUpAt,
+                lostReason: leads.lostReason,
+                notes: leads.notes,
+                assignedTo: leads.assignedTo,
+                clientId: leads.clientId,
+                projectId: leads.projectId,
+                invoiceId: leads.invoiceId,
+                value: leads.value,
+                createdAt: leads.createdAt,
+                updatedAt: leads.updatedAt,
+                assignedToName: assignedUser.name,
+                assignedToEmail: assignedUser.email,
+                assignedToAvatar: assignedUser.avatarUrl,
+            })
+            .from(leads)
+            .leftJoin(assignedUser, eq(leads.assignedTo, assignedUser.id))
+            .orderBy(desc(leads.createdAt));
+
         return { success: true, data: allLeads };
     } catch (error) {
         console.error('Error fetching leads:', error);
@@ -140,6 +300,13 @@ export async function getLeads() {
 }
 
 export async function createLead(formData: FormData) {
+    let currentUser;
+    try {
+        currentUser = await requireStaffOrAdmin();
+    } catch {
+        return authzError('Only team members can create leads manually');
+    }
+
     const firstName = getOptionalString(formData, 'firstName');
     const lastName = getOptionalString(formData, 'lastName');
     const email = getOptionalString(formData, 'email');
@@ -152,11 +319,38 @@ export async function createLead(formData: FormData) {
     const priority = getOptionalString(formData, 'priority') || 'medium';
     const serviceInterest = getOptionalString(formData, 'serviceInterest');
     const nextFollowUpAt = getFollowUpDate(formData);
+    const assignedTo = getOptionalString(formData, 'assignedTo') || currentUser.id;
 
     if (!email) return { success: false, error: 'Email is required' };
     if (!firstName) return { success: false, error: 'First name is required' };
 
     try {
+        const existingLead = await findLeadByEmail(email);
+        if (existingLead) {
+            await db.update(leads)
+                .set({
+                    phone: phone || existingLead.phone,
+                    company: company || existingLead.company,
+                    serviceInterest: serviceInterest || existingLead.serviceInterest,
+                    priority,
+                    nextFollowUpAt: nextFollowUpAt || existingLead.nextFollowUpAt,
+                    assignedTo: assignedTo || existingLead.assignedTo,
+                    updatedAt: new Date(),
+                })
+                .where(eq(leads.id, existingLead.id));
+
+            await db.insert(interactions).values({
+                leadId: existingLead.id,
+                type: 'note',
+                notes: `Manual lead entry matched this existing email.${notes ? `\n\n${notes}` : ''}`,
+                createdBy: currentUser.id,
+            });
+
+            revalidatePath('/admin/crm');
+            revalidatePath(`/admin/crm/${existingLead.id}`);
+            return { success: true, id: existingLead.id, duplicate: true };
+        }
+
         const [newLead] = await db.insert(leads).values({
             firstName,
             lastName: lastName || '',
@@ -170,6 +364,7 @@ export async function createLead(formData: FormData) {
             priority,
             serviceInterest,
             nextFollowUpAt,
+            assignedTo,
         }).returning({ id: leads.id, assignedTo: leads.assignedTo });
         
         revalidatePath('/admin/crm');
@@ -205,46 +400,119 @@ export async function createWebsiteLead(formData: FormData) {
     normalized.set('source', getOptionalString(formData, 'source') || 'website');
     normalized.set('serviceInterest', getOptionalString(formData, 'serviceInterest') || 'Website inquiry');
     normalized.set('priority', getOptionalString(formData, 'priority') || 'high');
-    normalized.set('notes', getOptionalString(formData, 'message') || getOptionalString(formData, 'notes') || '');
+    normalized.set('notes', formatQuoteNotes(formData));
 
-    const result = await createLead(normalized);
+    const email = getOptionalString(normalized, 'email');
+    if (!email) return { success: false, error: 'Email is required' };
 
-    if (result.success && result.id) {
-        try {
-            const admins = await db.select({ id: users.id })
-                .from(users)
-                .where(eq(users.role, 'admin'))
-                .limit(5);
+    try {
+        const existingLead = await findLeadByEmail(email);
 
-            for (const admin of admins) {
-                await createNotification(
-                    admin.id,
-                    'lead_created',
-                    'New Website Lead',
-                    `${firstName} ${lastName} submitted a website inquiry`,
-                    `/admin/crm/${result.id}`
-                );
-            }
-        } catch (error) {
-            console.error('Failed to notify admins for website lead:', error);
+        if (existingLead) {
+            await db.update(leads)
+                .set({
+                    firstName,
+                    lastName,
+                    phone: getOptionalString(normalized, 'phone') || existingLead.phone,
+                    company: getOptionalString(normalized, 'company') || existingLead.company,
+                    source: getOptionalString(normalized, 'source') || existingLead.source,
+                    serviceInterest: getOptionalString(normalized, 'serviceInterest') || existingLead.serviceInterest,
+                    priority: getOptionalString(normalized, 'priority') || existingLead.priority,
+                    status: existingLead.status === 'lost' ? 'new' : existingLead.status,
+                    updatedAt: new Date(),
+                })
+                .where(eq(leads.id, existingLead.id));
+
+            await db.insert(interactions).values({
+                leadId: existingLead.id,
+                type: 'note',
+                notes: `New website submission received.\n\n${getOptionalString(normalized, 'notes') || 'No message provided.'}`,
+            });
+
+            revalidatePath('/admin/crm');
+            revalidatePath(`/admin/crm/${existingLead.id}`);
+            await notifyAdmins(
+                'Website Lead Updated',
+                `${firstName} ${lastName} submitted another website inquiry`,
+                `/admin/crm/${existingLead.id}`
+            );
+            return { success: true, id: existingLead.id, duplicate: true };
         }
-    }
 
-    return result;
+        const [newLead] = await db.insert(leads).values({
+            firstName,
+            lastName,
+            email,
+            phone: getOptionalString(normalized, 'phone'),
+            company: getOptionalString(normalized, 'company'),
+            source: getOptionalString(normalized, 'source') || 'website',
+            serviceInterest: getOptionalString(normalized, 'serviceInterest') || 'Website inquiry',
+            priority: getOptionalString(normalized, 'priority') || 'high',
+            notes: getOptionalString(normalized, 'notes'),
+            status: 'new',
+        }).returning({ id: leads.id });
+
+        revalidatePath('/admin/crm');
+        await notifyAdmins(
+            'New Website Lead',
+            `${firstName} ${lastName} submitted a website inquiry`,
+            `/admin/crm/${newLead.id}`
+        );
+        return { success: true, id: newLead.id };
+    } catch (error) {
+        console.error('Error creating website lead:', error);
+        return { success: false, error: 'Failed to create lead' };
+    }
 }
 
 export async function getLead(id: string) {
     try {
-        const lead = await db.select().from(leads).where(eq(leads.id, id)).limit(1);
+        await requireStaffOrAdmin();
+        const assignedUser = db.select({
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            avatarUrl: users.avatarUrl,
+        }).from(users).as('assignedUser');
+
+        const lead = await db.select({
+            id: leads.id,
+            firstName: leads.firstName,
+            lastName: leads.lastName,
+            email: leads.email,
+            phone: leads.phone,
+            company: leads.company,
+            status: leads.status,
+            source: leads.source,
+            serviceInterest: leads.serviceInterest,
+            priority: leads.priority,
+            nextFollowUpAt: leads.nextFollowUpAt,
+            lostReason: leads.lostReason,
+            notes: leads.notes,
+            assignedTo: leads.assignedTo,
+            clientId: leads.clientId,
+            projectId: leads.projectId,
+            invoiceId: leads.invoiceId,
+            value: leads.value,
+            createdAt: leads.createdAt,
+            updatedAt: leads.updatedAt,
+            assignedToName: assignedUser.name,
+            assignedToEmail: assignedUser.email,
+            assignedToAvatar: assignedUser.avatarUrl,
+        }).from(leads)
+            .leftJoin(assignedUser, eq(leads.assignedTo, assignedUser.id))
+            .where(eq(leads.id, id))
+            .limit(1);
         if (lead.length === 0) return { success: false, error: 'Lead not found' };
         return { success: true, data: lead[0] };
-    } catch (error) {
+    } catch {
         return { success: false, error: 'Failed to fetch lead' };
     }
 }
 
 export async function updateLeadStatus(id: string, newStatus: string) {
     try {
+        await requireStaffOrAdmin();
         // Get lead info before updating
         const [lead] = await db.select()
             .from(leads)
@@ -268,12 +536,19 @@ export async function updateLeadStatus(id: string, newStatus: string) {
         }
 
         return { success: true };
-    } catch (error) {
+    } catch {
         return { success: false, error: 'Failed to update status' };
     }
 }
 
 export async function updateLead(formData: FormData) {
+    let currentUser;
+    try {
+        currentUser = await requireStaffOrAdmin();
+    } catch {
+        return authzError('Only team members can update leads');
+    }
+
     const id = getOptionalString(formData, 'id');
     if (!id) return { success: false, error: 'Lead id is required' };
 
@@ -293,9 +568,17 @@ export async function updateLead(formData: FormData) {
                 nextFollowUpAt: getFollowUpDate(formData) || null,
                 lostReason: getOptionalString(formData, 'lostReason'),
                 notes: getOptionalString(formData, 'notes'),
+                assignedTo: getOptionalString(formData, 'assignedTo') || null,
                 updatedAt: new Date(),
             })
             .where(eq(leads.id, id));
+
+        await db.insert(interactions).values({
+            leadId: id,
+            type: 'note',
+            notes: `Lead profile updated by ${currentUser.name || currentUser.email}.`,
+            createdBy: currentUser.id,
+        });
 
         revalidatePath('/admin/crm');
         revalidatePath(`/admin/crm/${id}`);
@@ -307,6 +590,13 @@ export async function updateLead(formData: FormData) {
 }
 
 export async function addInteraction(formData: FormData) {
+    let currentUser;
+    try {
+        currentUser = await requireStaffOrAdmin();
+    } catch {
+        return authzError('Only team members can log lead activity');
+    }
+
     const leadId = formData.get('leadId') as string;
     const type = formData.get('type') as string;
     const notes = formData.get('notes') as string;
@@ -316,20 +606,247 @@ export async function addInteraction(formData: FormData) {
             leadId,
             type,
             notes,
+            createdBy: currentUser.id,
         });
         revalidatePath(`/admin/crm/${leadId}`);
         return { success: true };
-    } catch (error) {
+    } catch {
         return { success: false, error: 'Failed to log interaction' };
     }
 }
 
 export async function getInteractions(leadId: string) {
     try {
+        await requireStaffOrAdmin();
         const data = await db.select().from(interactions).where(eq(interactions.leadId, leadId)).orderBy(desc(interactions.createdAt));
         return { success: true, data };
-    } catch (error) {
+    } catch {
         return { success: false, error: 'Failed to fetch interactions' };
+    }
+}
+
+export async function getCrmStaff() {
+    try {
+        await requireStaffOrAdmin();
+        const staff = await db.select({
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            role: users.role,
+            avatarUrl: users.avatarUrl,
+        })
+            .from(users)
+            .where(or(eq(users.role, 'admin'), eq(users.role, 'staff')))
+            .orderBy(desc(users.createdAt));
+
+        return { success: true, data: staff };
+    } catch {
+        return { success: false, error: 'Failed to fetch staff' };
+    }
+}
+
+export async function convertLeadToClient(formData: FormData) {
+    let currentUser;
+    try {
+        currentUser = await requireStaffOrAdmin();
+    } catch {
+        return authzError('Only team members can convert leads');
+    }
+
+    const leadId = getOptionalString(formData, 'leadId');
+    if (!leadId) return { success: false, error: 'Lead id is required' };
+
+    try {
+        const result = await ensureClientFromLead(leadId);
+        if (!result.success) return result;
+        if (result.lead.projectId) {
+            return { success: true, projectId: result.lead.projectId, clientId: result.clientId, existing: true };
+        }
+
+        await db.update(leads)
+            .set({
+                clientId: result.clientId,
+                status: result.lead.status === 'new' ? 'qualified' : result.lead.status,
+                updatedAt: new Date(),
+            })
+            .where(eq(leads.id, leadId));
+
+        await addConversionActivity(
+            leadId,
+            currentUser.id,
+            `${result.created ? 'Created' : 'Linked'} client profile for ${result.lead.email}.`
+        );
+
+        revalidatePath('/admin/crm');
+        revalidatePath(`/admin/crm/${leadId}`);
+        revalidatePath('/admin/users');
+        return { success: true, clientId: result.clientId, created: result.created };
+    } catch (error) {
+        console.error('convertLeadToClient error:', error);
+        return { success: false, error: 'Failed to convert lead to client' };
+    }
+}
+
+export async function createProjectFromLead(formData: FormData) {
+    let currentUser;
+    try {
+        currentUser = await requireStaffOrAdmin();
+    } catch {
+        return authzError('Only team members can create projects from leads');
+    }
+
+    const leadId = getOptionalString(formData, 'leadId');
+    if (!leadId) return { success: false, error: 'Lead id is required' };
+
+    try {
+        const result = await ensureClientFromLead(leadId);
+        if (!result.success) return result;
+        if (result.lead.invoiceId) {
+            return { success: true, invoiceId: result.lead.invoiceId, clientId: result.clientId, existing: true };
+        }
+
+        const title = getOptionalString(formData, 'title')
+            || `${result.lead.company || `${result.lead.firstName} ${result.lead.lastName}`.trim()} - ${result.lead.serviceInterest || 'Client Project'}`;
+        const budget = getOptionalString(formData, 'budget') || result.lead.value || undefined;
+        const dueDate = getOptionalString(formData, 'dueDate');
+        const managerId = getOptionalString(formData, 'managerId') || result.lead.assignedTo || currentUser.id;
+
+        const [project] = await db.insert(internalProjects).values({
+            title,
+            clientId: result.clientId,
+            managerId,
+            type: 'client',
+            status: 'planning',
+            budget,
+            dueDate: dueDate ? new Date(dueDate) : null,
+            description: [
+                `Created from CRM lead: ${result.lead.firstName} ${result.lead.lastName}`,
+                result.lead.serviceInterest ? `Service interest: ${result.lead.serviceInterest}` : null,
+                result.lead.notes ? `Lead notes:\n${result.lead.notes}` : null,
+            ].filter(Boolean).join('\n\n'),
+        }).returning({ id: internalProjects.id });
+
+        await db.update(leads)
+            .set({
+                clientId: result.clientId,
+                projectId: project.id,
+                status: result.lead.status === 'won' ? 'won' : 'qualified',
+                updatedAt: new Date(),
+            })
+            .where(eq(leads.id, leadId));
+
+        await addConversionActivity(
+            leadId,
+            currentUser.id,
+            `Project created from lead: ${title}\n/admin/projects/${project.id}`
+        );
+
+        if (managerId) {
+            await createNotification(
+                managerId,
+                'project_created',
+                'Project Created From Lead',
+                title,
+                `/admin/projects/${project.id}`
+            );
+        }
+
+        await createNotification(
+            result.clientId,
+            'project_assigned',
+            'Project Created',
+            `Your project "${title}" has been created.`,
+            `/client/projects/${project.id}`
+        );
+
+        revalidatePath('/admin/crm');
+        revalidatePath(`/admin/crm/${leadId}`);
+        revalidatePath('/admin/projects');
+        revalidatePath(`/admin/projects/${project.id}`);
+        revalidatePath('/client');
+        return { success: true, projectId: project.id, clientId: result.clientId };
+    } catch (error) {
+        console.error('createProjectFromLead error:', error);
+        return { success: false, error: 'Failed to create project from lead' };
+    }
+}
+
+export async function createInvoiceFromLead(formData: FormData) {
+    let currentUser;
+    try {
+        currentUser = await requireAdmin();
+    } catch {
+        return authzError('Only admins can create invoices from leads');
+    }
+
+    const leadId = getOptionalString(formData, 'leadId');
+    if (!leadId) return { success: false, error: 'Lead id is required' };
+
+    try {
+        const result = await ensureClientFromLead(leadId);
+        if (!result.success) return result;
+
+        const amount = getOptionalString(formData, 'amount') || result.lead.value || '0';
+        const currency = getOptionalString(formData, 'currency') || 'USD';
+        const dueDateValue = getOptionalString(formData, 'dueDate');
+        const dueDate = dueDateValue ? new Date(dueDateValue) : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+        const itemTitle = getOptionalString(formData, 'itemTitle') || result.lead.serviceInterest || 'Professional Services';
+        const invoiceNumber = await nextInvoiceNumber();
+
+        const [invoice] = await db.insert(invoices).values({
+            invoiceNumber,
+            clientId: result.clientId,
+            status: 'draft',
+            totalAmount: amount,
+            currency,
+            dueDate,
+            notes: [
+                `Created from CRM lead: ${result.lead.firstName} ${result.lead.lastName}`,
+                result.lead.company ? `Company: ${result.lead.company}` : null,
+                result.lead.notes || null,
+            ].filter(Boolean).join('\n\n'),
+        }).returning({ id: invoices.id });
+
+        await db.insert(invoiceItems).values({
+            invoiceId: invoice.id,
+            title: itemTitle,
+            description: `Converted from CRM lead ${result.lead.email}`,
+            quantity: '1',
+            unitPrice: amount,
+            amount,
+        });
+
+        await db.update(leads)
+            .set({
+                clientId: result.clientId,
+                invoiceId: invoice.id,
+                status: result.lead.status === 'new' ? 'proposal' : result.lead.status,
+                updatedAt: new Date(),
+            })
+            .where(eq(leads.id, leadId));
+
+        await addConversionActivity(
+            leadId,
+            currentUser.id,
+            `Draft invoice ${invoiceNumber} created for ${currency} ${Number(amount || 0).toLocaleString()}.\n/admin/finance/invoice/${invoice.id}`
+        );
+
+        await createNotification(
+            result.clientId,
+            'invoice_created',
+            'Invoice Draft Prepared',
+            `Invoice ${invoiceNumber} has been prepared for ${currency} ${Number(amount || 0).toLocaleString()}.`,
+            `/admin/finance/invoice/${invoice.id}`
+        );
+
+        revalidatePath('/admin/crm');
+        revalidatePath(`/admin/crm/${leadId}`);
+        revalidatePath('/admin/finance');
+        revalidatePath(`/admin/finance/invoice/${invoice.id}`);
+        return { success: true, invoiceId: invoice.id, clientId: result.clientId };
+    } catch (error) {
+        console.error('createInvoiceFromLead error:', error);
+        return { success: false, error: 'Failed to create invoice from lead' };
     }
 }
 

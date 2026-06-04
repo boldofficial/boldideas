@@ -1,23 +1,28 @@
 'use client';
 
 import { useMemo, useState, useTransition, useCallback } from 'react';
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { updateLeadStatus, bulkUpdateLeads, bulkDeleteLeads } from '@/actions/crm';
 import PipelineAnalytics from './PipelineAnalytics';
 import {
-    Search,
-    Filter,
-    X,
+    ArrowRight,
+    BarChart3,
+    CalendarClock,
+    CheckSquare,
     ChevronDown,
     ChevronRight,
-    CheckSquare,
+    ClipboardList,
+    Filter,
+    LayoutGrid,
+    ListChecks,
+    Plus,
+    RefreshCw,
+    Search,
     Square,
     Trash2,
-    BarChart3,
-    DollarSign,
-    Calendar,
-    User,
-    RefreshCw,
+    UserRound,
+    X,
 } from 'lucide-react';
 
 type Lead = {
@@ -33,106 +38,122 @@ type Lead = {
     serviceInterest: string | null;
     nextFollowUpAt: Date | string | null;
     assignedTo: string | null;
-    createdAt: Date | null;
+    assignedToName?: string | null;
+    assignedToEmail?: string | null;
+    createdAt: Date | string | null;
     phone: string | null;
     notes: string | null;
 };
 
+type Staff = {
+    id: string;
+    name: string | null;
+    email: string;
+    role: string | null;
+};
+
+type AnalyticsData = {
+    total: number;
+    active: number;
+    won: number;
+    lost: number;
+    winRate: number;
+    totalPipelineValue: number;
+    pipeline: { status: string; label: string; count: number; value: number }[];
+    monthlyTrend: { month: string; created: number; won: number }[];
+    bySource: { source: string; count: number }[];
+};
+
 type Props = {
     leads: Lead[];
-    analyticsData?: any;
+    staff: Staff[];
+    analyticsData?: AnalyticsData | null;
+    createLeadAction: (formData: FormData) => Promise<void>;
 };
 
-const STATUS_COLORS: Record<string, string> = {
-    new: 'bg-blue-50 border-blue-200',
-    contacted: 'bg-yellow-50 border-yellow-200',
-    qualified: 'bg-indigo-50 border-indigo-200',
-    proposal: 'bg-purple-50 border-purple-200',
-    won: 'bg-green-50 border-green-200',
-    lost: 'bg-rose-50 border-rose-200',
+const columns = [
+    { id: 'new', label: 'New' },
+    { id: 'contacted', label: 'Contacted' },
+    { id: 'qualified', label: 'Qualified' },
+    { id: 'proposal', label: 'Proposal' },
+    { id: 'won', label: 'Won' },
+    { id: 'lost', label: 'Lost' },
+];
+
+const columnStyles: Record<string, string> = {
+    new: 'border-slate-200 bg-slate-50',
+    contacted: 'border-amber-200 bg-amber-50/55',
+    qualified: 'border-blue-200 bg-blue-50/55',
+    proposal: 'border-brand-gold/40 bg-brand-gold/10',
+    won: 'border-emerald-200 bg-emerald-50/55',
+    lost: 'border-rose-200 bg-rose-50/55',
 };
 
-export default function CRMClient({ leads, analyticsData }: Props) {
-    const [view, setView] = useState<'kanban' | 'list'>('kanban');
+export default function CRMClient({ leads, analyticsData, staff, createLeadAction }: Props) {
+    const [view, setView] = useState<'pipeline' | 'list' | 'followups' | 'quotes' | 'analytics'>('pipeline');
     const [searchTerm, setSearchTerm] = useState('');
     const [items, setItems] = useState(leads);
     const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
-    const [showAnalytics, setShowAnalytics] = useState(false);
-
-    // Advanced filters
-    const [filters, setFilters] = useState({
-        source: '' as string,
-        priority: '' as string,
-        dateRange: '' as string,
-        assignedTo: '' as string,
-    });
+    const [filters, setFilters] = useState({ source: '', priority: '', owner: '', followUp: '' });
     const [showFilters, setShowFilters] = useState(false);
-
-    // Bulk selection
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-
-    // Collapsible columns — Won/Lost collapsed by default
     const [collapsedCols, setCollapsedCols] = useState<Set<string>>(new Set(['won', 'lost']));
-
-    const columns = [
-        { id: 'new', label: 'New Lead' },
-        { id: 'contacted', label: 'Contacted' },
-        { id: 'qualified', label: 'Qualified' },
-        { id: 'proposal', label: 'Proposal Sent' },
-        { id: 'won', label: 'Won' },
-        { id: 'lost', label: 'Lost' },
-    ];
+    const [showCreate, setShowCreate] = useState(false);
 
     const filteredLeads = useMemo(() => {
-        return items.filter(l => {
-            if (searchTerm) {
-                const term = searchTerm.toLowerCase();
-                if (
-                    !l.firstName.toLowerCase().includes(term) &&
-                    !l.lastName.toLowerCase().includes(term) &&
-                    !l.company?.toLowerCase().includes(term) &&
-                    !l.email.toLowerCase().includes(term) &&
-                    !l.phone?.toLowerCase().includes(term) &&
-                    !l.serviceInterest?.toLowerCase().includes(term)
-                ) return false;
+        return items.filter((lead) => {
+            const term = searchTerm.toLowerCase();
+            if (term) {
+                const haystack = [
+                    lead.firstName,
+                    lead.lastName,
+                    lead.company,
+                    lead.email,
+                    lead.phone,
+                    lead.serviceInterest,
+                    lead.notes,
+                ].filter(Boolean).join(' ').toLowerCase();
+                if (!haystack.includes(term)) return false;
             }
-            if (filters.source && l.source !== filters.source) return false;
-            if (filters.priority && l.priority !== filters.priority) return false;
-            if (filters.dateRange && l.createdAt) {
-                const created = new Date(l.createdAt);
-                const now = new Date();
-                const diffDays = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
-                if (filters.dateRange === 'day' && diffDays > 1) return false;
-                if (filters.dateRange === 'week' && diffDays > 7) return false;
-                if (filters.dateRange === 'month' && diffDays > 30) return false;
-            }
+
+            if (filters.source && lead.source !== filters.source) return false;
+            if (filters.priority && lead.priority !== filters.priority) return false;
+            if (filters.owner && (filters.owner === 'unassigned' ? lead.assignedTo : lead.assignedTo !== filters.owner)) return false;
+            if (filters.followUp && getFollowUpState(lead) !== filters.followUp) return false;
+
             return true;
         });
     }, [items, searchTerm, filters]);
 
     const metrics = useMemo(() => {
+        const open = items.filter((lead) => !['won', 'lost'].includes(lead.status || '')).length;
         const pipelineValue = items
             .filter((lead) => lead.status !== 'lost')
             .reduce((total, lead) => total + Number(lead.value || 0), 0);
-        const dueToday = items.filter((lead) => isFollowUpDue(lead.nextFollowUpAt)).length;
-        const newThisWeek = items.filter((lead) => {
-            if (!lead.createdAt) return false;
-            const createdAt = new Date(lead.createdAt);
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-            return createdAt >= sevenDaysAgo;
-        }).length;
-        return { pipelineValue, dueToday, newThisWeek };
+        const overdue = items.filter((lead) => getFollowUpState(lead) === 'overdue').length;
+        const quotes = items.filter(isQuoteLead).length;
+        const unassigned = items.filter((lead) => !lead.assignedTo).length;
+        return { open, pipelineValue, overdue, quotes, unassigned };
     }, [items]);
 
+    const visibleLeads = useMemo(() => {
+        if (view === 'followups') {
+            return filteredLeads
+                .filter((lead) => ['overdue', 'today', 'week', 'unset'].includes(getFollowUpState(lead)))
+                .sort((a, b) => followUpSortValue(a) - followUpSortValue(b));
+        }
+        if (view === 'quotes') return filteredLeads.filter(isQuoteLead);
+        return filteredLeads;
+    }, [filteredLeads, view]);
+
     const clearFilters = useCallback(() => {
-        setFilters({ source: '', priority: '', dateRange: '', assignedTo: '' });
+        setFilters({ source: '', priority: '', owner: '', followUp: '' });
         setSearchTerm('');
     }, []);
 
     const toggleSelect = useCallback((id: string) => {
-        setSelectedIds(prev => {
+        setSelectedIds((prev) => {
             const next = new Set(prev);
             if (next.has(id)) next.delete(id);
             else next.add(id);
@@ -141,12 +162,9 @@ export default function CRMClient({ leads, analyticsData }: Props) {
     }, []);
 
     const toggleSelectAll = useCallback(() => {
-        if (selectedIds.size === filteredLeads.length) {
-            setSelectedIds(new Set());
-        } else {
-            setSelectedIds(new Set(filteredLeads.map(l => l.id)));
-        }
-    }, [filteredLeads, selectedIds]);
+        if (selectedIds.size === visibleLeads.length) setSelectedIds(new Set());
+        else setSelectedIds(new Set(visibleLeads.map((lead) => lead.id)));
+    }, [selectedIds, visibleLeads]);
 
     const executeBulkAction = useCallback(async (action: string) => {
         const ids = Array.from(selectedIds);
@@ -155,14 +173,14 @@ export default function CRMClient({ leads, analyticsData }: Props) {
         startTransition(async () => {
             if (action === 'delete') {
                 await bulkDeleteLeads(ids);
-                setItems(prev => prev.filter(l => !ids.includes(l.id)));
+                setItems((prev) => prev.filter((lead) => !ids.includes(lead.id)));
             } else {
                 await bulkUpdateLeads(ids, { status: action });
-                setItems(prev => prev.map(l => ids.includes(l.id) ? { ...l, status: action } : l));
+                setItems((prev) => prev.map((lead) => ids.includes(lead.id) ? { ...lead, status: action } : lead));
             }
             setSelectedIds(new Set());
         });
-    }, [selectedIds, startTransition]);
+    }, [selectedIds]);
 
     function handleStatusChange(leadId: string, status: string) {
         const previousItems = items;
@@ -179,439 +197,494 @@ export default function CRMClient({ leads, analyticsData }: Props) {
         setDraggedLeadId(null);
     }
 
-    const toggleCollapse = (colId: string) => {
-        setCollapsedCols(prev => {
-            const next = new Set(prev);
-            if (next.has(colId)) next.delete(colId);
-            else next.add(colId);
-            return next;
-        });
-    };
-
-    const hasActiveFilters = filters.source || filters.priority || filters.dateRange || filters.assignedTo;
+    const hasActiveFilters = Boolean(filters.source || filters.priority || filters.owner || filters.followUp || searchTerm);
 
     return (
-        <div className="flex flex-col h-full">
-            {/* Metrics Row */}
-            <div className="mb-6 grid gap-3 md:grid-cols-3">
-                <MetricCard
-                    icon={<DollarSign className="w-4 h-4" />}
-                    label="Pipeline value"
-                    value={`$${metrics.pipelineValue.toLocaleString()}`}
-                />
-                <MetricCard
-                    icon={<User className="w-4 h-4" />}
-                    label="New this week"
-                    value={String(metrics.newThisWeek)}
-                />
-                <MetricCard
-                    icon={<Calendar className="w-4 h-4" />}
-                    label="Follow-ups due"
-                    value={String(metrics.dueToday)}
-                    tone={metrics.dueToday > 0 ? 'urgent' : 'default'}
-                />
+        <div className="space-y-5">
+            <div className="grid gap-3 md:grid-cols-5">
+                <MetricCard label="Open Deals" value={String(metrics.open)} />
+                <MetricCard label="Pipeline Value" value={`$${metrics.pipelineValue.toLocaleString()}`} />
+                <MetricCard label="Overdue" value={String(metrics.overdue)} tone={metrics.overdue > 0 ? 'urgent' : 'default'} />
+                <MetricCard label="Quote Requests" value={String(metrics.quotes)} />
+                <MetricCard label="Unassigned" value={String(metrics.unassigned)} tone={metrics.unassigned > 0 ? 'watch' : 'default'} />
             </div>
 
-            {/* Analytics Section */}
-            {showAnalytics && analyticsData && (
-                <div className="mb-6">
-                    <PipelineAnalytics data={analyticsData} onClose={() => setShowAnalytics(false)} />
-                </div>
-            )}
-
-            {/* Toolbar Row */}
-            <div className="space-y-3 mb-6">
-                {/* View Toggle + Search + Actions */}
-                <div className="flex justify-between items-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-2">
-                        <div className="flex bg-slate-100 p-1 rounded-lg">
-                            <button
-                                onClick={() => setView('kanban')}
-                                className={`px-4 py-2 text-sm font-bold rounded-md transition-all ${view === 'kanban' ? 'bg-white shadow text-brand-navy' : 'text-slate-500'}`}
-                            >
-                                Kanban Board
-                            </button>
-                            <button
-                                onClick={() => setView('list')}
-                                className={`px-4 py-2 text-sm font-bold rounded-md transition-all ${view === 'list' ? 'bg-white shadow text-brand-navy' : 'text-slate-500'}`}
-                            >
-                                List View
-                            </button>
-                        </div>
-                        {analyticsData && (
-                            <button
-                                onClick={() => setShowAnalytics(!showAnalytics)}
-                                className={`p-2 rounded-lg text-sm transition-all ${showAnalytics ? 'bg-brand-navy text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
-                                title="Pipeline Analytics"
-                            >
-                                <BarChart3 className="w-4 h-4" />
-                            </button>
-                        )}
+            <div className="rounded-sm border border-slate-200 bg-white shadow-sm">
+                <div className="flex flex-col gap-4 border-b border-slate-200 p-4 xl:flex-row xl:items-center xl:justify-between">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <ViewButton active={view === 'pipeline'} icon={<LayoutGrid className="h-4 w-4" />} label="Pipeline" onClick={() => setView('pipeline')} />
+                        <ViewButton active={view === 'list'} icon={<ListChecks className="h-4 w-4" />} label="List" onClick={() => setView('list')} />
+                        <ViewButton active={view === 'followups'} icon={<CalendarClock className="h-4 w-4" />} label="Follow-ups" onClick={() => setView('followups')} />
+                        <ViewButton active={view === 'quotes'} icon={<ClipboardList className="h-4 w-4" />} label="Quotes" onClick={() => setView('quotes')} />
+                        <ViewButton active={view === 'analytics'} icon={<BarChart3 className="h-4 w-4" />} label="Analytics" onClick={() => setView('analytics')} />
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        {/* Search */}
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                             <input
                                 type="text"
-                                placeholder="Search leads..."
-                                className="pl-9 pr-8 py-2 border rounded-lg text-sm bg-white w-56 focus:outline-none focus:ring-2 focus:ring-brand-navy/10 focus:border-brand-navy"
+                                placeholder="Search name, company, phone, notes"
+                                className="h-10 w-full rounded-sm border border-slate-200 bg-white pl-9 pr-8 text-sm text-slate-700 outline-none transition focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10 sm:w-80"
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={(event) => setSearchTerm(event.target.value)}
                             />
                             {searchTerm && (
-                                <button
-                                    onClick={() => setSearchTerm('')}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                                >
-                                    <X className="w-3.5 h-3.5" />
+                                <button type="button" onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+                                    <X className="h-3.5 w-3.5" />
                                 </button>
                             )}
                         </div>
-
-                        {/* Filter toggle */}
                         <button
+                            type="button"
                             onClick={() => setShowFilters(!showFilters)}
-                            className={`p-2 rounded-lg text-sm transition-all flex items-center gap-1.5 ${hasActiveFilters ? 'bg-brand-navy text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
-                            title="Advanced Filters"
+                            className={`inline-flex h-10 items-center justify-center gap-2 rounded-sm border px-3 text-xs font-black uppercase tracking-[0.14em] transition ${hasActiveFilters ? 'border-brand-navy bg-brand-navy text-white' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
                         >
-                            <Filter className="w-4 h-4" />
-                            {hasActiveFilters && <span className="text-[10px] font-bold">{Object.values(filters).filter(Boolean).length}</span>}
+                            <Filter className="h-4 w-4" />
+                            Filter
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setShowCreate(true)}
+                            className="inline-flex h-10 items-center justify-center gap-2 rounded-sm bg-brand-navy px-4 text-xs font-black uppercase tracking-[0.14em] text-white shadow-sm transition hover:bg-brand-gold hover:text-brand-navy"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Add Lead
                         </button>
                     </div>
                 </div>
 
-                {/* Advanced Filters Bar */}
                 {showFilters && (
-                    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-black uppercase tracking-widest text-slate-400">Advanced Filters</span>
-                            {hasActiveFilters && (
-                                <button
-                                    onClick={clearFilters}
-                                    className="text-xs font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1"
-                                >
-                                    <RefreshCw className="w-3 h-3" /> Clear all
-                                </button>
-                            )}
-                        </div>
-                        <div className="flex flex-wrap gap-3">
-                            <select
-                                value={filters.source}
-                                onChange={(e) => setFilters(f => ({ ...f, source: e.target.value }))}
-                                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
-                            >
-                                <option value="">All Sources</option>
+                    <div className="border-b border-slate-200 bg-slate-50 p-4">
+                        <div className="grid gap-3 md:grid-cols-5">
+                            <Select value={filters.source} onChange={(value) => setFilters((current) => ({ ...current, source: value }))}>
+                                <option value="">All sources</option>
                                 <option value="website">Website</option>
+                                <option value="website_contact_form">Website contact</option>
                                 <option value="referral">Referral</option>
                                 <option value="ads">Ads</option>
                                 <option value="campaign">Campaign</option>
                                 <option value="manual">Manual</option>
-                            </select>
-                            <select
-                                value={filters.priority}
-                                onChange={(e) => setFilters(f => ({ ...f, priority: e.target.value }))}
-                                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
-                            >
-                                <option value="">All Priorities</option>
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                            </select>
-                            <select
-                                value={filters.dateRange}
-                                onChange={(e) => setFilters(f => ({ ...f, dateRange: e.target.value }))}
-                                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
-                            >
-                                <option value="">Any Time</option>
-                                <option value="day">Last 24 hours</option>
-                                <option value="week">This Week</option>
-                                <option value="month">This Month</option>
-                            </select>
-                            <span className="text-xs text-slate-400 self-center">
-                                {filteredLeads.length} of {items.length} leads
-                            </span>
+                            </Select>
+                            <Select value={filters.priority} onChange={(value) => setFilters((current) => ({ ...current, priority: value }))}>
+                                <option value="">All priorities</option>
+                                <option value="high">High priority</option>
+                                <option value="medium">Medium priority</option>
+                                <option value="low">Low priority</option>
+                            </Select>
+                            <Select value={filters.owner} onChange={(value) => setFilters((current) => ({ ...current, owner: value }))}>
+                                <option value="">All owners</option>
+                                <option value="unassigned">Unassigned</option>
+                                {staff.map((person) => (
+                                    <option key={person.id} value={person.id}>{person.name || person.email}</option>
+                                ))}
+                            </Select>
+                            <Select value={filters.followUp} onChange={(value) => setFilters((current) => ({ ...current, followUp: value }))}>
+                                <option value="">Any follow-up</option>
+                                <option value="overdue">Overdue</option>
+                                <option value="today">Due today</option>
+                                <option value="week">This week</option>
+                                <option value="future">Future</option>
+                                <option value="unset">No follow-up</option>
+                            </Select>
+                            <button type="button" onClick={clearFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-sm border border-slate-200 bg-white px-3 text-xs font-black uppercase tracking-[0.14em] text-slate-500 transition hover:border-rose-200 hover:text-rose-600">
+                                <RefreshCw className="h-4 w-4" />
+                                Reset
+                            </button>
                         </div>
                     </div>
                 )}
 
-                {/* Bulk Actions Toolbar */}
                 {selectedIds.size > 0 && (
-                    <div className="bg-brand-navy text-white rounded-xl px-4 py-3 shadow-sm flex items-center justify-between">
+                    <div className="flex flex-col justify-between gap-3 border-b border-brand-navy/10 bg-brand-navy px-4 py-3 text-white sm:flex-row sm:items-center">
                         <div className="flex items-center gap-3">
                             <span className="text-sm font-bold">{selectedIds.size} selected</span>
-                            <div className="h-4 w-px bg-white/20" />
-                            <button
-                                onClick={() => setSelectedIds(new Set())}
-                                className="text-xs text-white/70 hover:text-white flex items-center gap-1"
-                            >
-                                <X className="w-3 h-3" /> Clear
-                            </button>
+                            <button type="button" onClick={() => setSelectedIds(new Set())} className="text-xs font-bold text-white/65 hover:text-white">Clear</button>
                         </div>
                         <div className="flex items-center gap-2">
                             <select
                                 value=""
-                                onChange={(e) => { if (e.target.value) executeBulkAction(e.target.value); }}
-                                className="rounded-lg bg-white/10 border border-white/20 px-3 py-1.5 text-xs font-bold text-white [&>option]:text-slate-800"
+                                onChange={(event) => { if (event.target.value) executeBulkAction(event.target.value); }}
+                                className="h-9 rounded-sm border border-white/20 bg-white/10 px-3 text-xs font-bold text-white [&>option]:text-slate-800"
                             >
-                                <option value="" disabled>Change Status →</option>
-                                {columns.map(col => (
-                                    <option key={col.id} value={col.id}>{col.label}</option>
-                                ))}
+                                <option value="" disabled>Change status</option>
+                                {columns.map((column) => <option key={column.id} value={column.id}>{column.label}</option>)}
                             </select>
-                            <button
-                                onClick={() => executeBulkAction('delete')}
-                                className="flex items-center gap-1.5 rounded-lg bg-rose-500/20 border border-rose-400/30 px-3 py-1.5 text-xs font-bold text-rose-300 hover:bg-rose-500/30"
-                            >
-                                <Trash2 className="w-3 h-3" /> Delete
+                            <button type="button" onClick={() => executeBulkAction('delete')} className="inline-flex h-9 items-center gap-1.5 rounded-sm border border-rose-300/30 bg-rose-500/20 px-3 text-xs font-bold text-rose-100 hover:bg-rose-500/30">
+                                <Trash2 className="h-3.5 w-3.5" />
+                                Delete
                             </button>
                         </div>
                     </div>
                 )}
+
+                <div className="p-4">
+                    {view === 'analytics' ? (
+                        analyticsData ? <PipelineAnalytics data={analyticsData} /> : <EmptyState title="Analytics unavailable" body="Pipeline analytics will appear once lead data is available." />
+                    ) : view === 'pipeline' ? (
+                        <PipelineBoard
+                            leads={visibleLeads}
+                            collapsedCols={collapsedCols}
+                            selectedIds={selectedIds}
+                            isPending={isPending}
+                            onDrop={handleDrop}
+                            onToggleCollapse={(id) => setCollapsedCols((current) => {
+                                const next = new Set(current);
+                                if (next.has(id)) next.delete(id);
+                                else next.add(id);
+                                return next;
+                            })}
+                            onToggleSelect={toggleSelect}
+                            onDragStart={setDraggedLeadId}
+                            onDragEnd={() => setDraggedLeadId(null)}
+                        />
+                    ) : (
+                        <LeadTable
+                            leads={visibleLeads}
+                            view={view}
+                            selectedIds={selectedIds}
+                            onToggleSelect={toggleSelect}
+                            onToggleSelectAll={toggleSelectAll}
+                            onStatusChange={handleStatusChange}
+                        />
+                    )}
+                </div>
             </div>
 
-            {/* Kanban Board View */}
-            {view === 'kanban' ? (
-                <div className="flex-1 overflow-x-auto pb-8">
-                    <div className="flex gap-6 min-w-max h-full">
-                        {columns.map(col => {
-                            const colLeads = filteredLeads.filter(l => l.status === col.id);
-                            const isCollapsed = collapsedCols.has(col.id);
-                            return (
-                                <div
-                                    key={col.id}
-                                    onDragOver={(event) => event.preventDefault()}
-                                    onDrop={() => handleDrop(col.id)}
-                                    className={`w-72 lg:w-80 rounded-xl border flex flex-col ${STATUS_COLORS[col.id] || 'bg-slate-50 border-slate-200'} ${isPending ? 'opacity-80' : ''}`}
-                                >
-                                    {/* Column Header — Always visible */}
-                                    <div
-                                        className="p-4 font-bold text-slate-700 uppercase tracking-wide text-xs border-b border-black/5 flex justify-between items-center cursor-pointer select-none"
-                                        onClick={() => toggleCollapse(col.id)}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                                            <span>{col.label}</span>
-                                            <span className="bg-white/50 px-2 rounded-full text-[10px]">{colLeads.length}</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Column Body — Collapsible */}
-                                    {!isCollapsed && (
-                                        <div className="p-3 flex-1 overflow-y-auto space-y-3">
-                                            {/* Bulk select all in column */}
-                                            {colLeads.length > 0 && (
-                                                <button
-                                                    onClick={() => {
-                                                        const allSelected = colLeads.every(l => selectedIds.has(l.id));
-                                                        setSelectedIds(prev => {
-                                                            const next = new Set(prev);
-                                                            colLeads.forEach(l => {
-                                                                if (allSelected) next.delete(l.id);
-                                                                else next.add(l.id);
-                                                            });
-                                                            return next;
-                                                        });
-                                                    }}
-                                                    className="flex items-center gap-2 text-[10px] font-bold text-slate-400 hover:text-slate-600 w-full"
-                                                >
-                                                    {colLeads.every(l => selectedIds.has(l.id)) ? (
-                                                        <CheckSquare className="w-3 h-3" />
-                                                    ) : (
-                                                        <Square className="w-3 h-3" />
-                                                    )}
-                                                    {colLeads.every(l => selectedIds.has(l.id)) ? 'Deselect all' : 'Select all'}
-                                                </button>
-                                            )}
-
-                                            {colLeads.map(lead => (
-                                                <div key={lead.id} className="group relative">
-                                                    {/* Selection checkbox */}
-                                                    <button
-                                                        onClick={(e) => { e.preventDefault(); toggleSelect(lead.id); }}
-                                                        className="absolute -left-1 -top-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    >
-                                                        {selectedIds.has(lead.id) ? (
-                                                            <CheckSquare className="w-4 h-4 text-brand-navy bg-white rounded" />
-                                                        ) : (
-                                                            <Square className="w-4 h-4 text-slate-400 bg-white rounded" />
-                                                        )}
-                                                    </button>
-                                                    {selectedIds.has(lead.id) && (
-                                                        <button
-                                                            onClick={() => toggleSelect(lead.id)}
-                                                            className="absolute -left-1 -top-1 z-10"
-                                                        >
-                                                            <CheckSquare className="w-4 h-4 text-brand-navy bg-white rounded" />
-                                                        </button>
-                                                    )}
-
-                                                    <Link
-                                                        href={`/admin/crm/${lead.id}`}
-                                                        draggable
-                                                        onDragStart={() => setDraggedLeadId(lead.id)}
-                                                        onDragEnd={() => setDraggedLeadId(null)}
-                                                        className="block"
-                                                    >
-                                                        <div className={`bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition-all ${selectedIds.has(lead.id) ? 'ring-2 ring-brand-navy/30 border-brand-navy/20' : 'border-slate-100'}`}>
-                                                            <div className="flex justify-between items-start mb-2">
-                                                                <h4 className="font-bold text-slate-800 group-hover:text-brand-navy text-sm">{lead.firstName} {lead.lastName}</h4>
-                                                                {lead.value && <span className="text-xs font-mono font-bold text-green-600">${lead.value}</span>}
-                                                            </div>
-                                                            <p className="text-xs text-slate-500 line-clamp-1">{lead.company || lead.email}</p>
-                                                            <div className="mt-3 flex flex-wrap gap-1.5">
-                                                                {lead.source && <MiniBadge>{formatLabel(lead.source)}</MiniBadge>}
-                                                                {lead.priority && (
-                                                                    <MiniBadge tone={lead.priority === 'high' ? 'urgent' : lead.priority === 'low' ? 'muted' : 'default'}>
-                                                                        {lead.priority}
-                                                                    </MiniBadge>
-                                                                )}
-                                                            </div>
-                                                            {lead.nextFollowUpAt && (
-                                                                <p className={`mt-3 text-[11px] font-bold ${isFollowUpDue(lead.nextFollowUpAt) ? 'text-rose-600' : 'text-slate-500'}`}>
-                                                                    {isFollowUpDue(lead.nextFollowUpAt) ? '\u26A0 ' : ''}Follow up {formatDate(lead.nextFollowUpAt)}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </Link>
-                                                </div>
-                                            ))}
-                                            {colLeads.length === 0 && (
-                                                <div className="rounded-lg border border-dashed border-slate-300 bg-white/45 p-4 text-center text-xs font-bold text-slate-400">
-                                                    Drop leads here
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
+            {showCreate && (
+                <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
+                    <button type="button" aria-label="Close add lead panel" className="absolute inset-0" onClick={() => setShowCreate(false)} />
+                    <div className="relative h-full w-full max-w-xl overflow-y-auto bg-white shadow-2xl">
+                        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-5">
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-gold">New opportunity</p>
+                                <h2 className="text-xl font-black text-brand-navy">Add lead</h2>
+                            </div>
+                            <button type="button" onClick={() => setShowCreate(false)} className="rounded-sm border border-slate-200 p-2 text-slate-500 hover:text-brand-navy">
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                        <form action={createLeadAction} className="grid gap-4 p-6 md:grid-cols-2">
+                            <Field label="First name" name="firstName" required />
+                            <Field label="Last name" name="lastName" />
+                            <Field label="Email" name="email" type="email" required />
+                            <Field label="Phone" name="phone" />
+                            <Field label="Company" name="company" />
+                            <Field label="Estimated value" name="value" />
+                            <Field label="Service interest" name="serviceInterest" className="md:col-span-2" />
+                            <SelectField label="Source" name="source" defaultValue="manual">
+                                <option value="manual">Manual</option>
+                                <option value="website">Website</option>
+                                <option value="referral">Referral</option>
+                                <option value="ads">Ads</option>
+                                <option value="campaign">Campaign</option>
+                            </SelectField>
+                            <SelectField label="Priority" name="priority" defaultValue="medium">
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </SelectField>
+                            <SelectField label="Owner" name="assignedTo" defaultValue="">
+                                <option value="">Assign to me</option>
+                                {staff.map((person) => <option key={person.id} value={person.id}>{person.name || person.email}</option>)}
+                            </SelectField>
+                            <Field label="Next follow-up" name="nextFollowUpAt" type="datetime-local" />
+                            <div className="md:col-span-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Notes</label>
+                                <textarea name="notes" rows={5} className="mt-1.5 w-full rounded-sm border border-slate-200 p-3 text-sm text-slate-700 outline-none focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10" />
+                            </div>
+                            <button className="md:col-span-2 inline-flex h-12 items-center justify-center gap-2 rounded-sm bg-brand-navy px-4 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:bg-brand-gold hover:text-brand-navy">
+                                Add Lead
+                                <ArrowRight className="h-4 w-4" />
+                            </button>
+                        </form>
                     </div>
-                </div>
-            ) : (
-                /* List View */
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-slate-50 border-b border-slate-200">
-                            <tr>
-                                <th className="p-4 w-10">
-                                    <button onClick={toggleSelectAll} className="text-slate-400 hover:text-brand-navy">
-                                        {selectedIds.size === filteredLeads.length && filteredLeads.length > 0 ? (
-                                            <CheckSquare className="w-4 h-4" />
-                                        ) : (
-                                            <Square className="w-4 h-4" />
-                                        )}
-                                    </button>
-                                </th>
-                                <th className="p-4 font-semibold text-slate-600">Name</th>
-                                <th className="p-4 font-semibold text-slate-600">Company</th>
-                                <th className="p-4 font-semibold text-slate-600">Email</th>
-                                <th className="p-4 font-semibold text-slate-600">Status</th>
-                                <th className="p-4 font-semibold text-slate-600">Priority</th>
-                                <th className="p-4 font-semibold text-slate-600">Value</th>
-                                <th className="p-4 font-semibold text-slate-600">Follow-up</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredLeads.map((lead) => (
-                                <tr key={lead.id} className={`border-b border-slate-100 hover:bg-slate-50 transition-colors ${selectedIds.has(lead.id) ? 'bg-brand-navy/5' : ''}`}>
-                                    <td className="p-4">
-                                        <button onClick={() => toggleSelect(lead.id)} className="text-slate-400 hover:text-brand-navy">
-                                            {selectedIds.has(lead.id) ? (
-                                                <CheckSquare className="w-4 h-4 text-brand-navy" />
-                                            ) : (
-                                                <Square className="w-4 h-4" />
-                                            )}
-                                        </button>
-                                    </td>
-                                    <td className="p-4 font-bold text-brand-navy">
-                                        <Link href={`/admin/crm/${lead.id}`} className="hover:underline">{lead.firstName} {lead.lastName}</Link>
-                                    </td>
-                                    <td className="p-4 text-slate-600">{lead.company || <span className="text-slate-300 italic">\u2014</span>}</td>
-                                    <td className="p-4 text-slate-500">{lead.email}</td>
-                                    <td className="p-4">
-                                        <select
-                                            value={lead.status || 'new'}
-                                            onChange={(event) => handleStatusChange(lead.id, event.target.value)}
-                                            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-navy/10"
-                                        >
-                                            {columns.map((column) => (
-                                                <option key={column.id} value={column.id}>{column.label}</option>
-                                            ))}
-                                        </select>
-                                    </td>
-                                    <td className="p-4">
-                                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                                            lead.priority === 'high' ? 'bg-rose-50 text-rose-600' :
-                                            lead.priority === 'low' ? 'bg-slate-100 text-slate-400' :
-                                            'bg-yellow-50 text-yellow-600'
-                                        }`}>
-                                            {lead.priority || '\u2014'}
-                                        </span>
-                                    </td>
-                                    <td className="p-4 font-mono font-bold text-slate-600">${lead.value || '0'}</td>
-                                    <td className="p-4">
-                                        {lead.nextFollowUpAt ? (
-                                            <span className={`text-xs ${isFollowUpDue(lead.nextFollowUpAt) ? 'text-rose-600 font-bold' : 'text-slate-500'}`}>
-                                                {formatDate(lead.nextFollowUpAt)}
-                                            </span>
-                                        ) : (
-                                            <span className="text-slate-300 italic">\u2014</span>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                            {filteredLeads.length === 0 && (
-                                <tr>
-                                    <td colSpan={8} className="p-8 text-center text-slate-400 italic">No leads match your filters.</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
                 </div>
             )}
         </div>
     );
 }
 
-function MetricCard({ icon, label, value, tone = 'default' }: { icon: React.ReactNode; label: string; value: string; tone?: 'default' | 'urgent' }) {
+function PipelineBoard({
+    leads,
+    collapsedCols,
+    selectedIds,
+    isPending,
+    onDrop,
+    onToggleCollapse,
+    onToggleSelect,
+    onDragStart,
+    onDragEnd,
+}: {
+    leads: Lead[];
+    collapsedCols: Set<string>;
+    selectedIds: Set<string>;
+    isPending: boolean;
+    onDrop: (status: string) => void;
+    onToggleCollapse: (status: string) => void;
+    onToggleSelect: (id: string) => void;
+    onDragStart: (id: string) => void;
+    onDragEnd: () => void;
+}) {
     return (
-        <div className={`rounded-xl border bg-white p-4 shadow-sm ${tone === 'urgent' ? 'border-rose-200' : 'border-slate-200'}`}>
-            <div className="flex items-center gap-2 mb-1">
-                <span className={tone === 'urgent' ? 'text-rose-400' : 'text-slate-400'}>{icon}</span>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</p>
+        <div className="overflow-x-auto pb-2">
+            <div className="flex min-w-max gap-4">
+                {columns.map((column) => {
+                    const colLeads = leads.filter((lead) => lead.status === column.id);
+                    const value = colLeads.reduce((total, lead) => total + Number(lead.value || 0), 0);
+                    const isCollapsed = collapsedCols.has(column.id);
+
+                    return (
+                        <div
+                            key={column.id}
+                            onDragOver={(event) => event.preventDefault()}
+                            onDrop={() => onDrop(column.id)}
+                            className={`w-72 rounded-sm border ${columnStyles[column.id]} ${isPending ? 'opacity-80' : ''}`}
+                        >
+                            <button type="button" onClick={() => onToggleCollapse(column.id)} className="flex w-full items-center justify-between border-b border-black/5 px-4 py-3 text-left">
+                                <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-slate-700">
+                                    {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                                    {column.label}
+                                </span>
+                                <span className="text-[11px] font-bold text-slate-500">{colLeads.length} / ${value.toLocaleString()}</span>
+                            </button>
+
+                            {!isCollapsed && (
+                                <div className="space-y-3 p-3">
+                                    {colLeads.map((lead) => (
+                                        <LeadCard
+                                            key={lead.id}
+                                            lead={lead}
+                                            selected={selectedIds.has(lead.id)}
+                                            onToggleSelect={onToggleSelect}
+                                            onDragStart={onDragStart}
+                                            onDragEnd={onDragEnd}
+                                        />
+                                    ))}
+                                    {colLeads.length === 0 && (
+                                        <div className="border border-dashed border-slate-300 bg-white/60 px-4 py-6 text-center text-xs font-bold text-slate-400">Drop leads here</div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
             </div>
-            <p className={`mt-1 text-2xl font-black ${tone === 'urgent' ? 'text-rose-600' : 'text-brand-navy'}`}>{value}</p>
         </div>
     );
 }
 
-function MiniBadge({ children, tone = 'default' }: { children: React.ReactNode; tone?: 'default' | 'urgent' | 'muted' }) {
-    const styles = {
-        default: 'bg-slate-100 text-slate-500',
-        urgent: 'bg-rose-50 text-rose-600',
-        muted: 'bg-slate-50 text-slate-400',
-    };
+function LeadCard({ lead, selected, onToggleSelect, onDragStart, onDragEnd }: {
+    lead: Lead;
+    selected: boolean;
+    onToggleSelect: (id: string) => void;
+    onDragStart: (id: string) => void;
+    onDragEnd: () => void;
+}) {
+    const followUpState = getFollowUpState(lead);
+
     return (
-        <span className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${styles[tone]}`}>
-            {children}
-        </span>
+        <div className="group relative">
+            <button type="button" onClick={() => onToggleSelect(lead.id)} className="absolute -left-1 -top-1 z-10 bg-white text-slate-400 opacity-0 shadow-sm transition group-hover:opacity-100">
+                {selected ? <CheckSquare className="h-4 w-4 text-brand-navy" /> : <Square className="h-4 w-4" />}
+            </button>
+            {selected && (
+                <button type="button" onClick={() => onToggleSelect(lead.id)} className="absolute -left-1 -top-1 z-10 bg-white shadow-sm">
+                    <CheckSquare className="h-4 w-4 text-brand-navy" />
+                </button>
+            )}
+            <Link href={`/admin/crm/${lead.id}`} draggable onDragStart={() => onDragStart(lead.id)} onDragEnd={onDragEnd} className="block">
+                <div className={`border bg-white p-4 shadow-sm transition hover:border-brand-navy/25 hover:shadow-md ${selected ? 'border-brand-navy ring-2 ring-brand-navy/15' : 'border-slate-200'}`}>
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <h3 className="truncate text-sm font-black text-brand-navy">{lead.firstName} {lead.lastName}</h3>
+                            <p className="mt-1 truncate text-xs font-medium text-slate-500">{lead.company || lead.email}</p>
+                        </div>
+                        <p className="shrink-0 font-mono text-xs font-black text-slate-700">${Number(lead.value || 0).toLocaleString()}</p>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                        <Badge>{formatLabel(lead.source || 'unknown')}</Badge>
+                        <Badge tone={lead.priority === 'high' ? 'urgent' : 'default'}>{lead.priority || 'medium'}</Badge>
+                        {isQuoteLead(lead) && <Badge tone="gold">quote</Badge>}
+                    </div>
+                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+                        <span className={`text-[11px] font-bold ${followUpState === 'overdue' ? 'text-rose-600' : followUpState === 'today' ? 'text-amber-700' : 'text-slate-500'}`}>
+                            {followUpLabel(lead)}
+                        </span>
+                        <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 text-[10px] font-black uppercase text-slate-500">
+                            {ownerInitial(lead)}
+                        </span>
+                    </div>
+                </div>
+            </Link>
+        </div>
     );
+}
+
+function LeadTable({ leads, view, selectedIds, onToggleSelect, onToggleSelectAll, onStatusChange }: {
+    leads: Lead[];
+    view: string;
+    selectedIds: Set<string>;
+    onToggleSelect: (id: string) => void;
+    onToggleSelectAll: () => void;
+    onStatusChange: (id: string, status: string) => void;
+}) {
+    return (
+        <div className="overflow-x-auto">
+            <table className="w-full min-w-[920px] text-left text-sm">
+                <thead className="border-b border-slate-200 bg-slate-50 text-[11px] font-black uppercase tracking-[0.14em] text-slate-500">
+                    <tr>
+                        <th className="w-10 p-3">
+                            <button type="button" onClick={onToggleSelectAll} className="text-slate-400 hover:text-brand-navy">
+                                {selectedIds.size === leads.length && leads.length > 0 ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+                            </button>
+                        </th>
+                        <th className="p-3">Lead</th>
+                        <th className="p-3">Source</th>
+                        <th className="p-3">Owner</th>
+                        <th className="p-3">Status</th>
+                        <th className="p-3">Value</th>
+                        <th className="p-3">{view === 'quotes' ? 'Request' : 'Follow-up'}</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                    {leads.map((lead) => (
+                        <tr key={lead.id} className={selectedIds.has(lead.id) ? 'bg-brand-navy/5' : 'bg-white hover:bg-slate-50'}>
+                            <td className="p-3">
+                                <button type="button" onClick={() => onToggleSelect(lead.id)} className="text-slate-400 hover:text-brand-navy">
+                                    {selectedIds.has(lead.id) ? <CheckSquare className="h-4 w-4 text-brand-navy" /> : <Square className="h-4 w-4" />}
+                                </button>
+                            </td>
+                            <td className="p-3">
+                                <Link href={`/admin/crm/${lead.id}`} className="font-black text-brand-navy hover:underline">{lead.firstName} {lead.lastName}</Link>
+                                <p className="mt-0.5 text-xs text-slate-500">{lead.company || lead.email}</p>
+                            </td>
+                            <td className="p-3"><Badge>{formatLabel(lead.source || 'unknown')}</Badge></td>
+                            <td className="p-3 text-xs font-bold text-slate-600">{lead.assignedToName || lead.assignedToEmail || 'Unassigned'}</td>
+                            <td className="p-3">
+                                <select value={lead.status || 'new'} onChange={(event) => onStatusChange(lead.id, event.target.value)} className="h-8 rounded-sm border border-slate-200 bg-white px-2 text-xs font-bold text-slate-700 outline-none focus:border-brand-navy">
+                                    {columns.map((column) => <option key={column.id} value={column.id}>{column.label}</option>)}
+                                </select>
+                            </td>
+                            <td className="p-3 font-mono text-xs font-black text-slate-700">${Number(lead.value || 0).toLocaleString()}</td>
+                            <td className="max-w-xs p-3 text-xs text-slate-500">
+                                {view === 'quotes' ? (lead.serviceInterest || 'Quote request') : followUpLabel(lead)}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            {leads.length === 0 && <EmptyState title="No matching leads" body="Adjust your filters or add a new lead to start building the pipeline." />}
+        </div>
+    );
+}
+
+function MetricCard({ label, value, tone = 'default' }: { label: string; value: string; tone?: 'default' | 'urgent' | 'watch' }) {
+    const toneClass = tone === 'urgent' ? 'border-rose-200 text-rose-600' : tone === 'watch' ? 'border-amber-200 text-amber-700' : 'border-slate-200 text-brand-navy';
+    return (
+        <div className={`rounded-sm border bg-white px-4 py-4 shadow-sm ${toneClass}`}>
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">{label}</p>
+            <p className="mt-2 text-2xl font-black">{value}</p>
+        </div>
+    );
+}
+
+function ViewButton({ active, icon, label, onClick }: { active: boolean; icon: ReactNode; label: string; onClick: () => void }) {
+    return (
+        <button type="button" onClick={onClick} className={`inline-flex h-10 items-center gap-2 rounded-sm px-3 text-xs font-black uppercase tracking-[0.14em] transition ${active ? 'bg-brand-navy text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-brand-navy'}`}>
+            {icon}
+            {label}
+        </button>
+    );
+}
+
+function Select({ value, onChange, children }: { value: string; onChange: (value: string) => void; children: ReactNode }) {
+    return (
+        <select value={value} onChange={(event) => onChange(event.target.value)} className="h-10 rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10">
+            {children}
+        </select>
+    );
+}
+
+function Field({ label, name, type = 'text', required = false, className = '' }: { label: string; name: string; type?: string; required?: boolean; className?: string }) {
+    return (
+        <div className={className}>
+            <label className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">{label}</label>
+            <input name={name} type={type} required={required} className="mt-1.5 h-10 w-full rounded-sm border border-slate-200 px-3 text-sm text-slate-700 outline-none focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10" />
+        </div>
+    );
+}
+
+function SelectField({ label, name, defaultValue, children }: { label: string; name: string; defaultValue?: string; children: ReactNode }) {
+    return (
+        <div>
+            <label className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">{label}</label>
+            <select name={name} defaultValue={defaultValue} className="mt-1.5 h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10">
+                {children}
+            </select>
+        </div>
+    );
+}
+
+function Badge({ children, tone = 'default' }: { children: ReactNode; tone?: 'default' | 'urgent' | 'gold' }) {
+    const style = tone === 'urgent'
+        ? 'bg-rose-50 text-rose-700 border-rose-100'
+        : tone === 'gold'
+            ? 'bg-brand-gold/10 text-amber-800 border-brand-gold/20'
+            : 'bg-slate-50 text-slate-600 border-slate-200';
+    return <span className={`inline-flex rounded-sm border px-2 py-1 text-[10px] font-black uppercase tracking-[0.12em] ${style}`}>{children}</span>;
+}
+
+function EmptyState({ title, body }: { title: string; body: string }) {
+    return (
+        <div className="border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
+            <p className="text-sm font-black text-brand-navy">{title}</p>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{body}</p>
+        </div>
+    );
+}
+
+function isQuoteLead(lead: Lead) {
+    const text = `${lead.serviceInterest || ''} ${lead.notes || ''}`.toLowerCase();
+    return text.includes('quote') || text.includes('requested features') || text.includes('custom website');
+}
+
+function getFollowUpState(lead: Lead) {
+    if (!lead.nextFollowUpAt) return 'unset';
+    const followUp = new Date(lead.nextFollowUpAt);
+    const now = new Date();
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+    const weekEnd = new Date(now);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    if (followUp < now) return 'overdue';
+    if (followUp <= todayEnd) return 'today';
+    if (followUp <= weekEnd) return 'week';
+    return 'future';
+}
+
+function followUpSortValue(lead: Lead) {
+    if (!lead.nextFollowUpAt) return Number.MAX_SAFE_INTEGER;
+    return new Date(lead.nextFollowUpAt).getTime();
+}
+
+function followUpLabel(lead: Lead) {
+    const state = getFollowUpState(lead);
+    if (state === 'unset') return 'No follow-up set';
+    const date = new Date(lead.nextFollowUpAt as string | Date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    if (state === 'overdue') return `Overdue: ${date}`;
+    if (state === 'today') return `Due today: ${date}`;
+    if (state === 'week') return `This week: ${date}`;
+    return `Follow-up: ${date}`;
+}
+
+function ownerInitial(lead: Lead) {
+    const name = lead.assignedToName || lead.assignedToEmail || '';
+    return name ? name[0].toUpperCase() : <UserRound className="h-3 w-3" />;
 }
 
 function formatLabel(value: string) {
     return value.replace(/_/g, ' ');
-}
-
-function formatDate(value: Date | string) {
-    return new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
-
-function isFollowUpDue(value: Date | string | null) {
-    if (!value) return false;
-    const date = new Date(value);
-    const today = new Date();
-    today.setHours(23, 59, 59, 999);
-    return date <= today;
 }

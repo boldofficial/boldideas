@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { createWebsiteLead } from '@/actions/crm';
 
 interface FormProps {
@@ -9,11 +9,6 @@ interface FormProps {
 }
 
 export const ContactForm: React.FC<FormProps> = ({ className = '', theme = 'light' }) => {
-  const [leadContext, setLeadContext] = useState({
-    service: '',
-    type: '',
-    features: '',
-  });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -28,21 +23,15 @@ export const ContactForm: React.FC<FormProps> = ({ className = '', theme = 'ligh
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  useEffect(() => {
+  const getLeadContext = () => {
+    if (typeof window === 'undefined') return { service: '', type: '', features: '' };
     const params = new URLSearchParams(window.location.search);
-    const service = params.get('service') || '';
-    const type = params.get('type') || '';
-    const features = params.get('features') || '';
-
-    setLeadContext({ service, type, features });
-
-    if (type === 'custom-quote' && features) {
-      setFormData((current) => ({
-        ...current,
-        message: current.message || `I would like a custom website quote with these features: ${features}.`,
-      }));
-    }
-  }, []);
+    return {
+      service: params.get('service') || '',
+      type: params.get('type') || '',
+      features: params.get('features') || '',
+    };
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +40,21 @@ export const ContactForm: React.FC<FormProps> = ({ className = '', theme = 'ligh
 
     try {
       const formBody = new FormData();
+      const leadContext = getLeadContext();
+      const message = formData.message || (
+        leadContext.type === 'custom-quote' && leadContext.features
+          ? `I would like a custom website quote with these features: ${leadContext.features}.`
+          : ''
+      );
+
+      if (!message.trim()) {
+        setStatus('error');
+        setErrorMessage('Please enter a short message.');
+        return;
+      }
+
       Object.entries(formData).forEach(([key, value]) => formBody.append(key, value));
+      formBody.set('message', message);
       formBody.set('source', 'website_contact_form');
       formBody.set(
         'serviceInterest',
@@ -61,6 +64,9 @@ export const ContactForm: React.FC<FormProps> = ({ className = '', theme = 'ligh
             : 'Website inquiry'
           : 'Website or AI agent inquiry'
       );
+      if (leadContext.service) formBody.set('service', leadContext.service);
+      if (leadContext.type) formBody.set('type', leadContext.type);
+      if (leadContext.features) formBody.set('features', leadContext.features);
 
       const result = await createWebsiteLead(formBody);
 
@@ -157,7 +163,6 @@ export const ContactForm: React.FC<FormProps> = ({ className = '', theme = 'ligh
             name="message"
             value={formData.message}
             onChange={handleChange}
-            required
             rows={4}
             placeholder="Describe your operational bottleneck..."
             className={`w-full px-4 py-4 rounded-sm border ${isDark ? 'bg-white/5 border-white/10 text-white focus:border-brand-gold focus:ring-1 focus:ring-brand-gold/20' : 'bg-white border-slate-200 text-slate-700 focus:border-brand-navy focus:ring-1 focus:ring-brand-navy/20'} outline-none transition-all placeholder:text-slate-500`}

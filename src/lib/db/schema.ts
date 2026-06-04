@@ -107,12 +107,15 @@ export const leads = pgTable('leads', {
   priority: text('priority').default('medium'), // 'low' | 'medium' | 'high'
   nextFollowUpAt: timestamp('next_follow_up_at'),
   lostReason: text('lost_reason'),
-  notes: text('notes'),
-  assignedTo: uuid('assigned_to').references(() => users.id), // Staff assigned
-  value: text('value'), // Estimated deal value
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
-});
+    notes: text('notes'),
+    assignedTo: uuid('assigned_to').references(() => users.id), // Staff assigned
+    clientId: uuid('client_id').references(() => users.id, { onDelete: 'set null' }),
+    projectId: uuid('project_id').references(() => internalProjects.id, { onDelete: 'set null' }),
+    invoiceId: uuid('invoice_id').references(() => invoices.id, { onDelete: 'set null' }),
+    value: text('value'), // Estimated deal value
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  });
 
 export const interactions = pgTable('interactions', {
   id: uuid('id').defaultRandom().primaryKey(),
